@@ -1,1 +1,6 @@
-# frens
+# Frens
+
+A friendship management application for introverts and not only.
+Build relationships with people that lasts.
+
+
