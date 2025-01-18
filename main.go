@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/roma-glushko/frens/cmd"
-	"github.com/urfave/cli/v2"
 	"log"
 	"os"
+
+	"github.com/roma-glushko/frens/cmd"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {

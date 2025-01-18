@@ -1,4 +1,3 @@
 package friend
 
-type Wishlist struct {
-}
+type Wishlist struct{}

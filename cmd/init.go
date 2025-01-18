@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/roma-glushko/frens/internal/life"
+
+	"github.com/roma-glushko/frens/internal/lifedir"
 	"github.com/urfave/cli/v2"
 )
 
@@ -12,14 +13,12 @@ var InitCommand = &cli.Command{
 	Usage:   "Init a new life space",
 	Flags:   []cli.Flag{},
 	Action: func(context *cli.Context) error {
-		lifeDir, err := life.DefaultDir()
-
+		lifeDir, err := lifedir.DefaultDir()
 		if err != nil {
 			return err
 		}
 
-		err = life.Init(lifeDir)
-
+		err = lifedir.Init(lifeDir)
 		if err != nil {
 			return err
 		}

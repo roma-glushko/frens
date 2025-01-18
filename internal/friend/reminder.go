@@ -1,4 +1,3 @@
 package friend
 
-type Reminder struct {
-}
+type Reminder struct{}
