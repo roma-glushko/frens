@@ -14,15 +14,13 @@ type Files interface {
 	FriendsFile | ActivitiesFile
 }
 
-func createFile[T Files](filePath string) error {
+func saveFile[T Files](filePath string, content T) error {
 	file, err := os.Create(filePath)
 	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", filePath, err)
+		return fmt.Errorf("failed to save file %s: %w", filePath, err)
 	}
 
 	defer file.Close()
-
-	var content T
 
 	encoder := toml.NewEncoder(file)
 
@@ -55,11 +53,15 @@ func loadFile[T Files](filePath string) (*T, error) {
 func Init(lifeDir string) error {
 	var errs []error
 
-	if err := createFile[FriendsFile](filepath.Join(lifeDir, FileNameFriends)); err != nil {
+	var entities FriendsFile
+
+	if err := saveFile(filepath.Join(lifeDir, FileNameFriends), entities); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create friends file: %w", err))
 	}
 
-	if err := createFile[ActivitiesFile](filepath.Join(lifeDir, FileNameActivities)); err != nil {
+	var activities ActivitiesFile
+
+	if err := saveFile(filepath.Join(lifeDir, FileNameActivities), activities); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
 	}
 
@@ -89,4 +91,28 @@ func Load(lifeDir string) (*life.Data, error) {
 		Locations:  entities.Locations,
 		Activities: activities.Activities,
 	}, nil
+}
+
+func Save(lifeDir string, data *life.Data) error {
+	var errs []error
+
+	entities := FriendsFile{
+		Tags:      data.Tags,
+		Friends:   data.Friends,
+		Locations: data.Locations,
+	}
+
+	if err := saveFile(filepath.Join(lifeDir, FileNameFriends), entities); err != nil {
+		errs = append(errs, fmt.Errorf("failed to create friends file: %w", err))
+	}
+
+	activities := ActivitiesFile{
+		Activities: data.Activities,
+	}
+
+	if err := saveFile(filepath.Join(lifeDir, FileNameActivities), activities); err != nil {
+		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
+	}
+
+	return errors.Join(errs...)
 }

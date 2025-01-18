@@ -1,17 +1,19 @@
 package main
 
 import (
+	"os"
+	"time"
+
 	"github.com/charmbracelet/log"
 	"github.com/muesli/termenv"
 	"github.com/roma-glushko/frens/cmd"
 	"github.com/roma-glushko/frens/internal/version"
 	"github.com/urfave/cli/v2"
-	"os"
-	"time"
 )
 
 func InitLogging(debugLevel bool) {
 	log.SetOutput(os.Stdout)
+	log.SetPrefix(version.AppName)
 	log.SetLevel(log.InfoLevel)
 	log.SetReportTimestamp(false)
 	log.SetColorProfile(termenv.TrueColor)
@@ -21,7 +23,6 @@ func InitLogging(debugLevel bool) {
 		log.SetReportTimestamp(true)
 		log.SetTimeFormat(time.Kitchen)
 		log.SetReportCaller(true)
-		log.SetPrefix(version.AppName)
 	}
 }
 

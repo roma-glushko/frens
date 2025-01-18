@@ -47,3 +47,8 @@ func Load(lifePath string) (*life.Data, error) {
 
 	return data, nil
 }
+
+// Save saves the life files from the specific path or `~/.frens/` is used by default
+func Save(lifePath string, data *life.Data) error {
+	return toml.Save(lifePath, data)
+}
