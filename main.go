@@ -1,14 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"github.com/roma-glushko/frens/cmd"
+	"github.com/urfave/cli/v2"
 	"os"
 	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/muesli/termenv"
-	"github.com/roma-glushko/frens/cmd"
 	"github.com/roma-glushko/frens/internal/version"
-	"github.com/urfave/cli/v2"
 )
 
 func InitLogging(debugLevel bool) {
@@ -26,10 +27,19 @@ func InitLogging(debugLevel bool) {
 	}
 }
 
+const AppBanner = `
+▗▄▄▄▖▗▄▄▖ ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖
+▐▌   ▐▌ ▐▌▐▌   ▐▛▚▖▐▌▐▌   
+▐▛▀▀▘▐▛▀▚▖▐▛▀▀▘▐▌ ▝▜▌ ▝▀▚▖
+▐▌   ▐▌ ▐▌▐▙▄▄▖▐▌  ▐▌▗▄▄▞▘
+`
+
 func main() {
+	fmt.Println(AppBanner)
+
 	cliApp := cli.App{
 		Name:                 "frens",
-		Usage:                "A friendship management & journaling application. Build friendship that lasts",
+		Usage:                "A friendship management & journaling application. Build friendship that lasts.",
 		Version:              version.FullVersion,
 		Suggest:              true,
 		EnableBashCompletion: true,
