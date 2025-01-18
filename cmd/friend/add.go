@@ -1,8 +1,8 @@
-package add
+package friend
 
 import "github.com/urfave/cli/v2"
 
-var AddFriendCommand = &cli.Command{
+var AddCommand = &cli.Command{
 	Name:    "friend",
 	Aliases: []string{"f"},
 	Usage:   "Add a new friend",

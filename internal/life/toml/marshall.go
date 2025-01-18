@@ -1,4 +1,4 @@
-package tomlf
+package toml
 
 import (
 	"errors"
@@ -32,7 +32,7 @@ func createFile[T Files](lifeDir string, fileName string) error {
 	return nil
 }
 
-func InitLife(lifeDir string) error {
+func Init(lifeDir string) error {
 	var errs []error
 
 	if err := createFile[FriendsFile](lifeDir, FileNameFriends); err != nil {
@@ -44,4 +44,8 @@ func InitLife(lifeDir string) error {
 	}
 
 	return errors.Join(errs...)
+}
+
+func Load(lifeDir string) {
+
 }

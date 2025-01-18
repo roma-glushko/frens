@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/roma-glushko/frens/internal/life"
-	"github.com/roma-glushko/frens/internal/life/tomlf"
 	"github.com/urfave/cli/v2"
 )
 
@@ -19,7 +18,7 @@ var InitCommand = &cli.Command{
 			return err
 		}
 
-		err = tomlf.InitLife(lifeDir)
+		err = life.Init(lifeDir)
 
 		if err != nil {
 			return err

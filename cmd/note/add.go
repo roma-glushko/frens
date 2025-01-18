@@ -1,8 +1,8 @@
-package add
+package note
 
 import "github.com/urfave/cli/v2"
 
-var AddNoteCommand = &cli.Command{
+var AddCommand = &cli.Command{
 	Name:    "note",
 	Aliases: []string{"n"},
 	Usage:   "Add a new note",
