@@ -12,6 +12,13 @@ import (
 	"github.com/roma-glushko/frens/internal/version"
 )
 
+const AppBanner = `
+▗▄▄▄▖▗▄▄▖ ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖
+▐▌   ▐▌ ▐▌▐▌   ▐▛▚▖▐▌▐▌   
+▐▛▀▀▘▐▛▀▚▖▐▛▀▀▘▐▌ ▝▜▌ ▝▀▚▖
+▐▌   ▐▌ ▐▌▐▙▄▄▖▐▌  ▐▌▗▄▄▞▘
+`
+
 func InitLogging(debugLevel bool) {
 	log.SetOutput(os.Stdout)
 	log.SetPrefix(version.AppName)
@@ -27,20 +34,16 @@ func InitLogging(debugLevel bool) {
 	}
 }
 
-const AppBanner = `
-▗▄▄▄▖▗▄▄▖ ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖
-▐▌   ▐▌ ▐▌▐▌   ▐▛▚▖▐▌▐▌   
-▐▛▀▀▘▐▛▀▚▖▐▛▀▀▘▐▌ ▝▜▌ ▝▀▚▖
-▐▌   ▐▌ ▐▌▐▙▄▄▖▐▌  ▐▌▗▄▄▞▘
-`
+const Copyright = `2025-Present, Roma Hlushko & Friends (c)`
 
 func main() {
 	fmt.Println(AppBanner)
 
 	cliApp := cli.App{
 		Name:                 "frens",
-		Usage:                "A friendship management & journaling application. Build friendship that lasts.",
+		Usage:                "A friendship management & journaling app. Build friendship that lasts.",
 		Version:              version.FullVersion,
+		Copyright:            Copyright,
 		Suggest:              true,
 		EnableBashCompletion: true,
 		Flags: []cli.Flag{
