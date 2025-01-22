@@ -11,4 +11,4 @@ TBU
 
 ## Main Concepts
 
-TBU
+![Diagram](./docs/friens-data-model.png?raw=true)
