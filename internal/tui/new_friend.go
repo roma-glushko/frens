@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"github.com/charmbracelet/huh"
 	"github.com/roma-glushko/frens/internal/friend"
 	"strings"
@@ -29,6 +30,7 @@ type Styles struct {
 
 func NewStyles(lg *lipgloss.Renderer) *Styles {
 	s := Styles{}
+
 	s.Base = lg.NewStyle().
 		Padding(1, 4, 0, 1)
 	s.HeaderText = lg.NewStyle().
@@ -49,21 +51,27 @@ func NewStyles(lg *lipgloss.Renderer) *Styles {
 		Foreground(red)
 	s.Help = lg.NewStyle().
 		Foreground(lipgloss.Color("240"))
+
 	return &s
 }
 
 type NewFriendModel struct {
-	friend friend.Friend
-	lg     *lipgloss.Renderer
-	styles *Styles
-	form   *huh.Form
-	width  int
+	friend    *friend.Friend
+	nicknames string
+	lg        *lipgloss.Renderer
+	styles    *Styles
+	form      *huh.Form
+	width     int
 }
 
-func NewFriendForm(f friend.Friend) NewFriendModel {
+func NewFriendForm(f *friend.Friend) NewFriendModel {
 	m := NewFriendModel{
 		friend: f,
 		width:  maxWidth,
+	}
+
+	if f.Nicknames != nil {
+		m.nicknames = strings.Join(f.Nicknames, ", ")
 	}
 
 	m.lg = lipgloss.DefaultRenderer()
@@ -80,26 +88,35 @@ func NewFriendForm(f friend.Friend) NewFriendModel {
 				Value(&f.Name),
 
 			huh.NewInput().
-				Key("nickname").
-				Title("Nickname").
+				Key("nicknames").
+				Title("Nicknames").
 				Description("What's your friend nicknames?").
-				Placeholder("Jimbo, Jimmy, Jimothy, Tuna"),
-
-			huh.NewMultiSelect[string]().
-				Key("tags").
-				Title("Tags").
-				Description("What tags would you like to add to your friend?").
-				Options(huh.NewOptions("friend", "family", "colleague", "acquaintance")...),
+				Placeholder("Jimbo, Jimmy, Jimothy, Tuna").
+				Value(&m.nicknames),
 
 			huh.NewMultiSelect[string]().
 				Key("locations").
 				Title("Locations").
 				Description("What locations would you like to associate to your friend with?").
-				Options(huh.NewOptions("Scranton, Pennsylvania", "New York")...),
+				Options(huh.NewOptions("Scranton, Pennsylvania", "New York")...).
+				Value(&f.Locations),
+
+			huh.NewMultiSelect[string]().
+				Key("tags").
+				Title("Tags").
+				Description("What tags would you like to add to your friend?").
+				Options(huh.NewOptions("friend", "family", "colleague", "acquaintance")...).
+				Value(&f.Tags),
 
 			huh.NewConfirm().
 				Key("done").
 				Title("All done?").
+				Validate(func(v bool) error {
+					if !v {
+						return fmt.Errorf("Welp, whenever you are ready")
+					}
+					return nil
+				}).
 				Affirmative("Yep").
 				Negative("No"),
 		),
@@ -134,6 +151,8 @@ func (m NewFriendModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if m.form.State == huh.StateCompleted {
 		// Quit when the form is done.
+		m.friend.Nicknames = strings.Split(m.nicknames, ",")
+
 		cmds = append(cmds, tea.Quit)
 	}
 

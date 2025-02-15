@@ -1,6 +1,7 @@
 package friend
 
 import (
+	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
@@ -30,7 +31,7 @@ var AddCommand = &cli.Command{
 		&cli.StringSliceFlag{
 			Name:    "nickname",
 			Aliases: []string{"a", "alias", "nick", "n"},
-			Usage:   "Add friend's nickname",
+			Usage:   "Add friend's nicknames",
 		},
 	},
 	Action: func(context *cli.Context) error {
@@ -56,7 +57,7 @@ var AddCommand = &cli.Command{
 
 		if context.NArg() == 0 {
 			// return cli.ShowCommandHelp(context, context.Command.Name)
-			if _, err := tea.NewProgram(tui.NewFriendForm(friend)).Run(); err != nil {
+			if _, err := tea.NewProgram(tui.NewFriendForm(&friend)).Run(); err != nil {
 				log.Error("uh oh", "err", err)
 				return err
 			}
@@ -76,7 +77,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("New friend added")
+		log.Info(fmt.Sprintf("%s has been added", friend.Name))
 
 		return nil
 	},
