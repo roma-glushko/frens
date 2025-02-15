@@ -61,7 +61,9 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			cmd.InitCommand,
+			cmd.EditCommand,
 			cmd.AddCommands,
+			cmd.ListCommands,
 		},
 	}
 

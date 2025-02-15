@@ -58,7 +58,9 @@ var AddCommand = &cli.Command{
 
 		if context.NArg() == 0 {
 			// return cli.ShowCommandHelp(context, context.Command.Name)
-			if _, err := tea.NewProgram(tui.NewFriendForm(&friend)).Run(); err != nil {
+			teaUI := tea.NewProgram(tui.NewFriendForm(&friend), tea.WithMouseAllMotion())
+
+			if _, err := teaUI.Run(); err != nil {
 				log.Error("uh oh", "err", err)
 				return err
 			}
