@@ -7,9 +7,7 @@ import (
 	"time"
 )
 
-var (
-	ErrNameEmpty = errors.New("friend name must be provided")
-)
+var ErrNameEmpty = errors.New("friend name must be provided")
 
 type Friend struct {
 	Name      string    `toml:"name"`
