@@ -13,3 +13,7 @@ type Data struct {
 	Locations  []location.Location
 	Activities []activity.Activity
 }
+
+func (d *Data) AddFriend(f friend.Friend) {
+	d.Friends = append(d.Friends, f)
+}
