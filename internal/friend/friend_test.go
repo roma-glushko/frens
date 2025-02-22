@@ -42,24 +42,6 @@ func TestFriend_Nickname(t *testing.T) {
 	require.Len(t, f.Nicknames, 0)
 }
 
-func TestFriend_Tag(t *testing.T) {
-	tag := "sales"
-	f := Friend{Name: "Jim Halpert"}
-
-	f.AddTag(tag)
-
-	require.True(t, f.HasTag(tag))
-
-	f.AddTag(tag)
-
-	require.Len(t, f.Tags, 1)
-
-	f.RemoveTag(tag)
-	f.RemoveTag(tag)
-
-	require.False(t, f.HasTag(tag))
-}
-
 func TestFriend_String(t *testing.T) {
 	name := "Jim Halpert"
 	nick1 := "Big Tuna"

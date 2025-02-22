@@ -1,7 +1,7 @@
 package life
 
 import (
-	"github.com/roma-glushko/frens/internal/activity"
+	"github.com/roma-glushko/frens/internal/event"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/location"
 	"github.com/roma-glushko/frens/internal/tag"
@@ -17,7 +17,7 @@ type Data struct {
 	Tags       []tag.Tag
 	Friends    []friend.Friend
 	Locations  []location.Location
-	Activities []activity.Activity
+	Activities []event.Activity
 }
 
 func (d *Data) Init() {
@@ -46,7 +46,7 @@ func (d *Data) AddTag(t tag.Tag) {
 	d.dirty = true
 }
 
-func (d *Data) AddActivity(a activity.Activity) {
+func (d *Data) AddActivity(a event.Activity) {
 	d.Activities = append(d.Activities, a)
 
 	d.dirty = true
@@ -60,7 +60,7 @@ func (d *Data) ListFriends(q ListFriendQuery) []friend.Friend {
 			continue
 		}
 
-		if q.Tag != "" && !f.HasTag(q.Tag) {
+		if q.Tag != "" && !tag.HasTag(&f, q.Tag) {
 			continue
 		}
 

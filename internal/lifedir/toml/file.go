@@ -1,7 +1,7 @@
 package toml
 
 import (
-	"github.com/roma-glushko/frens/internal/activity"
+	"github.com/roma-glushko/frens/internal/event"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/location"
 	"github.com/roma-glushko/frens/internal/tag"
@@ -19,5 +19,5 @@ type FriendsFile struct {
 }
 
 type ActivitiesFile struct {
-	Activities []activity.Activity `toml:"activities"`
+	Activities []event.Activity `toml:"activities"`
 }

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/roma-glushko/frens/internal/tag"
+
 	"github.com/roma-glushko/frens/internal/utils"
 )
 
@@ -20,6 +22,8 @@ type Friend struct {
 	Reminders []string  `toml:"reminders,omitempty"`
 	// activities int
 }
+
+var _ tag.Tagged = (*Friend)(nil)
 
 func (f *Friend) Validate() error {
 	if f.Name == "" {
@@ -53,7 +57,7 @@ func (f *Friend) RemoveNickname(n string) {
 	var nicks []string
 
 	for _, nick := range f.Nicknames {
-		if strings.ToLower(nick) != strings.ToLower(n) {
+		if strings.EqualFold(nick, n) {
 			nicks = append(nicks, nick)
 		}
 	}
@@ -61,35 +65,17 @@ func (f *Friend) RemoveNickname(n string) {
 	f.Nicknames = nicks
 }
 
-func (f *Friend) AddTag(t string) {
-	f.Tags = utils.Unique(append(f.Tags, t))
-}
-
-func (f *Friend) HasTag(t string) bool {
-	for _, tag := range f.Tags {
-		if strings.ToLower(tag) == strings.ToLower(t) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (f *Friend) RemoveTag(t string) {
-	var tags []string
-
-	for _, tag := range f.Tags {
-		if strings.ToLower(tag) != strings.ToLower(t) {
-			tags = append(tags, tag)
-		}
-	}
-
+func (f *Friend) SetTags(tags []string) {
 	f.Tags = tags
+}
+
+func (f *Friend) GetTags() []string {
+	return f.Tags
 }
 
 func (f *Friend) HasLocation(l string) bool {
 	for _, loc := range f.Locations {
-		if strings.ToLower(loc) == strings.ToLower(l) {
+		if strings.EqualFold(loc, l) {
 			return true
 		}
 	}
@@ -105,7 +91,7 @@ func (f *Friend) RemoveLocation(l string) {
 	var locs []string
 
 	for _, loc := range f.Locations {
-		if strings.ToLower(loc) != strings.ToLower(l) {
+		if strings.EqualFold(loc, l) {
 			locs = append(locs, loc)
 		}
 	}
