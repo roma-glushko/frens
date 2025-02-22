@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -12,12 +11,6 @@ import (
 	"github.com/muesli/termenv"
 	"github.com/roma-glushko/frens/internal/version"
 )
-
-const AppBanner = `
-▗▄▄▄▖▗▄▄▖ ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖
-▐▌   ▐▌ ▐▌▐▌   ▐▛▚▖▐▌▐▌   
-▐▛▀▀▘▐▛▀▚▖▐▛▀▀▘▐▌ ▝▜▌ ▝▀▚▖
-▐▌   ▐▌ ▐▌▐▙▄▄▖▐▌  ▐▌▗▄▄▞▘`
 
 func InitLogging(debugLevel bool) {
 	log.SetOutput(os.Stdout)
@@ -37,7 +30,6 @@ func InitLogging(debugLevel bool) {
 const Copyright = `2025-Present, Roma Hlushko & Friends (c)`
 
 func main() {
-	fmt.Println(AppBanner)
 	cliApp := cli.App{
 		Name:                 "frens",
 		Usage:                "A friendship management & journaling app. Build friendship that lasts.",

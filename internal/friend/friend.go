@@ -3,6 +3,7 @@ package friend
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 )
@@ -32,6 +33,14 @@ func (f *Friend) AddNickname(n string) {
 
 func (f *Friend) AddTag(t string) {
 	f.Tags = append(f.Tags, t)
+}
+
+func (f *Friend) HasTag(t string) bool {
+	return slices.Contains(f.Tags, t)
+}
+
+func (f *Friend) HasLocation(l string) bool {
+	return slices.Contains(f.Locations, l)
 }
 
 func (f *Friend) AddLocation(l string) {

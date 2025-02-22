@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/roma-glushko/frens/internal/lifedir"
-	"github.com/urfave/cli/v2"
 	"os"
 	"os/exec"
+
+	"github.com/roma-glushko/frens/internal/lifedir"
+	"github.com/urfave/cli/v2"
 )
 
 var EditCommand = &cli.Command{
@@ -27,7 +28,6 @@ var EditCommand = &cli.Command{
 		cmd.Stderr = os.Stderr
 
 		err = cmd.Run()
-
 		if err != nil {
 			return fmt.Errorf("Error running editor: %s", err)
 		}
