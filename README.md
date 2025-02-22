@@ -12,3 +12,11 @@ TBU
 ## Main Concepts
 
 ![Diagram](./docs/friens-data-model.png?raw=true)
+
+## Refs
+
+- https://github.com/charmbracelet/huh/blob/main/examples/bubbletea/main.go
+- https://github.com/stefanlogue/meteor/blob/main/main.go
+- https://github.com/maaslalani/nap
+- https://github.com/mritd/bubbles
+- https://github.com/getsavvyinc/savvy-cli

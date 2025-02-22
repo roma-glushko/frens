@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/roma-glushko/frens/cmd"
-	"github.com/urfave/cli/v2"
 	"os"
 	"time"
+
+	"github.com/roma-glushko/frens/cmd"
+	"github.com/urfave/cli/v2"
 
 	"github.com/charmbracelet/log"
 	"github.com/muesli/termenv"
@@ -16,8 +17,7 @@ const AppBanner = `
 ▗▄▄▄▖▗▄▄▖ ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖
 ▐▌   ▐▌ ▐▌▐▌   ▐▛▚▖▐▌▐▌   
 ▐▛▀▀▘▐▛▀▚▖▐▛▀▀▘▐▌ ▝▜▌ ▝▀▚▖
-▐▌   ▐▌ ▐▌▐▙▄▄▖▐▌  ▐▌▗▄▄▞▘
-`
+▐▌   ▐▌ ▐▌▐▙▄▄▖▐▌  ▐▌▗▄▄▞▘`
 
 func InitLogging(debugLevel bool) {
 	log.SetOutput(os.Stdout)
@@ -38,7 +38,6 @@ const Copyright = `2025-Present, Roma Hlushko & Friends (c)`
 
 func main() {
 	fmt.Println(AppBanner)
-
 	cliApp := cli.App{
 		Name:                 "frens",
 		Usage:                "A friendship management & journaling app. Build friendship that lasts.",
@@ -62,7 +61,9 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			cmd.InitCommand,
+			cmd.EditCommand,
 			cmd.AddCommands,
+			cmd.ListCommands,
 		},
 	}
 
