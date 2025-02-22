@@ -20,6 +20,10 @@ type Data struct {
 	Activities []activity.Activity
 }
 
+func (d *Data) Init() {
+	// TODO: implement
+}
+
 func (d *Data) Dirty() bool {
 	return d.dirty
 }
@@ -49,23 +53,19 @@ func (d *Data) AddActivity(a activity.Activity) {
 }
 
 func (d *Data) ListFriends(q ListFriendQuery) []friend.Friend {
-	var view []friend.Friend
+	var v []friend.Friend
 
 	for _, f := range d.Friends {
-		if q.Location != "" {
-			if !f.HasLocation(q.Location) {
-				continue
-			}
+		if q.Location != "" && !f.HasLocation(q.Location) {
+			continue
 		}
 
-		if q.Tag != "" {
-			if !f.HasTag(q.Tag) {
-				continue
-			}
+		if q.Tag != "" && !f.HasTag(q.Tag) {
+			continue
 		}
 
-		view = append(view, f)
+		v = append(v, f)
 	}
 
-	return view
+	return v
 }

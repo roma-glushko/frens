@@ -45,6 +45,8 @@ func Load(lifePath string) (*life.Data, error) {
 		return nil, fmt.Errorf("failed to load life space: %w", err)
 	}
 
+	data.Init()
+
 	return data, nil
 }
 
