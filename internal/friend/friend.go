@@ -3,6 +3,7 @@ package friend
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -12,6 +13,14 @@ import (
 )
 
 var ErrNameEmpty = errors.New("friend name must be provided")
+
+type Friends []Friend
+
+var _ sort.Interface = (*Friends)(nil)
+
+func (f Friends) Len() int           { return len(f) }
+func (f Friends) Less(i, j int) bool { return f[i].Name < f[j].Name }
+func (f Friends) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
 
 type Friend struct {
 	Name      string    `toml:"name"`

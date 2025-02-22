@@ -3,6 +3,7 @@ package location
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/tag"
@@ -10,6 +11,14 @@ import (
 )
 
 var ErrNameEmpty = errors.New("location name must be provided")
+
+type Locations []Location
+
+var _ sort.Interface = (*Locations)(nil)
+
+func (l Locations) Len() int           { return len(l) }
+func (l Locations) Less(i, j int) bool { return l[i].Name < l[j].Name }
+func (l Locations) Swap(i, j int)      { l[i], l[j] = l[j], l[i] }
 
 type Location struct {
 	Name    string   `toml:"name"`
