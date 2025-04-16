@@ -1,7 +1,20 @@
+// Copyright 2025 Roma Hlushko
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package friend
 
 import (
-	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -35,7 +48,7 @@ var AddCommand = &cli.Command{
 			Usage:   "Add friend's nicknames",
 		},
 	},
-	Action: func(context *cli.Context) error {
+	Action: func(ctx *cli.Context) error {
 		lifeDir, err := lifedir.DefaultDir()
 		if err != nil {
 			return err
@@ -46,9 +59,9 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		nicknames := context.StringSlice("nickname")
-		tags := context.StringSlice("tag")
-		locs := context.StringSlice("location")
+		nicknames := ctx.StringSlice("nickname")
+		tags := ctx.StringSlice("tag")
+		locs := ctx.StringSlice("location")
 
 		var friend friend.Friend
 
@@ -56,7 +69,7 @@ var AddCommand = &cli.Command{
 		friend.Tags = tags
 		friend.Locations = locs
 
-		if context.NArg() == 0 {
+		if ctx.NArg() == 0 {
 			// return cli.ShowCommandHelp(context, context.Command.Name)
 			teaUI := tea.NewProgram(tui.NewFriendForm(&friend), tea.WithMouseAllMotion())
 
@@ -65,7 +78,7 @@ var AddCommand = &cli.Command{
 				return err
 			}
 		} else {
-			name := strings.Join(context.Args().Slice(), " ")
+			name := strings.Join(ctx.Args().Slice(), " ")
 
 			friend.Name = name
 		}
@@ -80,7 +93,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info(fmt.Sprintf("%s has been added", friend.Name))
+		log.Info(friend.Name + " has been added")
 
 		return nil
 	},

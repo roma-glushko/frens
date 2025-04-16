@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+.github
+
+# Docker
+.dockerignore
+
+# IDE
+.idea
+.vscode
+
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+sample.env
+.env
+
+dist
+tmp

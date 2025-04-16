@@ -1,5 +1,9 @@
-BIN_DIR=$(PWD)/tmp/bin
-VERSION_PACKAGE := nasmijewelry.com/shop/internal/version
+.PHONY: help
+help:
+	@echo "🛠️ Dev Commands\n"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+VERSION_PACKAGE := github.com/roma-glushko/frens/internal/version
 VERSION ?= $(shell git describe --long --always --abbrev=15)
 COMMIT ?= $(shell git describe --dirty --long --always --abbrev=15)
 BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -7,23 +11,20 @@ VERSION ?= "latest"
 
 LDFLAGS_COMMON := "-X $(VERSION_PACKAGE).GitCommit=$(COMMIT) -X $(VERSION_PACKAGE).Version=$(VERSION) -X $(VERSION_PACKAGE).BuildDate=$(BUILD_DATE)"
 
-.PHONY: help
-help:
-	@echo "🛠️ Frens :: Dev Commands\n"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+BIN_DIR=$(PWD)/tmp/bin
 
-.PHONY: install-bin
-install-bin: ## Install static checkers & other binaries
-	@echo "🚚 Downloading binaries.."
+.PHONY: install-tools
+install-tools: ## Install static checkers & other binaries
+	@echo "🚚 Downloading tools.."
 	@GOBIN=$(BIN_DIR) go install mvdan.cc/gofumpt@latest
 	@GOBIN=$(BIN_DIR) go install github.com/air-verse/air@latest
 	@GOBIN=$(BIN_DIR) go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@GOBIN=$(BIN_DIR) go install github.com/g4s8/envdoc@latest
 	@GOBIN=$(BIN_DIR) go install github.com/denis-tingaikin/go-header/cmd/go-header@latest
-	@GOBIN=$(BIN_DIR) go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	@GOBIN=$(BIN_DIR) go install github.com/goreleaser/goreleaser/v2@latest
 
 .PHONY: lint
-lint: install-bin ## Lint the source code
+lint: install-tools ## Lint the source code
 	@echo "🧹 Cleaning go.mod.."
 	@go mod tidy
 	@echo "🧹 Formatting files.."
@@ -33,6 +34,8 @@ lint: install-bin ## Lint the source code
 	@go vet ./...
 	@echo "🧹 GoCI Lint.."
 	@$(BIN_DIR)/golangci-lint run ./...
+	@echo "🧹Check GoReleaser.."
+	@$(BIN_DIR)/goreleaser check
 
 .PHONY: run
 run: ## Run Frens
@@ -40,12 +43,56 @@ run: ## Run Frens
 
 .PHONY: build
 build: ## Build Frens
-	@echo "🔨Building Frens binary.."
+	@echo "🔨Building binary.."
 	@echo "Version: $(VERSION)"
 	@echo "Commit: $(COMMIT)"
 	@echo "Build Date: $(BUILD_DATE)"
 	@go build -ldflags $(LDFLAGS_COMMON) -o ./dist/frens;
 
+.PHONY: gen
+gen: ## Generate Go code
+	@go generate ./...
+
+.PHONY: gen-check
+gen-check: gen ## Check if Go code needs to be generated
+	@git diff --exit-code
+
 .PHONY: test
 test: ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
+
+copyright: ## Apply copyrights to all files
+	@echo "🧹 Applying license headers"
+	@docker run  --rm -v $(CURDIR):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:4021a396bf07b2136f97c12708476418a8157d72 -v info -c .licenserc.yaml header fix
+
+license: copyright
+
+VENDOR ?= roma-glushko
+PROJECT ?= frens
+SOURCE ?= https://github.com/roma-glushko/frens
+LICENSE ?= Apache-2.0
+DESCRIPTION ?= "A friendship management application for introverts and not only. Build relationships with people that lasts."
+REPOSITORY ?= roma-glushko/frens
+
+.PHONY: image
+image: ## Build docker image
+	@echo "🛠️ Building image.."
+	@echo "- Version: $(VERSION)"
+	@echo "- Commit: $(COMMIT)"
+	@echo "- Build Date: $(BUILD_DATE)"
+	@docker build . -t $(REPOSITORY):$(VERSION) -f Dockerfile \
+	--build-arg VERSION="$(VERSION)" \
+	--build-arg COMMIT="$(COMMIT)" \
+	--build-arg BUILD_DATE="$(BUILD_DATE)" \
+	--label=org.opencontainers.image.vendor="$(VENDOR)" \
+	--label=org.opencontainers.image.title="$(PROJECT)" \
+	--label=org.opencontainers.image.revision="$(COMMIT)" \
+	--label=org.opencontainers.image.version="$(VERSION)" \
+	--label=org.opencontainers.image.created="$(BUILD_DATE)" \
+	--label=org.opencontainers.image.source="$(SOURCE)" \
+	--label=org.opencontainers.image.licenses="$(LICENSE)" \
+	--label=org.opencontainers.image.description=$(DESCRIPTION)
+
+.PHONY: image-lint
+image-lint: ## Lint Dockerfile
+	@hadolint Dockerfile
