@@ -8,6 +8,7 @@ import (
 
 func TestFriend_Validation(t *testing.T) {
 	var noName Friend
+
 	require.Error(t, noName.Validate())
 
 	withName := Friend{Name: "Jim Halpert"}
@@ -39,7 +40,7 @@ func TestFriend_Nickname(t *testing.T) {
 	f.RemoveNickname(nickname)
 	f.RemoveNickname(nickname)
 
-	require.Len(t, f.Nicknames, 0)
+	require.Empty(t, f.Nicknames)
 }
 
 func TestFriend_String(t *testing.T) {
