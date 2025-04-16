@@ -178,14 +178,10 @@ release:
   # Templates: allowed
   name_template: "v{{.Version}}"
 
-  header: |
-    <a name='{{.Tag}}'></a>
-    ### {{ .Tag }} Release Notes ({{ .Date }})
-
   footer: |
     **Full Changelog**: https://github.com/roma-glushko/frens/compare/{{ .PreviousTag }}...{{ .Tag }}
     
-    Your feedbacks are more than welcome, feel free to open issues/discussions.
+    Your feedback is more than welcome, feel free to open issues/discussions.
     You can reach out to the team using:
 
     - [Github Discussions](https://github.com/roma-glushko/frens/discussions)
