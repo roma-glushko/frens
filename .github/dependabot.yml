@@ -5,16 +5,16 @@ updates:
     schedule:
       interval: daily
     commit-message:
-      prefix: "[gomod] "
+      prefix: "⬆️ sec(deps):"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: daily
     commit-message:
-      prefix: "[github-actions] "
+      prefix: "⬆️ sec(deps):"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: daily
     commit-message:
-      prefix: "[docker] "
+      prefix: "⬆️ sec(deps): "
