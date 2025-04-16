@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package location
+package friend
 
 import (
 	"testing"
@@ -20,39 +20,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLocation_Validation(t *testing.T) {
-	var l Location
-
-	require.Error(t, l.Validate())
-
-	l.Name = "Los Angeles"
-
-	require.NoError(t, l.Validate())
+type testEntity struct {
+	Tags []string
 }
 
-func TestLocation_Match(t *testing.T) {
-	var l Location
+var _ Tagged = (*testEntity)(nil)
 
-	l.Name = "Los Angeles"
-	l.AddAlias("LA")
-
-	require.True(t, l.Match("los"))
-	require.True(t, l.Match("angeles"))
-	require.True(t, l.Match("los angeles"))
-	require.False(t, l.Match("new"))
-	require.True(t, l.Match("la"))
+func (e *testEntity) SetTags(tags []string) {
+	e.Tags = tags
 }
 
-func TestLocation_Alias(t *testing.T) {
-	var l Location
+func (e *testEntity) GetTags() []string {
+	return e.Tags
+}
 
-	l.AddAlias("LA")
-	l.AddAlias("Los Angeles")
+func TestTags(t *testing.T) {
+	var e testEntity
 
-	require.Len(t, l.Alias, 2)
+	require.False(t, HasTag(&e, "corporate"))
 
-	l.RemoveAlias("la")
-	l.RemoveAlias("LA")
+	Add(&e, "sales")
+	Add(&e, "sales")
+	Add(&e, "accounting")
 
-	require.Len(t, l.Alias, 1)
+	require.Len(t, e.Tags, 2)
+
+	require.True(t, HasTag(&e, "Sales"))
+	require.False(t, HasTag(&e, "warehouse"))
+
+	Remove(&e, "SALES")
+
+	require.Len(t, e.Tags, 1)
 }

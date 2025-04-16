@@ -12,18 +12,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package friend
 
 import (
-	"github.com/roma-glushko/frens/cmd/friend"
-	"github.com/urfave/cli/v2"
+	"strings"
+
+	"github.com/roma-glushko/frens/internal/utils"
 )
 
-var ListCommands = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l", "ls"},
-	Usage:   "List your friends, activities, locations",
-	Subcommands: []*cli.Command{
-		friend.ListCommand,
-	},
+type Tag struct {
+	Name string
+}
+
+type Tagged interface {
+	SetTags(tags []string)
+	GetTags() []string
+}
+
+func Add(e Tagged, t string) {
+	tags := utils.Unique(append(e.GetTags(), t))
+
+	e.SetTags(tags)
+}
+
+func Remove(e Tagged, t string) {
+	var tags []string
+
+	for _, tag := range e.GetTags() {
+		if !strings.EqualFold(tag, t) {
+			tags = append(tags, tag)
+		}
+	}
+
+	e.SetTags(tags)
+}
+
+func HasTag(e Tagged, t string) bool {
+	for _, tag := range e.GetTags() {
+		if strings.EqualFold(tag, t) {
+			return true
+		}
+	}
+
+	return false
 }

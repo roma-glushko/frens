@@ -18,10 +18,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/event"
 	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/location"
-	"github.com/roma-glushko/frens/internal/tag"
 )
 
 type ListFriendQuery struct {
@@ -31,10 +28,11 @@ type ListFriendQuery struct {
 
 type Data struct {
 	dirty      bool
-	Tags       []tag.Tag
+	DirPath    string
+	Tags       []friend.Tag
 	Friends    friend.Friends
-	Locations  location.Locations
-	Activities []event.Activity
+	Locations  friend.Locations
+	Activities []friend.Event
 }
 
 func (d *Data) Init() {
@@ -43,6 +41,10 @@ func (d *Data) Init() {
 
 func (d *Data) Dirty() bool {
 	return d.dirty
+}
+
+func (d *Data) Path() string {
+	return d.DirPath
 }
 
 func (d *Data) AddFriend(f friend.Friend) {
@@ -79,14 +81,14 @@ func (d *Data) GetFriend(q string) (*friend.Friend, error) {
 	return &f, nil
 }
 
-func (d *Data) AddLocation(l location.Location) {
+func (d *Data) AddLocation(l friend.Location) {
 	d.Locations = append(d.Locations, l)
 
 	d.dirty = true
 }
 
-func (d *Data) GetLocation(q string) (*location.Location, error) {
-	var found []location.Location
+func (d *Data) GetLocation(q string) (*friend.Location, error) {
+	var found []friend.Location
 
 	for _, l := range d.Locations {
 		if l.Match(q) {
@@ -113,14 +115,26 @@ func (d *Data) GetLocation(q string) (*location.Location, error) {
 	return &l, nil
 }
 
-func (d *Data) AddTag(t tag.Tag) {
+func (d *Data) AddTag(t friend.Tag) {
 	d.Tags = append(d.Tags, t)
 
 	d.dirty = true
 }
 
-func (d *Data) AddActivity(a event.Activity) {
-	d.Activities = append(d.Activities, a)
+func (d *Data) AddActivity(e friend.Event) {
+	for _, f := range d.Friends {
+
+	}
+
+	for _, l := range d.Locations {
+
+	}
+
+	for _, t := range d.Tags {
+
+	}
+
+	d.Activities = append(d.Activities, e)
 
 	d.dirty = true
 }
@@ -133,7 +147,7 @@ func (d *Data) ListFriends(q ListFriendQuery) []friend.Friend {
 			continue
 		}
 
-		if q.Tag != "" && !tag.HasTag(&f, q.Tag) {
+		if q.Tag != "" && !friend.HasTag(&f, q.Tag) {
 			continue
 		}
 

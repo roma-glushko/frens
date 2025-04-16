@@ -65,6 +65,28 @@ func Load(lifePath string) (*life.Data, error) {
 }
 
 // Save saves the life files from the specific path or `~/.frens/` is used by default
-func Save(lifePath string, data *life.Data) error {
-	return toml.Save(lifePath, data)
+func Save(data *life.Data) error {
+	return toml.Save(data)
+}
+
+type LifeUpdateFunc = func(data *life.Data) error
+
+func Update(l *life.Data, updater LifeUpdateFunc) error {
+	err := updater(l)
+	if err != nil {
+		return err
+	}
+
+	if !l.Dirty() {
+		return nil
+	}
+
+	err = Save(l)
+	if err != nil {
+		return fmt.Errorf("failed to save life space: %w", err)
+	}
+
+	// l.dirty = false
+
+	return nil
 }

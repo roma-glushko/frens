@@ -100,6 +100,7 @@ func Load(lifeDir string) (*life.Data, error) {
 	}
 
 	return &life.Data{
+		DirPath:    lifeDir,
 		Tags:       entities.Tags,
 		Friends:    entities.Friends,
 		Locations:  entities.Locations,
@@ -107,24 +108,24 @@ func Load(lifeDir string) (*life.Data, error) {
 	}, nil
 }
 
-func Save(lifeDir string, data *life.Data) error {
+func Save(l *life.Data) error {
 	var errs []error
 
 	entities := FriendsFile{
-		Tags:      data.Tags,
-		Friends:   data.Friends,
-		Locations: data.Locations,
+		Tags:      l.Tags,
+		Friends:   l.Friends,
+		Locations: l.Locations,
 	}
 
-	if err := saveFile(filepath.Join(lifeDir, FileNameFriends), entities); err != nil {
+	if err := saveFile(filepath.Join(l.DirPath, FileNameFriends), entities); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create friends file: %w", err))
 	}
 
 	activities := ActivitiesFile{
-		Activities: data.Activities,
+		Activities: l.Activities,
 	}
 
-	if err := saveFile(filepath.Join(lifeDir, FileNameActivities), activities); err != nil {
+	if err := saveFile(filepath.Join(l.DirPath, FileNameActivities), activities); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
 	}
 

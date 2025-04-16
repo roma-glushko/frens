@@ -17,6 +17,8 @@ package friend
 import (
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/life"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
@@ -54,7 +56,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		life, err := lifedir.Load(lifeDir)
+		l, err := lifedir.Load(lifeDir)
 		if err != nil {
 			return err
 		}
@@ -87,9 +89,12 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		life.AddFriend(friend)
+		err = lifedir.Update(l, func(l *life.Data) error {
+			l.AddFriend(friend)
 
-		if err = lifedir.Save(lifeDir, life); err != nil {
+			return nil
+		})
+		if err != nil {
 			return err
 		}
 

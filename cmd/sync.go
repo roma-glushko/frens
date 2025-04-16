@@ -12,47 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tag
+package cmd
 
 import (
-	"strings"
-
-	"github.com/roma-glushko/frens/internal/utils"
+	"github.com/roma-glushko/frens/cmd/life"
+	"github.com/urfave/cli/v2"
 )
 
-type Tag struct {
-	Name string
-}
-
-type Tagged interface {
-	SetTags(tags []string)
-	GetTags() []string
-}
-
-func Add(e Tagged, t string) {
-	tags := utils.Unique(append(e.GetTags(), t))
-
-	e.SetTags(tags)
-}
-
-func Remove(e Tagged, t string) {
-	var tags []string
-
-	for _, tag := range e.GetTags() {
-		if !strings.EqualFold(tag, t) {
-			tags = append(tags, tag)
-		}
-	}
-
-	e.SetTags(tags)
-}
-
-func HasTag(e Tagged, t string) bool {
-	for _, tag := range e.GetTags() {
-		if strings.EqualFold(tag, t) {
-			return true
-		}
-	}
-
-	return false
+var SyncCommand = &cli.Command{
+	Name:    "sync",
+	Aliases: []string{"s"},
+	Usage:   "Sync life space and other info",
+	Flags:   []cli.Flag{},
+	Subcommands: []*cli.Command{
+		life.SyncCommand,
+	},
 }

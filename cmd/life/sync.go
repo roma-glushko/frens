@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event
+package life
 
-import "time"
+import "github.com/urfave/cli/v2"
 
-type Activity struct {
-	Date        time.Time
-	Description string
+var SyncCommand = &cli.Command{
+	Name:    "sync",
+	Aliases: []string{"l"},
+	Usage:   "Sync all outdated data in the life space",
+	Action: func(_ *cli.Context) error {
+		// TODO: implement
+
+		return nil
+	},
 }

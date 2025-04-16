@@ -70,6 +70,7 @@ func main() {
 			cmd.EditCommand,
 			cmd.AddCommands,
 			cmd.ListCommands,
+			cmd.SyncCommand,
 		},
 	}
 

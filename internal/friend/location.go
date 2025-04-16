@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package location
+package friend
 
 import (
 	"errors"
@@ -20,11 +20,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/tag"
 	"github.com/roma-glushko/frens/internal/utils"
 )
 
-var ErrNameEmpty = errors.New("location name must be provided")
+var ErrLocNameEmpty = errors.New("location name must be provided")
 
 type Locations []Location
 
@@ -41,11 +40,11 @@ type Location struct {
 	Tags    []string `toml:"tags,omitempty"`
 }
 
-var _ tag.Tagged = (*Location)(nil)
+var _ Tagged = (*Location)(nil)
 
 func (l *Location) Validate() error {
 	if l.Name == "" {
-		return ErrNameEmpty
+		return ErrLocNameEmpty
 	}
 
 	return nil

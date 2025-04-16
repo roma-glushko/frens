@@ -15,10 +15,7 @@
 package toml
 
 import (
-	"github.com/roma-glushko/frens/internal/event"
 	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/location"
-	"github.com/roma-glushko/frens/internal/tag"
 )
 
 const (
@@ -27,11 +24,11 @@ const (
 )
 
 type FriendsFile struct {
-	Tags      []tag.Tag           `toml:"tags"`
-	Friends   []friend.Friend     `toml:"friends"`
-	Locations []location.Location `toml:"locations"`
+	Tags      []friend.Tag      `toml:"tags"`
+	Friends   []friend.Friend   `toml:"friends"`
+	Locations []friend.Location `toml:"locations"`
 }
 
 type ActivitiesFile struct {
-	Activities []event.Activity `toml:"activities"`
+	Activities []friend.Event `toml:"activities"`
 }

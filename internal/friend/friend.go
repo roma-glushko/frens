@@ -21,12 +21,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/roma-glushko/frens/internal/tag"
-
 	"github.com/roma-glushko/frens/internal/utils"
 )
 
-var ErrNameEmpty = errors.New("friend name must be provided")
+var ErrFriendNameEmpty = errors.New("friend name must be provided")
 
 type Friends []Friend
 
@@ -37,20 +35,21 @@ func (f Friends) Less(i, j int) bool { return f[i].Name < f[j].Name }
 func (f Friends) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
 
 type Friend struct {
-	Name      string    `toml:"name"`
-	Birthday  time.Time `toml:"birthday,omitempty"`
-	Nicknames []string  `toml:"nicknames,omitempty"`
-	Tags      []string  `toml:"tags,omitempty"`
-	Locations []string  `toml:"locations,omitempty"`
-	Reminders []string  `toml:"reminders,omitempty"`
-	// activities int
+	Name       string    `toml:"name"`
+	Birthday   time.Time `toml:"birthday,omitempty"`
+	Nicknames  []string  `toml:"nicknames,omitempty"`
+	Tags       []string  `toml:"tags,omitempty"`
+	Notes      []Event   `toml:"notes,omitempty"`
+	Locations  []string  `toml:"locations,omitempty"`
+	Reminders  []string  `toml:"reminders,omitempty"`
+	Activities int       `toml:"activities,omitempty"`
 }
 
-var _ tag.Tagged = (*Friend)(nil)
+var _ Tagged = (*Friend)(nil)
 
 func (f *Friend) Validate() error {
 	if f.Name == "" {
-		return ErrNameEmpty
+		return ErrFriendNameEmpty
 	}
 
 	return nil
