@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -71,7 +71,7 @@ func NewFriendForm(f *friend.Friend) NewFriendModel {
 				Title("All done?").
 				Validate(func(v bool) error {
 					if !v {
-						return fmt.Errorf("Welp, whenever you are ready")
+						return errors.New("welp, whenever you are ready")
 					}
 					return nil
 				}).
@@ -104,6 +104,7 @@ func (m NewFriendModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	form, cmd := m.form.Update(msg)
 	if f, ok := form.(*huh.Form); ok {
 		m.form = f
+
 		cmds = append(cmds, cmd)
 	}
 
@@ -142,9 +143,11 @@ func (m NewFriendModel) View() string {
 
 func (m NewFriendModel) errorView() string {
 	var s string
+
 	for _, err := range m.form.Errors() {
 		s += err.Error()
 	}
+
 	return s
 }
 

@@ -9,7 +9,7 @@ var AddCommand = &cli.Command{
 	Name:    "activity",
 	Aliases: []string{"a"},
 	Usage:   "Add a new activity",
-	Action: func(context *cli.Context) error {
+	Action: func(_ *cli.Context) error {
 		log.Info("Adding a new activity..")
 
 		return nil

@@ -6,7 +6,7 @@ var AddCommand = &cli.Command{
 	Name:    "note",
 	Aliases: []string{"n"},
 	Usage:   "Add a new note",
-	Action: func(context *cli.Context) error {
+	Action: func(_ *cli.Context) error {
 		// TODO: implement
 
 		return nil

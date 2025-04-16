@@ -18,7 +18,7 @@ func (l Location) String() string {
 	sb.WriteString(l.Name)
 
 	if len(l.Country) > 0 {
-		sb.WriteString(fmt.Sprintf(", %s", l.Country))
+		sb.WriteString(", " + l.Country)
 	}
 
 	if len(l.Alias) > 0 {

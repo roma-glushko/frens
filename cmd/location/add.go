@@ -9,7 +9,7 @@ var AddCommand = &cli.Command{
 	Name:    "location",
 	Aliases: []string{"l"},
 	Usage:   "Add a new location",
-	Action: func(context *cli.Context) error {
+	Action: func(_ *cli.Context) error {
 		log.Info("Adding a new location..")
 
 		return nil

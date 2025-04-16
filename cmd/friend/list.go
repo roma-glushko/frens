@@ -20,7 +20,7 @@ var ListCommand = &cli.Command{
 			Name: "sort",
 		},
 	},
-	Action: func(context *cli.Context) error {
+	Action: func(_ *cli.Context) error {
 		return nil
 	},
 }

@@ -127,6 +127,7 @@ func (m ListFriendsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list.SetShowTitle(v)
 			m.list.SetShowFilter(v)
 			m.list.SetFilteringEnabled(v)
+
 			return m, nil
 
 		case key.Matches(msg, m.keys.toggleStatusBar):
@@ -135,6 +136,7 @@ func (m ListFriendsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.togglePagination):
 			m.list.SetShowPagination(!m.list.ShowPagination())
+
 			return m, nil
 
 		case key.Matches(msg, m.keys.toggleHelpMenu):
@@ -146,6 +148,7 @@ func (m ListFriendsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// This will also call our delegate's update function.
 	newListModel, cmd := m.list.Update(msg)
 	m.list = newListModel
+
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)

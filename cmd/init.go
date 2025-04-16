@@ -12,9 +12,8 @@ var InitCommand = &cli.Command{
 	Aliases: []string{"i"},
 	Usage:   "Init a new life space",
 	Flags:   []cli.Flag{},
-	Action: func(context *cli.Context) error {
+	Action: func(_ *cli.Context) error {
 		lifeDir, err := lifedir.DefaultDir()
-
 		if err != nil {
 			return err
 		}

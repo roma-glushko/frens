@@ -49,7 +49,7 @@ func (d *Data) AddActivity(a activity.Activity) {
 }
 
 func (d *Data) ListFriends(q ListFriendQuery) []friend.Friend {
-	var view []friend.Friend
+	view := make([]friend.Friend, 5)
 
 	for _, f := range d.Friends {
 		if q.Location != "" {

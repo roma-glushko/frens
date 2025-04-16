@@ -14,7 +14,7 @@ var EditCommand = &cli.Command{
 	Aliases: []string{"e"},
 	Usage:   "Edit life space raw files",
 	Flags:   []cli.Flag{},
-	Action: func(context *cli.Context) error {
+	Action: func(_ *cli.Context) error {
 		lifeDir, err := lifedir.DefaultDir()
 		if err != nil {
 			return err
@@ -29,7 +29,7 @@ var EditCommand = &cli.Command{
 
 		err = cmd.Run()
 		if err != nil {
-			return fmt.Errorf("Error running editor: %s", err)
+			return fmt.Errorf("error running editor: %s", err)
 		}
 
 		return nil
