@@ -1,6 +1,6 @@
 module github.com/roma-glushko/frens
 
-go 1.24.0
+go 1.24.2
 
 require (
 	github.com/BurntSushi/toml v1.4.0
