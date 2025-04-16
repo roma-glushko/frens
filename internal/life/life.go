@@ -126,7 +126,7 @@ func (d *Data) AddActivity(a event.Activity) {
 }
 
 func (d *Data) ListFriends(q ListFriendQuery) []friend.Friend {
-	v := make([]friend.Friend, 5)
+	v := make([]friend.Friend, 0, 5)
 
 	for _, f := range d.Friends {
 		if q.Location != "" && !f.HasLocation(q.Location) {

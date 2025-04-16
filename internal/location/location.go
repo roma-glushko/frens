@@ -75,7 +75,7 @@ func (l *Location) RemoveAlias(a string) {
 	var aliases []string
 
 	for _, alias := range l.Alias {
-		if strings.EqualFold(alias, a) {
+		if !strings.EqualFold(alias, a) {
 			aliases = append(aliases, alias)
 		}
 	}

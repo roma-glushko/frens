@@ -39,7 +39,7 @@ func Remove(e Tagged, t string) {
 	var tags []string
 
 	for _, tag := range e.GetTags() {
-		if strings.EqualFold(tag, t) {
+		if !strings.EqualFold(tag, t) {
 			tags = append(tags, tag)
 		}
 	}

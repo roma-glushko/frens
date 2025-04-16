@@ -80,7 +80,7 @@ func (f *Friend) RemoveNickname(n string) {
 	var nicks []string
 
 	for _, nick := range f.Nicknames {
-		if strings.EqualFold(nick, n) {
+		if !strings.EqualFold(nick, n) {
 			nicks = append(nicks, nick)
 		}
 	}
@@ -114,7 +114,7 @@ func (f *Friend) RemoveLocation(l string) {
 	var locs []string
 
 	for _, loc := range f.Locations {
-		if strings.EqualFold(loc, l) {
+		if !strings.EqualFold(loc, l) {
 			locs = append(locs, loc)
 		}
 	}
