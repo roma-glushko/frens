@@ -61,6 +61,12 @@ gen-check: gen ## Check if Go code needs to be generated
 test: ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
 
+copyright: ## Apply copyrights to all files
+	@echo "🧹 Applying license headers"
+	@docker run  --rm -v $(CURDIR):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:4021a396bf07b2136f97c12708476418a8157d72 -v info -c .licenserc.yaml header fix
+
+license: copyright
+
 VENDOR ?= roma-glushko
 PROJECT ?= frens
 SOURCE ?= https://github.com/roma-glushko/frens

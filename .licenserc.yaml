@@ -25,6 +25,7 @@ header:
     - 'main.go'
 
   paths-ignore:
-    - 'internal/db/model/'
+    - 'tools/*.yaml'
+    - 'tools/*.yml'
 
   comment: on-failure
