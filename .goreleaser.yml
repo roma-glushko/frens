@@ -14,9 +14,9 @@ builds:
     ldflags:
       - >
         -s -w
-        -X "{{ .Env.GOMOD }}/internal/version.Version={{ .Tag }}"
-        -X "{{ .Env.GOMOD }}/internal/version.GitCommit={{ .ShortCommit }}"
-        -X "{{ .Env.GOMOD }}/internal/version.BuildDate={{ .CommitDate }}"
+        -X "github.com/roma-glushko/frens/internal/version.Version={{ .Tag }}"
+        -X "github.com/roma-glushko/frens/internal/version.GitCommit={{ .ShortCommit }}"
+        -X "github.com/roma-glushko/frens/internal/version.BuildDate={{ .CommitDate }}"
     goos:
       - linux
       - darwin
