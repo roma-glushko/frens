@@ -1,0 +1,188 @@
+version: 2
+
+project_name: frens
+
+before:
+  hooks:
+    - go generate
+
+builds:
+  - binary: frens
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - >
+        -s -w
+        -X "github.com/roma-glushko/frens/internal/version.Version={{ .Tag }}"
+        -X "github.com/roma-glushko/frens/internal/version.GitCommit={{ .ShortCommit }}"
+        -X "github.com/roma-glushko/frens/internal/version.BuildDate={{ .CommitDate }}"
+    goos:
+      - linux
+      - darwin
+      - freebsd
+      - openbsd
+      - windows
+    goarch:
+      - amd64
+      - arm
+      - arm64
+      - ppc64le
+      - s390x
+      - riscv64
+    goarm:
+      - '7'
+      - '6'
+    ignore:
+      - goos: darwin
+        goarch: '386'
+      - goos: openbsd
+        goarch: arm
+      - goos: openbsd
+        goarch: arm64
+      - goos: freebsd
+        goarch: arm
+      - goos: freebsd
+        goarch: arm64
+      - goos: windows
+        goarch: arm
+
+changelog:
+  use: github
+  sort: '' # use the output of `git log` as is
+  abbrev: -1
+  filters:
+    exclude:
+      - '^Merge pull request'
+      - '^Merge remote-tracking branch'
+      - '^Merge branch'
+      - "^README.md"
+  groups:
+    - title: '💥 Breaking Changes'
+      regexp: '^.*?break(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: '💥 Breaking Changes'
+      regexp: "^.*?:boom:.+"
+      order: 0
+    - title: '✨ Features'
+      regexp: '^.*?(feat|feature)(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: '✨ Features'
+      regexp: "^.*?:sparkles:.+"
+      order: 1
+    - title: '🐛 Quality'
+      regexp: '^.*?(fix|tests|test)(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: '🐛 Quality'
+      regexp: "^.*?:bug:.+"
+      order: 2
+    - title: '⚡️ Performance'
+      regexp: '^.*?perf(\(.*\))?:.*$'
+      order: 3
+    - title: '⚡️ Performance'
+      regexp: "^.*?:zap:.+"
+      order: 2
+    - title: '🔒 Security'
+      regexp: '^.*?(sec|upgrade)(\(.*\))?:.*$'
+      order: 4
+    - title: '🔒 Security'
+      regexp: '^.*?:lock:.+'
+      order: 4
+    - title: '📖 Docs'
+      regexp: '^.*?(doc|docs)(\(.*\))?:.*$'
+      order: 5
+    - title: '📖 Docs'
+      regexp: '^.*?:book:.+'
+      order: 5
+    - title: '🧹Misc' # chore(...), build(...), etc.
+      regexp: '^.+$'
+      order: 999
+
+archives:
+  - id: frens
+    name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - LICENSE
+      - CHANGELOG.md
+
+checksum:
+  name_template: "{{ .ProjectName }}_v{{ .Version }}_checksums.txt"
+
+release:
+  # If set to true, will not auto-publish the release.
+  # Available only for GitHub and Gitea.
+  draft: true
+
+  # Whether to remove existing draft releases with the same name before creating
+  # a new one.
+  # Only effective if `draft` is set to true.
+  # Available only for GitHub.
+  #
+  # Since: v1.11
+  replace_existing_draft: true
+
+  # Useful if you want to delay the creation of the tag in the remote.
+  # You can create the tag locally, but not push it, and run GoReleaser.
+  # It'll then set the `target_commitish` portion of the GitHub release to the
+  # value of this field.
+  # Only works on GitHub.
+  #
+  # Default: ''
+  # Since: v1.11
+  # Templates: allowed
+  target_commitish: "{{ .Commit }}"
+
+  # If set, will create a release discussion in the category specified.
+  #
+  # Warning: do not use categories in the 'Announcement' format.
+  #  Check https://github.com/goreleaser/goreleaser/issues/2304 for more info.
+  #
+  # Default is empty.
+  discussion_category_name: Releases
+
+  # If set to auto, will mark the release as not ready for production
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
+  prerelease: auto
+
+  # If set to false, will NOT mark the release as "latest".
+  # This prevents it from being shown at the top of the release list,
+  # and from being returned when calling https://api.github.com/repos/OWNER/REPO/releases/latest.
+  #
+  # Available only for GitHub.
+  #
+  # Default is true.
+  # Since: v1.20
+  make_latest: true
+
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
+
+  # You can change the name of the release.
+  #
+  # Templates: allowed
+  name_template: "v{{.Version}}"
+
+  footer: |
+    **Full Changelog**: https://github.com/roma-glushko/frens/compare/{{ .PreviousTag }}...{{ .Tag }}
+    
+    Your feedback is more than welcome, feel free to open issues/discussions.
+    You can reach out to the team using:
+
+    - [Github Discussions](https://github.com/roma-glushko/frens/discussions)
+    - [Github Issues](https://github.com/roma-glushko/frens/issues)

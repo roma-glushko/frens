@@ -12,29 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+//go:build tools
 
-import "github.com/urfave/cli/v2"
+package tools
 
-var ListCommand = &cli.Command{
-	Name:    "friend",
-	Aliases: []string{"f"},
-	Usage:   "List all friends",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "location",
-			Aliases: []string{"l", "loc", "in"},
-		},
-		&cli.StringFlag{
-			Name:    "tag",
-			Aliases: []string{"t"},
-			Usage:   "Filter by tag",
-		},
-		&cli.StringFlag{
-			Name: "sort",
-		},
-	},
-	Action: func(_ *cli.Context) error {
-		return nil
-	},
-}
+//import (
+//	_ "github.com/sqlc-dev/sqlc/cmd/sqlc"
+//)

@@ -1,7 +1,21 @@
+// Copyright 2025 Roma Hlushko
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package tui
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -71,7 +85,7 @@ func NewFriendForm(f *friend.Friend) NewFriendModel {
 				Title("All done?").
 				Validate(func(v bool) error {
 					if !v {
-						return fmt.Errorf("Welp, whenever you are ready")
+						return errors.New("welp, whenever you are ready")
 					}
 					return nil
 				}).
@@ -104,6 +118,7 @@ func (m NewFriendModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	form, cmd := m.form.Update(msg)
 	if f, ok := form.(*huh.Form); ok {
 		m.form = f
+
 		cmds = append(cmds, cmd)
 	}
 
@@ -142,9 +157,11 @@ func (m NewFriendModel) View() string {
 
 func (m NewFriendModel) errorView() string {
 	var s string
+
 	for _, err := range m.form.Errors() {
 		s += err.Error()
 	}
+
 	return s
 }
 

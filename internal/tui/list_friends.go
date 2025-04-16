@@ -1,3 +1,17 @@
+// Copyright 2025 Roma Hlushko
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package tui
 
 import (
@@ -127,6 +141,7 @@ func (m ListFriendsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list.SetShowTitle(v)
 			m.list.SetShowFilter(v)
 			m.list.SetFilteringEnabled(v)
+
 			return m, nil
 
 		case key.Matches(msg, m.keys.toggleStatusBar):
@@ -135,6 +150,7 @@ func (m ListFriendsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.togglePagination):
 			m.list.SetShowPagination(!m.list.ShowPagination())
+
 			return m, nil
 
 		case key.Matches(msg, m.keys.toggleHelpMenu):
@@ -146,6 +162,7 @@ func (m ListFriendsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// This will also call our delegate's update function.
 	newListModel, cmd := m.list.Update(msg)
 	m.list = newListModel
+
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
