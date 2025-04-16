@@ -89,4 +89,4 @@ image: ## Build docker image
 
 .PHONY: image-lint
 image-lint: ## Lint Dockerfile
-    @hadolint Dockerfile
+	@hadolint Dockerfile
