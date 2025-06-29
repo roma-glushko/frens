@@ -12,20 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package activity
+package list
 
 import (
-	"github.com/charmbracelet/log"
 	"github.com/urfave/cli/v2"
 )
 
-var AddCommand = &cli.Command{
-	Name:    "activity",
-	Aliases: []string{"a"},
-	Usage:   "Add a new activity",
-	Action: func(_ *cli.Context) error {
-		log.Info("Adding a new activity..")
-
-		return nil
+var Commands = &cli.Command{
+	Name:    "list",
+	Aliases: []string{"l", "ls"},
+	Usage:   "List your friends, activities, locations",
+	Subcommands: []*cli.Command{
+		friendCommand,
 	},
 }

@@ -12,29 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package add
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/charmbracelet/log"
+	"github.com/urfave/cli/v2"
+)
 
-var ListCommand = &cli.Command{
-	Name:    "friend",
-	Aliases: []string{"f"},
-	Usage:   "List all friends",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "location",
-			Aliases: []string{"l", "loc", "in"},
-		},
-		&cli.StringFlag{
-			Name:    "tag",
-			Aliases: []string{"t"},
-			Usage:   "Filter by tag",
-		},
-		&cli.StringFlag{
-			Name: "sort",
-		},
-	},
+var locationCommand = &cli.Command{
+	Name:    "location",
+	Aliases: []string{"loc", "l"},
+	Usage:   "Add a new location",
 	Action: func(_ *cli.Context) error {
+		log.Info("Adding a new location..")
+
 		return nil
 	},
 }

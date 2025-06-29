@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package life
+package journal
 
 import (
 	"fmt"
+	"github.com/roma-glushko/frens/internal/utils"
 	"strings"
+	"sync"
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/tag"
@@ -28,12 +30,16 @@ type ListFriendQuery struct {
 }
 
 type Data struct {
-	dirty      bool
 	DirPath    string
 	Tags       tag.Tags
 	Friends    []friend.Person
 	Locations  friend.Locations
 	Activities []friend.Event
+
+	dirty           bool
+	matcherMu       sync.Mutex
+	friendMatcher   *utils.Matcher[friend.Person]
+	locationMatcher *utils.Matcher[friend.Location]
 }
 
 func (d *Data) Init() {
@@ -55,29 +61,41 @@ func (d *Data) AddFriend(f friend.Person) {
 }
 
 func (d *Data) GetFriend(q string) (*friend.Person, error) {
-	var found []friend.Person
+	matches := d.frenMatcher().Match(q)
 
-	for _, f := range d.Friends {
-		if f.Match(q) {
-			found = append(found, f)
-		}
-	}
-
-	if len(found) == 0 {
+	if len(matches) == 0 {
 		return nil, fmt.Errorf("no friends found for '%s'", q)
 	}
 
-	if len(found) > 1 {
-		names := make([]string, len(found))
+	if len(matches) > 1 {
+		names := make([]string, 0, len(matches))
 
-		for i, f := range found {
-			names[i] = f.Name
+		for _, m := range matches {
+			for _, f := range m.Entities {
+				names = append(names, f.Name)
+			}
 		}
 
 		return nil, fmt.Errorf("multiple friends found for '%s': %s", q, strings.Join(names, ", "))
 	}
 
-	f := found[0]
+	m := matches[0]
+
+	if len(m.Entities) == 0 {
+		return nil, fmt.Errorf("no friends found for '%s'", q)
+	}
+
+	if len(m.Entities) > 1 {
+		names := make([]string, 0, len(m.Entities))
+
+		for _, f := range m.Entities {
+			names = append(names, f.Name)
+		}
+
+		return nil, fmt.Errorf("multiple friends found for '%s': %s", q, strings.Join(names, ", "))
+	}
+
+	f := m.Entities[0]
 
 	return &f, nil
 }
@@ -89,29 +107,41 @@ func (d *Data) AddLocation(l friend.Location) {
 }
 
 func (d *Data) GetLocation(q string) (*friend.Location, error) {
-	var found []friend.Location
+	matches := d.locMatcher().Match(q)
 
-	for _, l := range d.Locations {
-		if l.Match(q) {
-			found = append(found, l)
-		}
-	}
-
-	if len(found) == 0 {
+	if len(matches) == 0 {
 		return nil, fmt.Errorf("no locations found for '%s'", q)
 	}
 
-	if len(found) > 1 {
-		names := make([]string, len(found))
+	if len(matches) > 1 {
+		names := make([]string, 0, len(matches))
 
-		for i, f := range found {
-			names[i] = f.Name
+		for _, m := range matches {
+			for _, f := range m.Entities {
+				names = append(names, f.Name)
+			}
 		}
 
 		return nil, fmt.Errorf("multiple locations found for '%s': %s", q, strings.Join(names, ", "))
 	}
 
-	l := found[0]
+	m := matches[0]
+
+	if len(m.Entities) == 0 {
+		return nil, fmt.Errorf("no locations found for '%s'", q)
+	}
+
+	if len(m.Entities) > 1 {
+		names := make([]string, 0, len(m.Entities))
+
+		for _, f := range m.Entities {
+			names = append(names, f.Name)
+		}
+
+		return nil, fmt.Errorf("multiple locations found for '%s': %s", q, strings.Join(names, ", "))
+	}
+
+	l := m.Entities[0]
 
 	return &l, nil
 }
@@ -123,21 +153,10 @@ func (d *Data) AddTags(t []tag.Tag) {
 }
 
 func (d *Data) AddActivity(e friend.Event) {
-	//friendMatcher := utils.NewMatcher[friend.Location]()
-	//
-	//for _, l := range d.Locations {
-	//	friendMatcher.Add(l, l.Refs())
-	//}
-	//
-	//friends := friendMatcher.Match(e.Desc)
+	_ = d.frenMatcher().Match(e.Desc)
+	_ = d.locMatcher().Match(e.Desc)
 
-	//locMatcher := utils.NewMatcher[friend.Location]()
-	//
-	//for _, l := range d.Locations {
-	//	locMatcher.Add(l, l.Refs())
-	//}
-
-	//locations := locMatcher.Match(e.Desc)
+	// TODO: record locs/friends
 
 	tags := tag.Match(e.Desc)
 
@@ -168,4 +187,34 @@ func (d *Data) ListFriends(q ListFriendQuery) []friend.Person {
 	}
 
 	return v
+}
+
+func (d *Data) locMatcher() *utils.Matcher[friend.Location] {
+	if d.locationMatcher == nil {
+		d.matcherMu.Lock()
+		defer d.matcherMu.Unlock()
+
+		d.locationMatcher = utils.NewMatcher[friend.Location]()
+
+		for _, l := range d.Locations {
+			d.locationMatcher.Add(l)
+		}
+	}
+
+	return d.locationMatcher
+}
+
+func (d *Data) frenMatcher() *utils.Matcher[friend.Person] {
+	if d.friendMatcher == nil {
+		d.matcherMu.Lock()
+		defer d.matcherMu.Unlock()
+
+		d.friendMatcher = utils.NewMatcher[friend.Person]()
+
+		for _, f := range d.Friends {
+			d.friendMatcher.Add(f)
+		}
+	}
+
+	return d.friendMatcher
 }

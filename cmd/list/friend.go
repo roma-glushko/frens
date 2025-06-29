@@ -12,24 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package list
 
-import (
-	"github.com/roma-glushko/frens/cmd/activity"
-	"github.com/roma-glushko/frens/cmd/friend"
-	"github.com/roma-glushko/frens/cmd/location"
-	"github.com/roma-glushko/frens/cmd/note"
-	"github.com/urfave/cli/v2"
-)
+import "github.com/urfave/cli/v2"
 
-var AddCommands = &cli.Command{
-	Name:    "add",
-	Aliases: []string{"a"},
-	Usage:   "Add a new friend, location, activity, etc.",
-	Subcommands: []*cli.Command{
-		friend.AddCommand,
-		location.AddCommand,
-		note.AddCommand,
-		activity.AddCommand,
+var friendCommand = &cli.Command{
+	Name:    "friend",
+	Aliases: []string{"f"},
+	Usage:   "List all friends",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:    "location",
+			Aliases: []string{"l", "loc", "in"},
+		},
+		&cli.StringFlag{
+			Name:    "tag",
+			Aliases: []string{"t"},
+			Usage:   "Filter by tag",
+		},
+		&cli.StringFlag{
+			Name: "sort",
+		},
+	},
+	Action: func(_ *cli.Context) error {
+		return nil
 	},
 }

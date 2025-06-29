@@ -19,7 +19,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/roma-glushko/frens/internal/lifedir"
+	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/urfave/cli/v2"
 )
 
@@ -29,14 +29,14 @@ var EditCommand = &cli.Command{
 	Usage:   "Edit life space raw files",
 	Flags:   []cli.Flag{},
 	Action: func(_ *cli.Context) error {
-		lifeDir, err := lifedir.DefaultDir()
+		journalDir, err := journaldir.DefaultDir()
 		if err != nil {
 			return err
 		}
 
 		editor := GetEditor()
 
-		cmd := exec.Command(editor, lifeDir+"/friends.toml") // TODO: make it configurable
+		cmd := exec.Command(editor, journalDir+"/friends.toml") // TODO: make it configurable
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

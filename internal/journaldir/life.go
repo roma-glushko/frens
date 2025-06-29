@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lifedir
+package journaldir
 
 import (
 	"errors"
@@ -20,25 +20,25 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/roma-glushko/frens/internal/lifedir/toml"
+	"github.com/roma-glushko/frens/internal/journaldir/toml"
 
-	"github.com/roma-glushko/frens/internal/life"
+	"github.com/roma-glushko/frens/internal/journal"
 )
 
-// Init loads the life from the specific path or `~/.frens/` is used by default
-func Init(lifePath string) error {
-	_, err := os.Stat(lifePath)
+// Init loads the journal from the specific path or `~/.config/frens/` is used by default
+func Init(path string) error {
+	_, err := os.Stat(path)
 
 	if err != nil && errors.Is(err, fs.ErrNotExist) {
-		return fmt.Errorf("life already exists at %s", lifePath)
+		return fmt.Errorf("life already exists at %s", path)
 	}
 
-	err = os.MkdirAll(lifePath, os.ModePerm)
+	err = os.MkdirAll(path, os.ModePerm)
 	if err != nil {
-		return fmt.Errorf("failed to create the life directory at %s: %w", lifePath, err)
+		return fmt.Errorf("failed to create the life directory at %s: %w", path, err)
 	}
 
-	err = toml.Init(lifePath)
+	err = toml.Init(path)
 	if err != nil {
 		return fmt.Errorf("failed to initialize life: %w", err)
 	}
@@ -46,15 +46,15 @@ func Init(lifePath string) error {
 	return nil
 }
 
-// Load loads the life from the specific path or `~/.frens/` is used by default
-func Load(lifePath string) (*life.Data, error) {
-	_, err := os.Stat(lifePath)
+// Load loads the journal from the specific path or `~/.frens/` is used by default
+func Load(path string) (*journal.Data, error) {
+	_, err := os.Stat(path)
 
 	if err != nil && errors.Is(err, fs.ErrNotExist) {
-		return nil, fmt.Errorf("couldn't find life space at %s. Please init a life space via the init command", lifePath)
+		return nil, fmt.Errorf("couldn't find life space at %s. Please init a life space via the init command", path)
 	}
 
-	data, err := toml.Load(lifePath)
+	data, err := toml.Load(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load life space: %w", err)
 	}
@@ -64,14 +64,14 @@ func Load(lifePath string) (*life.Data, error) {
 	return data, nil
 }
 
-// Save saves the life files from the specific path or `~/.frens/` is used by default
-func Save(data *life.Data) error {
+// Save saves the life files from the specific path or `~/.config/frens/` is used by default
+func Save(data *journal.Data) error {
 	return toml.Save(data)
 }
 
-type LifeUpdateFunc = func(data *life.Data) error
+type LifeUpdateFunc = func(data *journal.Data) error
 
-func Update(l *life.Data, updater LifeUpdateFunc) error {
+func Update(l *journal.Data, updater LifeUpdateFunc) error {
 	err := updater(l)
 	if err != nil {
 		return err

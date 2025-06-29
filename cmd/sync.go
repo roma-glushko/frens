@@ -15,16 +15,16 @@
 package cmd
 
 import (
-	"github.com/roma-glushko/frens/cmd/life"
 	"github.com/urfave/cli/v2"
 )
 
 var SyncCommand = &cli.Command{
 	Name:    "sync",
 	Aliases: []string{"s"},
-	Usage:   "Sync life space and other info",
-	Flags:   []cli.Flag{},
-	Subcommands: []*cli.Command{
-		life.SyncCommand,
+	Usage:   "Sync all outdated data in the journal",
+	Action: func(_ *cli.Context) error {
+		// TODO: implement
+
+		return nil
 	},
 }

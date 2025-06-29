@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/roma-glushko/frens/internal/life"
+	"github.com/roma-glushko/frens/internal/journal"
 )
 
 type Files interface {
@@ -64,33 +64,33 @@ func loadFile[T Files](filePath string) (*T, error) {
 	return &content, nil
 }
 
-func Init(lifeDir string) error {
+func Init(journalDir string) error {
 	var errs []error
 
 	var entities FriendsFile
 
-	if err := saveFile(filepath.Join(lifeDir, FileNameFriends), entities); err != nil {
+	if err := saveFile(filepath.Join(journalDir, FileNameFriends), entities); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create friends file: %w", err))
 	}
 
 	var activities ActivitiesFile
 
-	if err := saveFile(filepath.Join(lifeDir, FileNameActivities), activities); err != nil {
+	if err := saveFile(filepath.Join(journalDir, FileNameActivities), activities); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
 	}
 
 	return errors.Join(errs...)
 }
 
-func Load(lifeDir string) (*life.Data, error) {
+func Load(journalDir string) (*journal.Data, error) {
 	var errs []error
 
-	entities, err := loadFile[FriendsFile](filepath.Join(lifeDir, FileNameFriends))
+	entities, err := loadFile[FriendsFile](filepath.Join(journalDir, FileNameFriends))
 	if err != nil {
 		errs = append(errs, fmt.Errorf("failed to load friends file: %w", err))
 	}
 
-	activities, err := loadFile[ActivitiesFile](filepath.Join(lifeDir, FileNameActivities))
+	activities, err := loadFile[ActivitiesFile](filepath.Join(journalDir, FileNameActivities))
 	if err != nil {
 		errs = append(errs, fmt.Errorf("failed to load activities file: %w", err))
 	}
@@ -99,8 +99,8 @@ func Load(lifeDir string) (*life.Data, error) {
 		return nil, errors.Join(errs...)
 	}
 
-	return &life.Data{
-		DirPath:    lifeDir,
+	return &journal.Data{
+		DirPath:    journalDir,
 		Tags:       entities.Tags,
 		Friends:    entities.Friends,
 		Locations:  entities.Locations,
@@ -108,7 +108,7 @@ func Load(lifeDir string) (*life.Data, error) {
 	}, nil
 }
 
-func Save(l *life.Data) error {
+func Save(l *journal.Data) error {
 	var errs []error
 
 	entities := FriendsFile{

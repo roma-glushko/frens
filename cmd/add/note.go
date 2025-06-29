@@ -12,29 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lifedir
+package add
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-)
+import "github.com/urfave/cli/v2"
 
-const DefaultFrensDir = ".frens"
+var noteCommand = &cli.Command{
+	Name:    "note",
+	Aliases: []string{"n"},
+	Usage:   "Add a new note",
+	Action: func(_ *cli.Context) error {
+		// TODO: implement
 
-func DefaultDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get user home directory: %w", err)
-	}
-
-	lifePath := filepath.Join(homeDir, DefaultFrensDir)
-
-	// ensure directory exists
-	err = os.MkdirAll(lifePath, os.ModePerm)
-	if err != nil {
-		return "", fmt.Errorf("failed to create the life directory at %s: %w", lifePath, err)
-	}
-
-	return lifePath, nil
+		return nil
+	},
 }

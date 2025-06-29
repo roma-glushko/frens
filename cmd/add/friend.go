@@ -12,27 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package add
 
 import (
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/life"
+	"github.com/roma-glushko/frens/internal/journal"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/lifedir"
+	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
 
-var AddCommand = &cli.Command{
-	Name:      "friend",
-	Aliases:   []string{"f"},
-	Usage:     "Add a new friend",
-	Args:      true,
-	ArgsUsage: "<NAME>",
+var friendCommand = &cli.Command{
+	Name:    "friend",
+	Aliases: []string{"f"},
+	Usage:   "Add a new friend",
+	Args:    true,
+	ArgsUsage: `<NAME>
+
+		<NAME> is the full name of the friend you want to add.
+	`,
 	Flags: []cli.Flag{
 		&cli.StringSliceFlag{
 			Name:    "tag",
@@ -51,12 +54,12 @@ var AddCommand = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		lifeDir, err := lifedir.DefaultDir()
+		lifeDir, err := journaldir.DefaultDir()
 		if err != nil {
 			return err
 		}
 
-		l, err := lifedir.Load(lifeDir)
+		l, err := journaldir.Load(lifeDir)
 		if err != nil {
 			return err
 		}
@@ -89,16 +92,16 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		err = lifedir.Update(l, func(l *life.Data) error {
+		err = journaldir.Update(l, func(l *journal.Data) error {
 			l.AddFriend(friend)
-
 			return nil
 		})
+
 		if err != nil {
 			return err
 		}
 
-		log.Info(friend.Name + " has been added")
+		log.Info(friend.Name + " has been added to your journal.")
 
 		return nil
 	},

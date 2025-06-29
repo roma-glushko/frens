@@ -12,18 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package journaldir
 
 import (
-	"github.com/roma-glushko/frens/cmd/friend"
-	"github.com/urfave/cli/v2"
+	"fmt"
+	"os"
+	"path/filepath"
 )
 
-var ListCommands = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l", "ls"},
-	Usage:   "List your friends, activities, locations",
-	Subcommands: []*cli.Command{
-		friend.ListCommand,
-	},
+const DefaultFrensDir = "frens"
+
+func DefaultDir() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	lifePath := filepath.Join(configDir, DefaultFrensDir)
+
+	// ensure directory exists
+	err = os.MkdirAll(lifePath, os.ModePerm)
+	if err != nil {
+		return "", fmt.Errorf("failed to create the life directory at %s: %w", lifePath, err)
+	}
+
+	return lifePath, nil
 }

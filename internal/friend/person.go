@@ -48,6 +48,7 @@ type Person struct {
 }
 
 var _ tag.Tagged = (*Person)(nil)
+var _ utils.Matchable = (*Person)(nil)
 
 func (p *Person) Validate() error {
 	if p.Name == "" {
@@ -57,7 +58,7 @@ func (p *Person) Validate() error {
 	return nil
 }
 
-func (l *Person) Refs() []string {
+func (l Person) Refs() []string {
 	names := make([]string, 0, 1+len(l.Nicknames))
 
 	names = append(names, l.Name)

@@ -9,12 +9,16 @@ import (
 	"unicode/utf8"
 )
 
-type Pattern[T any] struct {
+type Matchable interface {
+	Refs() []string
+}
+
+type Pattern[T Matchable] struct {
 	Ref      string
 	Entities []T
 }
 
-type Matcher[T any] struct {
+type Matcher[T Matchable] struct {
 	EntityPatterns map[string]Pattern[T]
 }
 
@@ -23,14 +27,14 @@ type Match[T any] struct {
 	MatchedRef string
 }
 
-func NewMatcher[T any]() *Matcher[T] {
+func NewMatcher[T Matchable]() *Matcher[T] {
 	return &Matcher[T]{
 		EntityPatterns: make(map[string]Pattern[T]),
 	}
 }
 
-func (m *Matcher[T]) Add(entity T, refs []string) {
-	for _, ref := range refs {
+func (m *Matcher[T]) Add(entity T) {
+	for _, ref := range entity.Refs() {
 		if pattern, exists := m.EntityPatterns[ref]; exists {
 			pattern.Entities = append(pattern.Entities, entity)
 

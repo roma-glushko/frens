@@ -12,17 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package life
+package add
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/urfave/cli/v2"
+)
 
-var SyncCommand = &cli.Command{
-	Name:    "sync",
-	Aliases: []string{"l"},
-	Usage:   "Sync all outdated data in the life space",
-	Action: func(_ *cli.Context) error {
-		// TODO: implement
-
-		return nil
+var Commands = &cli.Command{
+	Name:    "add",
+	Aliases: []string{"a"},
+	Usage:   "Add a new friend, location, activity, etc.",
+	Subcommands: []*cli.Command{
+		friendCommand,
+		locationCommand,
+		noteCommand,
+		activityCommand,
 	},
 }

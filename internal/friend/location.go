@@ -37,6 +37,7 @@ type Location struct {
 }
 
 var _ tag.Tagged = (*Location)(nil)
+var _ utils.Matchable = (*Location)(nil)
 
 func (l *Location) Validate() error {
 	if l.Name == "" {
@@ -46,7 +47,7 @@ func (l *Location) Validate() error {
 	return nil
 }
 
-func (l *Location) Refs() []string {
+func (l Location) Refs() []string {
 	names := make([]string, 0, 1+len(l.Alias))
 
 	names = append(names, l.Name)
