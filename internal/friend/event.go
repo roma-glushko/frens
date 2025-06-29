@@ -19,6 +19,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/roma-glushko/frens/internal/tag"
+
 	"github.com/markusmobius/go-dateparser"
 )
 
@@ -43,15 +45,7 @@ type Event struct {
 	Tags      []string
 }
 
-var _ Tagged = (*Event)(nil)
-
-type Events []Event
-
-var _ sort.Interface = (*Events)(nil)
-
-func (e Events) Len() int           { return len(e) }
-func (e Events) Less(i, j int) bool { return e[i].Date.Before(e[j].Date) }
-func (e Events) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
+var _ tag.Tagged = (*Event)(nil)
 
 // NewEvent creates a new event (activity, note, etc.) with date and description.
 //
@@ -69,7 +63,7 @@ func NewEvent(etype EventType, rawDesc string) Event {
 		desc = parts[1]
 	}
 
-	desc = strings.Trim(desc, " 	")
+	desc = strings.TrimSpace(desc)
 
 	ts := time.Now().UTC()
 
@@ -97,3 +91,11 @@ func (f *Event) SetTags(tags []string) {
 func (f *Event) GetTags() []string {
 	return f.Tags
 }
+
+type Events []Event
+
+var _ sort.Interface = (*Events)(nil)
+
+func (e Events) Len() int           { return len(e) }
+func (e Events) Less(i, j int) bool { return e[i].Date.Before(e[j].Date) }
+func (e Events) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }

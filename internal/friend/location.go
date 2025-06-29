@@ -20,27 +20,23 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/tag"
+
 	"github.com/roma-glushko/frens/internal/utils"
 )
 
 var ErrLocNameEmpty = errors.New("location name must be provided")
-
-type Locations []Location
-
-var _ sort.Interface = (*Locations)(nil)
-
-func (l Locations) Len() int           { return len(l) }
-func (l Locations) Less(i, j int) bool { return l[i].Name < l[j].Name }
-func (l Locations) Swap(i, j int)      { l[i], l[j] = l[j], l[i] }
 
 type Location struct {
 	Name    string   `toml:"name"`
 	Country string   `toml:"country,omitempty"`
 	Alias   []string `toml:"alias,omitempty"`
 	Tags    []string `toml:"tags,omitempty"`
+
+	Activities int `toml:"activities,omitempty"`
 }
 
-var _ Tagged = (*Location)(nil)
+var _ tag.Tagged = (*Location)(nil)
 
 func (l *Location) Validate() error {
 	if l.Name == "" {
@@ -50,20 +46,16 @@ func (l *Location) Validate() error {
 	return nil
 }
 
-func (l *Location) Match(q string) bool {
-	q = strings.ToLower(q)
+func (l *Location) Refs() []string {
+	names := make([]string, 0, 1+len(l.Alias))
 
-	if strings.Contains(strings.ToLower(l.Name), q) {
-		return true
+	names = append(names, l.Name)
+
+	if len(l.Alias) > 0 {
+		names = append(names, l.Alias...)
 	}
 
-	for _, a := range l.Alias {
-		if strings.Contains(strings.ToLower(a), q) {
-			return true
-		}
-	}
-
-	return false
+	return names
 }
 
 func (l *Location) AddAlias(a string) {
@@ -105,3 +97,11 @@ func (l *Location) String() string {
 
 	return sb.String()
 }
+
+type Locations []Location
+
+var _ sort.Interface = (*Locations)(nil)
+
+func (l Locations) Len() int           { return len(l) }
+func (l Locations) Less(i, j int) bool { return l[i].Name < l[j].Name }
+func (l Locations) Swap(i, j int)      { l[i], l[j] = l[j], l[i] }

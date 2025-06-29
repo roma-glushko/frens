@@ -28,7 +28,7 @@ import (
 const maxWidth = 60
 
 type NewFriendModel struct {
-	friend    *friend.Friend
+	friend    *friend.Person
 	nicknames string
 	lg        *lipgloss.Renderer
 	styles    *Styles
@@ -36,7 +36,7 @@ type NewFriendModel struct {
 	width     int
 }
 
-func NewFriendForm(f *friend.Friend) NewFriendModel {
+func NewFriendForm(f *friend.Person) NewFriendModel {
 	m := NewFriendModel{
 		friend: f,
 		width:  maxWidth,
@@ -138,17 +138,17 @@ func (m NewFriendModel) View() string {
 	v := strings.TrimSuffix(m.form.View(), "\n\n")
 	form := m.lg.NewStyle().Margin(1, 0).Render(v)
 
-	errors := m.form.Errors()
+	errs := m.form.Errors()
 
 	header := m.appBoundaryView("New Friend")
 
-	if len(errors) > 0 {
+	if len(errs) > 0 {
 		header = m.appErrorBoundaryView(m.errorView())
 	}
 
 	footer := m.appBoundaryView(m.form.Help().ShortHelpView(m.form.KeyBinds()))
 
-	if len(errors) > 0 {
+	if len(errs) > 0 {
 		footer = m.appErrorBoundaryView("")
 	}
 

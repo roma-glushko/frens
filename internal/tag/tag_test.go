@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package tag
 
 import (
 	"testing"
@@ -39,9 +39,9 @@ func TestTags(t *testing.T) {
 
 	require.False(t, HasTag(&e, "corporate"))
 
-	Add(&e, "sales")
-	Add(&e, "sales")
-	Add(&e, "accounting")
+	AddStr(&e, []string{"sales"})
+	AddStr(&e, []string{"sales"})
+	AddStr(&e, []string{"accounting"})
 
 	require.Len(t, e.Tags, 2)
 

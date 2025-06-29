@@ -65,7 +65,7 @@ var AddCommand = &cli.Command{
 		tags := ctx.StringSlice("tag")
 		locs := ctx.StringSlice("location")
 
-		var friend friend.Friend
+		var friend friend.Person
 
 		friend.Nicknames = nicknames
 		friend.Tags = tags

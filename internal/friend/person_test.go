@@ -20,56 +20,56 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFriend_Validation(t *testing.T) {
-	var noName Friend
+func TestPerson_Validation(t *testing.T) {
+	var noName Person
 
 	require.Error(t, noName.Validate())
 
-	withName := Friend{Name: "Jim Halpert"}
+	withName := Person{Name: "Jim Halpert"}
 	require.NoError(t, withName.Validate())
 }
 
-func TestFriend_Location(t *testing.T) {
+func TestPerson_Location(t *testing.T) {
 	loc := "Scranton"
-	f := Friend{Name: "Jim Halpert"}
+	p := Person{Name: "Jim Halpert"}
 
-	f.AddLocation(loc)
+	p.AddLocation(loc)
 
-	require.True(t, f.HasLocation(loc))
+	require.True(t, p.HasLocation(loc))
 
-	f.AddLocation(loc)
+	p.AddLocation(loc)
 
-	require.Len(t, f.Locations, 1)
+	require.Len(t, p.Locations, 1)
 }
 
-func TestFriend_Nickname(t *testing.T) {
+func TestPerson_Nickname(t *testing.T) {
 	nickname := "Big Tuna"
-	f := Friend{Name: "Jim Halpert"}
+	p := Person{Name: "Jim Halpert"}
 
-	f.AddNickname(nickname)
-	f.AddNickname(nickname)
+	p.AddNickname(nickname)
+	p.AddNickname(nickname)
 
-	require.Len(t, f.Nicknames, 1)
+	require.Len(t, p.Nicknames, 1)
 
-	f.RemoveNickname(nickname)
-	f.RemoveNickname(nickname)
+	p.RemoveNickname(nickname)
+	p.RemoveNickname(nickname)
 
-	require.Empty(t, f.Nicknames)
+	require.Empty(t, p.Nicknames)
 }
 
-func TestFriend_String(t *testing.T) {
+func TestPerson_String(t *testing.T) {
 	name := "Jim Halpert"
 	nick1 := "Big Tuna"
 	nick2 := "Jimbo"
 
-	f := Friend{Name: name}
+	p := Person{Name: name}
 
-	require.Equal(t, name, f.String())
+	require.Equal(t, name, p.String())
 
-	f.AddNickname(nick1)
-	f.AddNickname(nick2)
+	p.AddNickname(nick1)
+	p.AddNickname(nick2)
 
-	require.Contains(t, f.String(), name)
-	require.Contains(t, f.String(), nick1)
-	require.Contains(t, f.String(), nick2)
+	require.Contains(t, p.String(), name)
+	require.Contains(t, p.String(), nick1)
+	require.Contains(t, p.String(), nick2)
 }

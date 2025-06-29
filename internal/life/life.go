@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/tag"
 )
 
 type ListFriendQuery struct {
@@ -29,8 +30,8 @@ type ListFriendQuery struct {
 type Data struct {
 	dirty      bool
 	DirPath    string
-	Tags       []friend.Tag
-	Friends    friend.Friends
+	Tags       tag.Tags
+	Friends    []friend.Person
 	Locations  friend.Locations
 	Activities []friend.Event
 }
@@ -47,14 +48,14 @@ func (d *Data) Path() string {
 	return d.DirPath
 }
 
-func (d *Data) AddFriend(f friend.Friend) {
+func (d *Data) AddFriend(f friend.Person) {
 	d.Friends = append(d.Friends, f)
 
 	d.dirty = true
 }
 
-func (d *Data) GetFriend(q string) (*friend.Friend, error) {
-	var found []friend.Friend
+func (d *Data) GetFriend(q string) (*friend.Person, error) {
+	var found []friend.Person
 
 	for _, f := range d.Friends {
 		if f.Match(q) {
@@ -115,23 +116,35 @@ func (d *Data) GetLocation(q string) (*friend.Location, error) {
 	return &l, nil
 }
 
-func (d *Data) AddTag(t friend.Tag) {
-	d.Tags = append(d.Tags, t)
+func (d *Data) AddTags(t []tag.Tag) {
+	d.Tags = append(d.Tags, t...).Unique()
 
 	d.dirty = true
 }
 
 func (d *Data) AddActivity(e friend.Event) {
-	for _, f := range d.Friends {
+	//friendMatcher := utils.NewMatcher[friend.Location]()
+	//
+	//for _, l := range d.Locations {
+	//	friendMatcher.Add(l, l.Refs())
+	//}
+	//
+	//friends := friendMatcher.Match(e.Desc)
 
-	}
+	//locMatcher := utils.NewMatcher[friend.Location]()
+	//
+	//for _, l := range d.Locations {
+	//	locMatcher.Add(l, l.Refs())
+	//}
 
-	for _, l := range d.Locations {
+	//locations := locMatcher.Match(e.Desc)
 
-	}
+	tags := tag.Match(e.Desc)
 
-	for _, t := range d.Tags {
-
+	if len(tags) > 0 {
+		d.AddTags(tags)
+		tag.Add(&e, tags)
+		// TODO: update tag stats
 	}
 
 	d.Activities = append(d.Activities, e)
@@ -139,15 +152,15 @@ func (d *Data) AddActivity(e friend.Event) {
 	d.dirty = true
 }
 
-func (d *Data) ListFriends(q ListFriendQuery) []friend.Friend {
-	v := make([]friend.Friend, 0, 5)
+func (d *Data) ListFriends(q ListFriendQuery) []friend.Person {
+	v := make([]friend.Person, 0, 5)
 
 	for _, f := range d.Friends {
 		if q.Location != "" && !f.HasLocation(q.Location) {
 			continue
 		}
 
-		if q.Tag != "" && !friend.HasTag(&f, q.Tag) {
+		if q.Tag != "" && !tag.HasTag(&f, q.Tag) {
 			continue
 		}
 

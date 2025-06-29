@@ -16,6 +16,7 @@ package toml
 
 import (
 	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/tag"
 )
 
 const (
@@ -24,8 +25,8 @@ const (
 )
 
 type FriendsFile struct {
-	Tags      []friend.Tag      `toml:"tags"`
-	Friends   []friend.Friend   `toml:"friends"`
+	Tags      []tag.Tag         `toml:"tags"`
+	Friends   []friend.Person   `toml:"friends"`
 	Locations []friend.Location `toml:"locations"`
 }
 
