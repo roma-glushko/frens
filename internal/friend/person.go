@@ -45,6 +45,8 @@ type Person struct {
 	Locations  []string  `toml:"locations,omitempty"`
 	Reminders  []string  `toml:"reminders,omitempty"`
 	Activities int       `toml:"activities,omitempty"`
+	// internal use only
+	Score int `toml:"-"`
 }
 
 var _ tag.Tagged = (*Person)(nil)
@@ -58,13 +60,13 @@ func (p *Person) Validate() error {
 	return nil
 }
 
-func (l Person) Refs() []string {
-	names := make([]string, 0, 1+len(l.Nicknames))
+func (p Person) Refs() []string {
+	names := make([]string, 0, 1+len(p.Nicknames))
 
-	names = append(names, l.Name)
+	names = append(names, p.Name)
 
-	if len(l.Nicknames) > 0 {
-		names = append(names, l.Nicknames...)
+	if len(p.Nicknames) > 0 {
+		names = append(names, p.Nicknames...)
 	}
 
 	return names

@@ -17,6 +17,7 @@ package journal
 import (
 	"fmt"
 	"github.com/roma-glushko/frens/internal/utils"
+	"slices"
 	"strings"
 	"sync"
 
@@ -153,7 +154,81 @@ func (d *Data) AddTags(t []tag.Tag) {
 }
 
 func (d *Data) AddActivity(e friend.Event) {
-	_ = d.frenMatcher().Match(e.Desc)
+	matches := d.frenMatcher().Match(e.Desc)
+
+	certainPersons := make([]friend.Person, 0, len(matches))
+	ambiguitiesMatches := make([]utils.Match[friend.Person], 0, len(matches))
+
+	for _, m := range matches {
+		if len(m.Entities) == 1 {
+			certainPersons = append(certainPersons, m.Entities[0])
+			continue
+		}
+
+		shortestNameFriend := slices.MinFunc(m.Entities, func(a, b friend.Person) int {
+			return strings.Compare(a.Name, b.Name)
+		})
+
+		shortestName := shortestNameFriend.Name
+		allContains := true
+
+		for _, e := range m.Entities {
+			if !strings.Contains(e.Name, shortestName) {
+				allContains = false
+				break
+			}
+		}
+
+		if allContains {
+			certainPersons = append(certainPersons, shortestNameFriend)
+		} else {
+			ambiguitiesMatches = append(ambiguitiesMatches, m)
+		}
+	}
+
+	type friendPair struct {
+		KnownPerson       friend.Person
+		AmbiguitiesPerson friend.Person
+	}
+
+	guessedPersons := make([]friend.Person, 0, len(ambiguitiesMatches))
+
+	if len(ambiguitiesMatches) > 0 {
+		rankPairs := make([]friendPair, 0, len(certainPersons)*len(ambiguitiesMatches))
+
+		for _, cp := range certainPersons {
+			for _, am := range ambiguitiesMatches {
+				for _, ap := range am.Entities {
+					rankPairs = append(rankPairs, friendPair{
+						KnownPerson:       cp,
+						AmbiguitiesPerson: ap,
+					})
+				}
+			}
+		}
+
+		for _, act := range d.Activities {
+			for _, pair := range rankPairs {
+				if slices.Contains(act.Friends, pair.KnownPerson.Name) &&
+					slices.Contains(act.Friends, pair.AmbiguitiesPerson.Name) {
+					pair.AmbiguitiesPerson.Score++
+				}
+			}
+		}
+
+		for _, am := range ambiguitiesMatches {
+			guessedPerson := slices.MaxFunc(am.Entities, func(a, b friend.Person) int {
+				if a.Score != b.Score {
+					return b.Score - a.Score
+				}
+
+				return b.Activities - a.Activities
+			})
+
+			guessedPersons = append(guessedPersons, guessedPerson)
+		}
+	}
+
 	_ = d.locMatcher().Match(e.Desc)
 
 	// TODO: record locs/friends
@@ -163,7 +238,13 @@ func (d *Data) AddActivity(e friend.Event) {
 	if len(tags) > 0 {
 		d.AddTags(tags)
 		tag.Add(&e, tags)
-		// TODO: update tag stats
+	}
+
+	e.Friends = make([]string, 0, len(certainPersons)+len(guessedPersons))
+
+	for _, p := range certainPersons {
+		e.Friends = append(e.Friends, p.Name)
+		p.Activities++
 	}
 
 	d.Activities = append(d.Activities, e)
