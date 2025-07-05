@@ -49,8 +49,10 @@ type Person struct {
 	Score int `toml:"-"`
 }
 
-var _ tag.Tagged = (*Person)(nil)
-var _ utils.Matchable = (*Person)(nil)
+var (
+	_ tag.Tagged      = (*Person)(nil)
+	_ utils.Matchable = (*Person)(nil)
+)
 
 func (p *Person) Validate() error {
 	if p.Name == "" {

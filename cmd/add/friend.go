@@ -96,7 +96,6 @@ var friendCommand = &cli.Command{
 			l.AddFriend(friend)
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}

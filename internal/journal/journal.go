@@ -16,10 +16,11 @@ package journal
 
 import (
 	"fmt"
-	"github.com/roma-glushko/frens/internal/utils"
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/tag"
@@ -153,7 +154,7 @@ func (d *Data) AddTags(t []tag.Tag) {
 	d.dirty = true
 }
 
-func (d *Data) AddActivity(e friend.Event) {
+func (d *Data) AddActivity(e friend.Event) { //nolint:cyclop
 	matches := d.frenMatcher().Match(e.Desc)
 
 	certainPersons := make([]friend.Person, 0, len(matches))

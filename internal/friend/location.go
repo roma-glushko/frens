@@ -36,8 +36,10 @@ type Location struct {
 	Activities int `toml:"activities,omitempty"`
 }
 
-var _ tag.Tagged = (*Location)(nil)
-var _ utils.Matchable = (*Location)(nil)
+var (
+	_ tag.Tagged      = (*Location)(nil)
+	_ utils.Matchable = (*Location)(nil)
+)
 
 func (l *Location) Validate() error {
 	if l.Name == "" {

@@ -47,7 +47,7 @@ func (m *Matcher[T]) Add(entity T) {
 	}
 }
 
-func (m *Matcher[T]) Match(input string) []Match[T] {
+func (m *Matcher[T]) Match(input string) []Match[T] { //nolint:cyclop
 	searchKeys := slices.Collect(maps.Keys(m.EntityPatterns))
 
 	sort.SliceStable(searchKeys, func(i, j int) bool {
@@ -55,6 +55,7 @@ func (m *Matcher[T]) Match(input string) []Match[T] {
 	})
 
 	var found []Match[T]
+
 	lowerInput := strings.ToLower(input)
 
 	for _, searchKey := range searchKeys {

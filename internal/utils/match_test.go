@@ -1,26 +1,28 @@
 package utils
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
+
+type testEntity struct {
+	ID         int
+	References []string
+}
+
+func (e testEntity) Refs() []string {
+	return e.References
+}
 
 func TestMatcher(t *testing.T) {
 	t.Parallel()
 
-	type TestEntity struct {
-		ID int
-	}
+	matcher := NewMatcher[testEntity]()
 
-	matcher := NewMatcher[TestEntity]()
-
-	matcher.Add(TestEntity{ID: 1}, []string{"Philly"})
-	matcher.Add(TestEntity{ID: 1}, []string{"Philadelphia"})
-	matcher.Add(TestEntity{ID: 2}, []string{"Scranton"})
-	matcher.Add(TestEntity{ID: 2}, []string{"Electric City"})
-	matcher.Add(TestEntity{ID: 3}, []string{"New York"})
-	matcher.Add(TestEntity{ID: 3}, []string{"NY"})
-	matcher.Add(TestEntity{ID: 3}, []string{"NYC"})
+	matcher.Add(testEntity{ID: 1, References: []string{"Philly", "Philadelphia"}})
+	matcher.Add(testEntity{ID: 2, References: []string{"Scranton", "Electric City"}})
+	matcher.Add(testEntity{ID: 3, References: []string{"New York", "NY", "NYC"}})
 
 	tests := []struct {
 		input    string

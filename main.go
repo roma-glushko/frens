@@ -15,10 +15,11 @@
 package main
 
 import (
-	"github.com/roma-glushko/frens/cmd/add"
-	"github.com/roma-glushko/frens/cmd/list"
 	"os"
 	"time"
+
+	"github.com/roma-glushko/frens/cmd/add"
+	"github.com/roma-glushko/frens/cmd/list"
 
 	"github.com/roma-glushko/frens/cmd"
 	"github.com/urfave/cli/v2"
