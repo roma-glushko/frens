@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package add
 
 import (
-	"github.com/roma-glushko/frens/cmd/friend"
 	"github.com/urfave/cli/v2"
 )
 
-var ListCommands = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l"},
-	Usage:   "List your friends, activities, locations",
+var Commands = &cli.Command{
+	Name:    "add",
+	Aliases: []string{"a"},
+	Usage:   "Add a new friend, location, activity, etc.",
 	Subcommands: []*cli.Command{
-		friend.ListCommand,
+		friendCommand,
+		locationCommand,
+		noteCommand,
+		activityCommand,
 	},
 }

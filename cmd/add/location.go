@@ -12,11 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package activity
+package add
 
-import "time"
+import (
+	"github.com/charmbracelet/log"
+	"github.com/urfave/cli/v2"
+)
 
-type Activity struct {
-	Date        time.Time
-	Description string
+var locationCommand = &cli.Command{
+	Name:    "location",
+	Aliases: []string{"loc", "l"},
+	Usage:   "Add a new location",
+	Action: func(_ *cli.Context) error {
+		log.Info("Adding a new location..")
+
+		return nil
+	},
 }

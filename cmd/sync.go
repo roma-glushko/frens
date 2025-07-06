@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package note
+package cmd
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/urfave/cli/v2"
+)
 
-var AddCommand = &cli.Command{
-	Name:    "note",
-	Aliases: []string{"n"},
-	Usage:   "Add a new note",
+var SyncCommand = &cli.Command{
+	Name:    "sync",
+	Aliases: []string{"s"},
+	Usage:   "Sync all outdated data in the journal",
 	Action: func(_ *cli.Context) error {
 		// TODO: implement
 

@@ -18,6 +18,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/roma-glushko/frens/cmd/add"
+	"github.com/roma-glushko/frens/cmd/list"
+
 	"github.com/roma-glushko/frens/cmd"
 	"github.com/urfave/cli/v2"
 
@@ -68,8 +71,9 @@ func main() {
 		Commands: []*cli.Command{
 			cmd.InitCommand,
 			cmd.EditCommand,
-			cmd.AddCommands,
-			cmd.ListCommands,
+			cmd.SyncCommand,
+			add.Commands,
+			list.Commands,
 		},
 	}
 

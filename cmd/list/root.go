@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package note
+package list
 
-import "time"
+import (
+	"github.com/urfave/cli/v2"
+)
 
-type Note struct {
-	Date        time.Time
-	Description string
+var Commands = &cli.Command{
+	Name:    "list",
+	Aliases: []string{"l", "ls"},
+	Usage:   "List your friends, activities, locations",
+	Subcommands: []*cli.Command{
+		friendCommand,
+	},
 }

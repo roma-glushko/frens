@@ -12,29 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lifedir
+package friend
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-const DefaultFrensDir = ".frens"
+func TestLocation_Validation(t *testing.T) {
+	var l Location
 
-func DefaultDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get user home directory: %w", err)
-	}
+	require.Error(t, l.Validate())
 
-	lifePath := filepath.Join(homeDir, DefaultFrensDir)
+	l.Name = "Los Angeles"
 
-	// ensure directory exists
-	err = os.MkdirAll(lifePath, os.ModePerm)
-	if err != nil {
-		return "", fmt.Errorf("failed to create the life directory at %s: %w", lifePath, err)
-	}
+	require.NoError(t, l.Validate())
+}
 
-	return lifePath, nil
+func TestLocation_Alias(t *testing.T) {
+	var l Location
+
+	l.AddAlias("LA")
+	l.AddAlias("Los Angeles")
+
+	require.Len(t, l.Alias, 2)
+
+	l.RemoveAlias("la")
+	l.RemoveAlias("LA")
+
+	require.Len(t, l.Alias, 1)
 }

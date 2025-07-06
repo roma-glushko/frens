@@ -14,27 +14,14 @@
 
 package friend
 
-import "github.com/urfave/cli/v2"
+type ContactType = string
 
-var ListCommand = &cli.Command{
-	Name:    "friend",
-	Aliases: []string{"f"},
-	Usage:   "List all friends",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "location",
-			Aliases: []string{"l", "loc", "in"},
-		},
-		&cli.StringFlag{
-			Name:    "tag",
-			Aliases: []string{"t"},
-			Usage:   "Filter by tag",
-		},
-		&cli.StringFlag{
-			Name: "sort",
-		},
-	},
-	Action: func(_ *cli.Context) error {
-		return nil
-	},
+var (
+	ContactTypeEmail ContactType = "email"
+	ContactTypePhone ContactType = "phone"
+)
+
+type Contact struct {
+	Type  string `toml:"type"`
+	Value string `toml:"value"` // e.g., email, phone number, social media handle
 }

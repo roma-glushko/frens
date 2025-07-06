@@ -12,26 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package toml
+package journaldir
 
 import (
-	"github.com/roma-glushko/frens/internal/activity"
-	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/location"
-	"github.com/roma-glushko/frens/internal/tag"
+	"fmt"
+	"os"
+	"path/filepath"
 )
 
-const (
-	FileNameFriends    = "friends.toml"
-	FileNameActivities = "activities.toml"
-)
+const DefaultFrensDir = "frens"
 
-type FriendsFile struct {
-	Tags      []tag.Tag           `toml:"tags"`
-	Friends   []friend.Friend     `toml:"friends"`
-	Locations []location.Location `toml:"locations"`
-}
+func DefaultDir() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user home directory: %w", err)
+	}
 
-type ActivitiesFile struct {
-	Activities []activity.Activity `toml:"activities"`
+	lifePath := filepath.Join(configDir, DefaultFrensDir)
+
+	// ensure directory exists
+	err = os.MkdirAll(lifePath, os.ModePerm)
+	if err != nil {
+		return "", fmt.Errorf("failed to create the life directory at %s: %w", lifePath, err)
+	}
+
+	return lifePath, nil
 }

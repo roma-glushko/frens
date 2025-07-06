@@ -12,32 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package location
+package utils
 
-import (
-	"fmt"
-	"strings"
-)
+func Unique[T comparable](s []T) []T {
+	m := make(map[T]struct{}, len(s))
 
-type Location struct {
-	Name    string   `toml:"name"`
-	Country string   `toml:"country,omitempty"`
-	Alias   []string `toml:"alias,omitempty"`
-	Tags    []string `toml:"tags,omitempty"`
-}
-
-func (l Location) String() string {
-	var sb strings.Builder
-
-	sb.WriteString(l.Name)
-
-	if len(l.Country) > 0 {
-		sb.WriteString(", " + l.Country)
+	for _, v := range s {
+		m[v] = struct{}{}
 	}
 
-	if len(l.Alias) > 0 {
-		sb.WriteString(fmt.Sprintf(" (%s)", strings.Join(l.Alias, ", ")))
+	unique := make([]T, 0, len(m))
+
+	for k := range m {
+		unique = append(unique, k)
 	}
 
-	return sb.String()
+	return unique
 }
