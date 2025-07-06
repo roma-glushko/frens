@@ -14,4 +14,14 @@
 
 package friend
 
-type Reminder struct{}
+type ContactType = string
+
+var (
+	ContactTypeEmail ContactType = "email"
+	ContactTypePhone ContactType = "phone"
+)
+
+type Contact struct {
+	Type  string `toml:"type"`
+	Value string `toml:"value"` // e.g., email, phone number, social media handle
+}

@@ -14,4 +14,12 @@
 
 package friend
 
-type Wishlist struct{}
+import "time"
+
+type Wishlist struct {
+	CreatedAt time.Time `toml:"created_at"`
+	Title     string    `toml:"title"`
+	Link      string    `toml:"link,omitempty"`
+	Priority  int       `toml:"priority"`
+	Note      string    `toml:"note,omitempty"`
+}
