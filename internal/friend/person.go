@@ -17,11 +17,9 @@ package friend
 import (
 	"errors"
 	"fmt"
+	"github.com/roma-glushko/frens/internal/tag"
 	"sort"
 	"strings"
-	"time"
-
-	"github.com/roma-glushko/frens/internal/tag"
 
 	"github.com/roma-glushko/frens/internal/utils"
 )
@@ -37,14 +35,14 @@ func (p Persons) Less(i, j int) bool { return p[i].Name < p[j].Name }
 func (p Persons) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 type Person struct {
-	Name       string    `toml:"name"`
-	Birthday   time.Time `toml:"birthday,omitempty"`
-	Nicknames  []string  `toml:"nicknames,omitempty"`
-	Tags       []string  `toml:"tags,omitempty"`
-	Notes      []Event   `toml:"notes,omitempty"`
-	Locations  []string  `toml:"locations,omitempty"`
-	Reminders  []string  `toml:"reminders,omitempty"`
-	Activities int       `toml:"activities,omitempty"`
+	Name       string   `toml:"name"`
+	Desc       string   `toml:"desc,omitempty"`
+	Nicknames  []string `toml:"nicknames,omitempty"`
+	Tags       []string `toml:"tags,omitempty"`
+	Notes      []Event  `toml:"notes,omitempty"`
+	Locations  []string `toml:"locations,omitempty"`
+	Reminders  []string `toml:"reminders,omitempty"`
+	Activities int      `toml:"activities,omitempty"`
 	// internal use only
 	Score int `toml:"-"`
 }

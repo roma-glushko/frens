@@ -15,15 +15,15 @@
 package add
 
 import (
+	"errors"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/tui"
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/journal"
-
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journaldir"
-	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
 
@@ -32,11 +32,31 @@ var friendCommand = &cli.Command{
 	Aliases: []string{"f"},
 	Usage:   "Add a new friend",
 	Args:    true,
-	ArgsUsage: `<NAME>
+	ArgsUsage: `<INFO>
+		If no arguments are provided, a textarea will be shown to fill in the details interactively.
+		Otherwise, the information will be parsed from the command options.
+		
+		<INFO> format:
+			` + friend.FormatPersonInfo + `
 
-		<NAME> is the full name of the friend you want to add.
+		For example:
+			Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss #office @Scranton $id:mscott
 	`,
 	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "id",
+			Usage: "Friend's unique identifier (used for linking with other data, editing, etc.)",
+		},
+		&cli.StringFlag{
+			Name:    "name",
+			Aliases: []string{"n"},
+			Usage:   "Friend's name (required if no arguments are provided)",
+		},
+		&cli.StringFlag{
+			Name:    "desc",
+			Aliases: []string{"d"},
+			Usage:   "Description of the friend (optional, used for additional information)",
+		},
 		&cli.StringSliceFlag{
 			Name:    "tag",
 			Aliases: []string{"t"},
@@ -49,8 +69,8 @@ var friendCommand = &cli.Command{
 		},
 		&cli.StringSliceFlag{
 			Name:    "nickname",
-			Aliases: []string{"a", "alias", "nick", "n"},
-			Usage:   "Add friend's nicknames",
+			Aliases: []string{"a", "aka", "alias", "nick"},
+			Usage:   "Add friend's nicknames (used in search and matching the friend in activities)",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
@@ -64,43 +84,81 @@ var friendCommand = &cli.Command{
 			return err
 		}
 
-		nicknames := ctx.StringSlice("nickname")
-		tags := ctx.StringSlice("tag")
-		locs := ctx.StringSlice("location")
-
-		var friend friend.Person
-
-		friend.Nicknames = nicknames
-		friend.Tags = tags
-		friend.Locations = locs
+		var info string
 
 		if ctx.NArg() == 0 {
-			// return cli.ShowCommandHelp(context, context.Command.Name)
-			teaUI := tea.NewProgram(tui.NewFriendForm(&friend), tea.WithMouseAllMotion())
+			// TODO: also check if we are in the interactive mode
+			inputForm := tui.NewInputForm(friend.FormatPersonInfo)
+			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 			if _, err := teaUI.Run(); err != nil {
 				log.Error("uh oh", "err", err)
 				return err
 			}
-		} else {
-			name := strings.Join(ctx.Args().Slice(), " ")
 
-			friend.Name = name
+			info = inputForm.Textarea.Value()
+		} else {
+			info = strings.Join(ctx.Args().Slice(), " ")
 		}
 
-		if err := friend.Validate(); err != nil {
+		var f friend.Person
+
+		if info != "" {
+			f, err = friend.ParsePerson(info)
+
+			if err != nil && !errors.Is(err, friend.ErrNoInfo) {
+				log.Error("failed to parse friend info", "err", err)
+				return err
+			}
+		}
+
+		// apply CLI flags
+		//id := ctx.String("id")
+		name := ctx.String("name")
+		desc := ctx.String("desc")
+		nicknames := ctx.StringSlice("nickname")
+		tags := ctx.StringSlice("tag")
+		locs := ctx.StringSlice("location")
+
+		// TODO: add support for ID
+		//if id != "" {
+		//	friend.ID = id
+		//}
+
+		if name != "" {
+			f.Name = name
+		}
+
+		if desc != "" {
+			f.Desc = desc
+		}
+
+		if len(nicknames) > 0 {
+			f.Nicknames = nicknames
+		}
+
+		if len(tags) > 0 {
+			f.Tags = tags
+		}
+
+		if len(locs) > 0 {
+			f.Locations = locs
+		}
+
+		if err := f.Validate(); err != nil {
 			return err
 		}
 
 		err = journaldir.Update(l, func(l *journal.Data) error {
-			l.AddFriend(friend)
+			l.AddFriend(f)
 			return nil
 		})
+
 		if err != nil {
 			return err
 		}
 
-		log.Info(friend.Name + " has been added to your journal.")
+		log.Info(f.Name + " has been added to your journal.")
 
 		return nil
 	},

@@ -15,19 +15,12 @@
 package tag
 
 import (
-	"regexp"
 	"slices"
 	"sort"
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/utils"
 )
-
-var regex *regexp.Regexp
-
-func init() {
-	regex = regexp.MustCompile(`#[\\p{L}\\p{N}](?:[:-]?[\\p{L}\\p{N}])*`)
-}
 
 type Tag struct {
 	Name string
@@ -133,15 +126,4 @@ func HasTag(e Tagged, t string) bool {
 	}
 
 	return false
-}
-
-func Match(s string) []Tag {
-	matches := regex.FindAllString(s, -1)
-	tags := make([]Tag, len(matches))
-
-	for i, match := range matches {
-		tags[i] = NewTag(match)
-	}
-
-	return utils.Unique(tags)
 }
