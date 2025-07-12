@@ -12,27 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package journal
 
 import (
-	"github.com/roma-glushko/frens/internal/utils"
-	"regexp"
-	"strings"
+	"github.com/urfave/cli/v2"
 )
 
-var regex *regexp.Regexp
-
-func init() {
-	regex = regexp.MustCompile(`@([\p{L}0-9_-]+)`)
-}
-
-func ParseLocMarkers(s string) []string {
-	matches := regex.FindAllString(s, -1)
-	locationIDs := make([]string, len(matches))
-
-	for i, match := range matches {
-		locationIDs[i] = strings.TrimLeft(match, "@")
-	}
-
-	return utils.Unique(locationIDs)
+var Commands = &cli.Command{
+	Name:    "journal",
+	Aliases: []string{"j", "jr"},
+	Usage:   "Manage your journals",
+	Subcommands: []*cli.Command{
+		InitCommand,
+		EditCommand,
+		SyncCommand,
+	},
 }

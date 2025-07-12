@@ -84,7 +84,7 @@ func (d *Data) GetFriend(q string) (*friend.Person, error) {
 	m := matches[0]
 
 	if len(m.Entities) == 0 {
-		return nil, fmt.Errorf("no friends found for '%s'", q)
+		return nil, fmt.Errorf("no friend found for '%s'", q)
 	}
 
 	if len(m.Entities) > 1 {
@@ -100,6 +100,19 @@ func (d *Data) GetFriend(q string) (*friend.Person, error) {
 	f := m.Entities[0]
 
 	return &f, nil
+}
+
+func (d *Data) UpdateFriend(old, new friend.Person) {
+	for i, f := range d.Friends {
+		if f.Name == old.Name {
+			d.Friends[i] = new
+			d.dirty = true
+			return
+		}
+	}
+
+	// If the friend was not found, add it as a new one
+	d.AddFriend(new)
 }
 
 func (d *Data) AddLocation(l friend.Location) {

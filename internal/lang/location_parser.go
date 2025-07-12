@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tag
+package lang
 
 import (
 	"github.com/roma-glushko/frens/internal/utils"
@@ -23,37 +23,40 @@ import (
 var regex *regexp.Regexp
 
 func init() {
-	regex = regexp.MustCompile(`#([a-zA-Z0-9]+(?::[a-zA-Z0-9]+)?(?:-[a-zA-Z0-9]+)?)`)
+	regex = regexp.MustCompile(`@([\p{L}0-9_-]+)`)
 }
 
-// Parse extracts tags from a string e.g. "#tag1 #tag2" and returns a slice of unique Tag objects.
-func Parse(s string) []Tag {
+func ParseLocMarkers(s string) []string {
 	matches := regex.FindAllString(s, -1)
-	tags := make([]Tag, len(matches))
+	locationIDs := make([]string, len(matches))
 
 	for i, match := range matches {
-		tags[i] = NewTag(match)
+		locationIDs[i] = strings.TrimLeft(match, "@")
 	}
 
-	return utils.Unique(tags)
+	return utils.Unique(locationIDs)
 }
 
-func RemoveTagMarkers(s string) string {
+func RemoveLocMarkers(s string) string {
 	return regex.ReplaceAllString(s, "")
 }
 
-func FormatTags(ts []string) string {
-	tags := make([]Tag, 0, len(ts))
+func FormatLocMarkers(locations []string) string {
+	if len(locations) == 0 {
+		return ""
+	}
 
-	for _, t := range ts {
-		t = strings.TrimSpace(t)
+	markers := make([]string, len(locations))
 
-		if t == "" {
+	for i, loc := range locations {
+		loc = strings.TrimSpace(loc)
+
+		if loc == "" {
 			continue
 		}
 
-		tags = append(tags, NewTag(t))
+		markers[i] = "@" + loc
 	}
 
-	return Tags(tags).String()
+	return strings.Join(markers, " ")
 }

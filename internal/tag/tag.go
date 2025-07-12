@@ -66,11 +66,7 @@ func (t Tags) ToNames() []string {
 }
 
 func (t Tags) String() string {
-	names := make([]string, 0, len(t))
-
-	for _, tag := range t {
-		names = append(names, tag.String())
-	}
+	names := t.ToNames()
 
 	slices.Sort(names)
 

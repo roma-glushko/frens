@@ -12,20 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package add
+package journal
 
 import (
+	"fmt"
+
+	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/urfave/cli/v2"
 )
 
-var Commands = &cli.Command{
-	Name:    "add",
-	Aliases: []string{"a"},
-	Usage:   "Add a new friend, location, activity, etc.",
-	Subcommands: []*cli.Command{
-		friendCommand,
-		locationCommand,
-		noteCommand,
-		activityCommand,
+var InitCommand = &cli.Command{
+	Name:    "init",
+	Aliases: []string{"i"},
+	Usage:   "Init a new journal",
+	Flags:   []cli.Flag{},
+	Action: func(_ *cli.Context) error {
+		journalDir, err := journaldir.DefaultDir()
+		if err != nil {
+			return err
+		}
+
+		err = journaldir.Init(journalDir)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("A new journal's initialized at", journalDir)
+
+		return nil
 	},
 }

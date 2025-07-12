@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package add
+package friend
 
 import (
 	"errors"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/tui"
 	"strings"
 
@@ -27,9 +28,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var friendCommand = &cli.Command{
-	Name:    "friend",
-	Aliases: []string{"f"},
+var AddCommand = &cli.Command{
+	Name:    "add",
+	Aliases: []string{"a", "new", "create"},
 	Usage:   "Add a new friend",
 	Args:    true,
 	ArgsUsage: `<INFO>
@@ -37,7 +38,7 @@ var friendCommand = &cli.Command{
 		Otherwise, the information will be parsed from the command options.
 		
 		<INFO> format:
-			` + friend.FormatPersonInfo + `
+			` + lang.FormatPersonInfo + `
 
 		For example:
 			Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss #office @Scranton $id:mscott
@@ -74,12 +75,12 @@ var friendCommand = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		lifeDir, err := journaldir.DefaultDir()
+		journalDir, err := journaldir.DefaultDir()
 		if err != nil {
 			return err
 		}
 
-		l, err := journaldir.Load(lifeDir)
+		j, err := journaldir.Load(journalDir)
 		if err != nil {
 			return err
 		}
@@ -88,7 +89,7 @@ var friendCommand = &cli.Command{
 
 		if ctx.NArg() == 0 {
 			// TODO: also check if we are in the interactive mode
-			inputForm := tui.NewInputForm(friend.FormatPersonInfo)
+			inputForm := tui.NewInputForm(lang.FormatPersonInfo)
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 			if _, err := teaUI.Run(); err != nil {
@@ -104,9 +105,9 @@ var friendCommand = &cli.Command{
 		var f friend.Person
 
 		if info != "" {
-			f, err = friend.ParsePerson(info)
+			f, err = lang.ParsePerson(info)
 
-			if err != nil && !errors.Is(err, friend.ErrNoInfo) {
+			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
 				log.Error("failed to parse friend info", "err", err)
 				return err
 			}
@@ -149,7 +150,7 @@ var friendCommand = &cli.Command{
 			return err
 		}
 
-		err = journaldir.Update(l, func(l *journal.Data) error {
+		err = journaldir.Update(j, func(l *journal.Data) error {
 			l.AddFriend(f)
 			return nil
 		})

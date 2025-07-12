@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package lang
 
 import (
 	"errors"
+	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/tag"
 	"regexp"
 	"strings"
 )
@@ -30,7 +32,6 @@ func init() {
 
 func parseNicknames(raw string) []string {
 	raw = strings.ReplaceAll(raw, `"`, "")
-	raw = strings.ReplaceAll(raw, `'`, "")
 	parts := strings.Split(raw, ",")
 
 	var cleaned []string
@@ -45,24 +46,63 @@ func parseNicknames(raw string) []string {
 	return cleaned
 }
 
-func ParsePerson(s string) (Person, error) {
+func ParsePerson(s string) (friend.Person, error) {
 	if s == "" {
-		return Person{}, ErrNoInfo
+		return friend.Person{}, ErrNoInfo
 	}
+
+	tags := tag.Tags(tag.Parse(s)).ToNames()
+	locations := ParseLocMarkers(s)
+
+	s = tag.RemoveTagMarkers(s)
+	s = RemoveLocMarkers(s)
+
+	// TODO: Remove them from the string after parsing.
 
 	matches := regexPerson.FindStringSubmatch(s)
 
 	if matches == nil {
-		return Person{}, ErrNoInfo
+		return friend.Person{}, ErrNoInfo
 	}
 
 	name := strings.TrimSpace(matches[1])
 	nicknames := parseNicknames(matches[2])
-	desc := strings.TrimSpace(matches[3])
+	desc := strings.TrimSpace(matches[4])
 
-	return Person{
+	return friend.Person{
 		Name:      name,
 		Nicknames: nicknames,
 		Desc:      desc,
+		Tags:      tags,
+		Locations: locations,
 	}, nil
+}
+
+func FormatPerson(p friend.Person) string {
+	var sb strings.Builder
+
+	sb.WriteString(p.Name)
+
+	if len(p.Nicknames) > 0 {
+		sb.WriteString(" (a.k.a. ")
+		sb.WriteString(strings.Join(p.Nicknames, ", "))
+		sb.WriteString(")")
+	}
+
+	if p.Desc != "" {
+		sb.WriteString(" :: ")
+		sb.WriteString(p.Desc)
+	}
+
+	if len(p.Tags) > 0 {
+		sb.WriteString(" ")
+		sb.WriteString(tag.FormatTags(p.Tags))
+	}
+
+	if len(p.Locations) > 0 {
+		sb.WriteString(" ")
+		sb.WriteString(FormatLocMarkers(p.Locations))
+	}
+
+	return sb.String()
 }

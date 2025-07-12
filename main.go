@@ -15,13 +15,14 @@
 package main
 
 import (
+	"github.com/roma-glushko/frens/cmd/journal"
+	"github.com/roma-glushko/frens/cmd/location"
+	"github.com/roma-glushko/frens/cmd/note"
 	"os"
 	"time"
 
-	"github.com/roma-glushko/frens/cmd/add"
-	"github.com/roma-glushko/frens/cmd/list"
-
-	"github.com/roma-glushko/frens/cmd"
+	"github.com/roma-glushko/frens/cmd/activity"
+	"github.com/roma-glushko/frens/cmd/friend"
 	"github.com/urfave/cli/v2"
 
 	"github.com/charmbracelet/log"
@@ -49,7 +50,7 @@ const Copyright = `2025-Present, Roma Hlushko & Friends (c)`
 func main() {
 	cliApp := cli.App{
 		Name:                 "frens",
-		Usage:                "A friendship management & journaling app. Build friendship that lasts.",
+		Usage:                "A friendship management & journaling. Build friendship that lasts.",
 		Version:              version.FullVersion,
 		Copyright:            Copyright,
 		Suggest:              true,
@@ -69,11 +70,11 @@ func main() {
 			return nil
 		},
 		Commands: []*cli.Command{
-			cmd.InitCommand,
-			cmd.EditCommand,
-			cmd.SyncCommand,
-			add.Commands,
-			list.Commands,
+			journal.Commands,
+			friend.Commands,
+			location.Commands,
+			note.Commands,
+			activity.Commands,
 		},
 	}
 

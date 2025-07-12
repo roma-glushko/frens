@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package list
+package friend
 
 import (
 	"github.com/urfave/cli/v2"
 )
 
 var Commands = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l", "ls"},
-	Usage:   "List your friends, activities, locations",
+	Name:    "friend",
+	Aliases: []string{"f", "fr"},
+	Usage:   "Manage your friends",
 	Subcommands: []*cli.Command{
-		friendCommand,
+		AddCommand,
+		EditCommand,
+		ListCommand,
 	},
 }

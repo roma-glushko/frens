@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package add
+package activity
 
 import (
 	"github.com/charmbracelet/log"
@@ -21,9 +21,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var activityCommand = &cli.Command{
-	Name:    "activity",
-	Aliases: []string{"a"},
+var AddCommand = &cli.Command{
+	Name:    "add",
+	Aliases: []string{"a", "new", "create"},
 	Usage:   "Add a new activity",
 	Args:    true,
 	ArgsUsage: `<DESCR> [<DESCR2> ...]

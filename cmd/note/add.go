@@ -12,19 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package add
+package note
 
-import (
-	"github.com/charmbracelet/log"
-	"github.com/urfave/cli/v2"
-)
+import "github.com/urfave/cli/v2"
 
-var locationCommand = &cli.Command{
-	Name:    "location",
-	Aliases: []string{"loc", "l"},
-	Usage:   "Add a new location",
+var AddCommand = &cli.Command{
+	Name:    "add",
+	Aliases: []string{"a", "create", "new"},
+	Usage:   "Add a new note",
 	Action: func(_ *cli.Context) error {
-		log.Info("Adding a new location..")
+		// TODO: implement
 
 		return nil
 	},
