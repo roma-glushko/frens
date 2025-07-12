@@ -15,9 +15,10 @@
 package lang
 
 import (
+	"testing"
+
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestPersonParser(t *testing.T) {
@@ -54,7 +55,6 @@ func TestPersonParser(t *testing.T) {
 			require.Equal(t, tc.Tags, got.Tags)
 			require.Equal(t, tc.Locations, got.Locations)
 			require.Equal(t, tc.Desc, got.Desc)
-			//require.Equal(t, tc.wantID, got.ID)
 		})
 	}
 }

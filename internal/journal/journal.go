@@ -102,17 +102,20 @@ func (d *Data) GetFriend(q string) (*friend.Person, error) {
 	return &f, nil
 }
 
-func (d *Data) UpdateFriend(old, new friend.Person) {
+func (d *Data) UpdateFriend(o, n friend.Person) {
 	for i, f := range d.Friends {
-		if f.Name == old.Name {
-			d.Friends[i] = new
+		if f.Name == o.Name {
+			d.Friends[i] = n
 			d.dirty = true
+
 			return
 		}
 	}
 
+	// TODO: update friend references in activities and notes
+
 	// If the friend was not found, add it as a new one
-	d.AddFriend(new)
+	d.AddFriend(n)
 }
 
 func (d *Data) AddLocation(l friend.Location) {

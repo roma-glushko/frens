@@ -16,15 +16,18 @@ package lang
 
 import (
 	"errors"
-	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/tag"
 	"regexp"
 	"strings"
+
+	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/tag"
 )
 
-var FormatPersonInfo = "NAME [(aka NICK1[, NICK2])] :: description [#tag1, #tag2] [@location1, @location2] [$id:FRIEND_ID]"
-var ErrNoInfo = errors.New("no information provided")
-var regexPerson *regexp.Regexp
+var (
+	FormatPersonInfo = "NAME [(aka NICK1[, NICK2])] :: description [#tag1, #tag2] [@location1, @location2] [$id:FRIEND_ID]"
+	ErrNoInfo        = errors.New("no information provided")
+	regexPerson      *regexp.Regexp
+)
 
 func init() {
 	regexPerson = regexp.MustCompile(`(?m)^(?P<name>[^\(\$:\n]+?)\s*(?:\(\s*a\.?k\.?a\.?\s+(?P<nicknames>[^)]*)\))?\s*(?:\$id:(?P<id>[^\s:]+))?\s*(?:::\s*(?P<desc>.+))?$`)

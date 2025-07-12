@@ -66,11 +66,19 @@ func (t Tags) ToNames() []string {
 }
 
 func (t Tags) String() string {
-	names := t.ToNames()
+	tags := make([]string, 0, len(t))
 
-	slices.Sort(names)
+	for _, tag := range t {
+		if tag.Name == "" {
+			continue
+		}
 
-	return strings.Join(names, " ")
+		tags = append(tags, tag.String())
+	}
+
+	slices.Sort(tags)
+
+	return strings.Join(tags, " ")
 }
 
 func (t Tags) Unique() Tags {

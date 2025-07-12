@@ -16,25 +16,39 @@ package tui
 
 import (
 	"fmt"
+
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type FormOptions struct {
+	Title       string
+	Placeholder string
+	SyntaxHint  string
+}
+
 type errMsg error
 
 type InputForm struct {
-	Textarea textarea.Model
-	err      error
+	Title      string
+	SyntaxHint string
+	Textarea   textarea.Model
+	err        error
 }
 
-func NewInputForm(placeholder string) InputForm {
+func NewInputForm(o FormOptions) InputForm {
 	ti := textarea.New()
-	ti.Placeholder = placeholder
+	ti.ShowLineNumbers = false
+	ti.Placeholder = o.Placeholder
+	ti.SetWidth(100)
+	ti.SetHeight(10)
 	ti.Focus()
 
 	return InputForm{
-		Textarea: ti,
-		err:      nil,
+		Title:      o.Title,
+		Textarea:   ti,
+		err:        nil,
+		SyntaxHint: o.SyntaxHint,
 	}
 }
 
@@ -44,6 +58,7 @@ func (m InputForm) Init() tea.Cmd {
 
 func (m InputForm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
+
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -70,13 +85,16 @@ func (m InputForm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m.Textarea, cmd = m.Textarea.Update(msg)
 	cmds = append(cmds, cmd)
+
 	return m, tea.Batch(cmds...)
 }
 
 func (m InputForm) View() string {
 	return fmt.Sprintf(
-		"Tell me a story.\n\n%s\n\n%s",
+		"\n%s\n\n%s\n\n%s\n\n%s",
+		m.Title,
 		m.Textarea.View(),
+		"Syntax: "+m.SyntaxHint,
 		"(ctrl+c to quit)",
 	) + "\n\n"
 }

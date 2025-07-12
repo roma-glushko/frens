@@ -16,11 +16,12 @@ package friend
 
 import (
 	"errors"
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/tui"
-	"strings"
 
 	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
@@ -89,7 +90,10 @@ var AddCommand = &cli.Command{
 
 		if ctx.NArg() == 0 {
 			// TODO: also check if we are in the interactive mode
-			inputForm := tui.NewInputForm(lang.FormatPersonInfo)
+			inputForm := tui.NewInputForm(tui.FormOptions{
+				Title:      "Add a new friend information:",
+				SyntaxHint: lang.FormatPersonInfo,
+			})
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 			if _, err := teaUI.Run(); err != nil {
@@ -114,7 +118,7 @@ var AddCommand = &cli.Command{
 		}
 
 		// apply CLI flags
-		//id := ctx.String("id")
+		// id := ctx.String("id")
 		name := ctx.String("name")
 		desc := ctx.String("desc")
 		nicknames := ctx.StringSlice("nickname")
@@ -154,7 +158,6 @@ var AddCommand = &cli.Command{
 			l.AddFriend(f)
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}

@@ -15,9 +15,10 @@
 package tag
 
 import (
-	"github.com/roma-glushko/frens/internal/utils"
 	"regexp"
 	"strings"
+
+	"github.com/roma-glushko/frens/internal/utils"
 )
 
 var regex *regexp.Regexp

@@ -15,11 +15,12 @@
 package main
 
 import (
+	"os"
+	"time"
+
 	"github.com/roma-glushko/frens/cmd/journal"
 	"github.com/roma-glushko/frens/cmd/location"
 	"github.com/roma-glushko/frens/cmd/note"
-	"os"
-	"time"
 
 	"github.com/roma-glushko/frens/cmd/activity"
 	"github.com/roma-glushko/frens/cmd/friend"
