@@ -82,7 +82,7 @@ func TestPersonFormatter(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.title, func(t *testing.T) {
-			personInfo := FormatPerson(tc.person)
+			personInfo := RenderPerson(tc.person)
 
 			require.Equal(t, tc.want, personInfo)
 		})

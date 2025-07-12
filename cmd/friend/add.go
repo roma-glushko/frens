@@ -162,7 +162,13 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info(f.Name + " has been added to your journal.")
+		log.Info("✅Added new friend: " + f.Name)
+		if len(f.Locations) > 0 {
+			log.Info("📍 Locations: " + strings.Join(f.Locations, ", "))
+		}
+		if len(f.Tags) > 0 {
+			log.Info("🏷️ Tags: " + strings.Join(f.Tags, ", "))
+		}
 
 		return nil
 	},

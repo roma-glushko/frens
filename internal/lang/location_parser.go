@@ -42,7 +42,7 @@ func RemoveLocMarkers(s string) string {
 	return regex.ReplaceAllString(s, "")
 }
 
-func FormatLocMarkers(locations []string) string {
+func RenderLocMarkers(locations []string) string {
 	if len(locations) == 0 {
 		return ""
 	}

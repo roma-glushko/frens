@@ -76,7 +76,7 @@ var EditCommand = &cli.Command{
 			Title:      "Edit " + pOld.Name + " information:",
 			SyntaxHint: lang.FormatPersonInfo,
 		})
-		inputForm.Textarea.SetValue(lang.FormatPerson(*pOld))
+		inputForm.Textarea.SetValue(lang.RenderPerson(*pOld))
 
 		// TODO: check if interactive mode is enabled
 		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
@@ -127,7 +127,7 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		log.Info(pNew.Name + " has been updated in your journal.")
+		log.Info("🔄 Updated friend: " + pNew.Name)
 
 		return nil
 	},

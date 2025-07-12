@@ -12,28 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tag
+package lang
 
 import (
+	"github.com/roma-glushko/frens/internal/tag"
 	"regexp"
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/utils"
 )
 
-var regex *regexp.Regexp
+var regexTag *regexp.Regexp
 
 func init() {
-	regex = regexp.MustCompile(`#([a-zA-Z0-9]+(?::[a-zA-Z0-9]+)?(?:-[a-zA-Z0-9]+)?)`)
+	regexTag = regexp.MustCompile(`#([a-zA-Z0-9]+(?::[a-zA-Z0-9]+)?(?:-[a-zA-Z0-9]+)?)`)
 }
 
 // Parse extracts tags from a string e.g. "#tag1 #tag2" and returns a slice of unique Tag objects.
-func Parse(s string) []Tag {
-	matches := regex.FindAllString(s, -1)
-	tags := make([]Tag, len(matches))
+func Parse(s string) []tag.Tag {
+	matches := regexTag.FindAllString(s, -1)
+	tags := make([]tag.Tag, len(matches))
 
 	for i, match := range matches {
-		tags[i] = NewTag(match)
+		tags[i] = tag.NewTag(match)
 	}
 
 	return utils.Unique(tags)
@@ -43,8 +44,8 @@ func RemoveTagMarkers(s string) string {
 	return regex.ReplaceAllString(s, "")
 }
 
-func FormatTags(ts []string) string {
-	tags := make([]Tag, 0, len(ts))
+func RenderTags(ts []string) string {
+	tags := make([]tag.Tag, 0, len(ts))
 
 	for _, t := range ts {
 		t = strings.TrimSpace(t)
@@ -53,8 +54,8 @@ func FormatTags(ts []string) string {
 			continue
 		}
 
-		tags = append(tags, NewTag(t))
+		tags = append(tags, tag.NewTag(t))
 	}
 
-	return Tags(tags).String()
+	return tag.Tags(tags).String()
 }

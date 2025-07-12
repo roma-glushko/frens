@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tag
+package lang
 
 import (
+	"github.com/roma-glushko/frens/internal/tag"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,11 +26,11 @@ func TestParser(t *testing.T) {
 
 	testcases := []struct {
 		input string
-		want  []Tag
+		want  []tag.Tag
 	}{
-		{"#tag1 #tag2", []Tag{{Name: "tag1"}, {Name: "tag2"}}},
-		{"#school:biology #school:math", []Tag{{Name: "school:biology"}, {Name: "school:math"}}},
-		{"#tag3#tag4", []Tag{{Name: "tag3"}, {Name: "tag4"}}},
+		{"#tag1 #tag2", []tag.Tag{{Name: "tag1"}, {Name: "tag2"}}},
+		{"#school:biology #school:math", []tag.Tag{{Name: "school:biology"}, {Name: "school:math"}}},
+		{"#tag3#tag4", []tag.Tag{{Name: "tag3"}, {Name: "tag4"}}},
 	}
 
 	for _, tc := range testcases {

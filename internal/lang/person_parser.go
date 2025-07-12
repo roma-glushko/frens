@@ -54,10 +54,10 @@ func ParsePerson(s string) (friend.Person, error) {
 		return friend.Person{}, ErrNoInfo
 	}
 
-	tags := tag.Tags(tag.Parse(s)).ToNames()
+	tags := tag.Tags(Parse(s)).ToNames()
 	locations := ParseLocMarkers(s)
 
-	s = tag.RemoveTagMarkers(s)
+	s = RemoveTagMarkers(s)
 	s = RemoveLocMarkers(s)
 
 	// TODO: Remove them from the string after parsing.
@@ -81,7 +81,7 @@ func ParsePerson(s string) (friend.Person, error) {
 	}, nil
 }
 
-func FormatPerson(p friend.Person) string {
+func RenderPerson(p friend.Person) string {
 	var sb strings.Builder
 
 	sb.WriteString(p.Name)
@@ -99,12 +99,12 @@ func FormatPerson(p friend.Person) string {
 
 	if len(p.Tags) > 0 {
 		sb.WriteString(" ")
-		sb.WriteString(tag.FormatTags(p.Tags))
+		sb.WriteString(RenderTags(p.Tags))
 	}
 
 	if len(p.Locations) > 0 {
 		sb.WriteString(" ")
-		sb.WriteString(FormatLocMarkers(p.Locations))
+		sb.WriteString(RenderLocMarkers(p.Locations))
 	}
 
 	return sb.String()

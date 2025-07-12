@@ -16,6 +16,7 @@ package journal
 
 import (
 	"fmt"
+	"github.com/roma-glushko/frens/internal/lang"
 	"slices"
 	"strings"
 	"sync"
@@ -250,7 +251,7 @@ func (d *Data) AddActivity(e friend.Event) { //nolint:cyclop
 
 	// TODO: record locs/friends
 
-	tags := tag.Parse(e.Desc)
+	tags := lang.Parse(e.Desc)
 
 	if len(tags) > 0 {
 		d.AddTags(tags)
