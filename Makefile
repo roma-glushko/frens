@@ -20,13 +20,13 @@ export PATH := $(BIN_DIR):$(PATH)
 .PHONY: tools
 tools: ## Install static checkers & other binaries
 	@echo "🚚 Downloading tools.."
-	@mkdir -p $(BIN_DIR)
+	@mkdir -p $(GOBIN)
 	@ \
-	test -x gofumpt || go install mvdan.cc/gofumpt@latest & \
-	test -x air || go install github.com/air-verse/air@latest & \
-	test -x golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
-	test -x goreleaser || go install github.com/goreleaser/goreleaser/v2@latest & \
-	test -x go-junit-report || go install github.com/jstemmer/go-junit-report/v2@latest & \
+	command -v gofumpt > /dev/null || go install mvdan.cc/gofumpt@latest & \
+	command -v air > /dev/null || go install github.com/air-verse/air@latest & \
+	command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
+	command -v goreleaser > /dev/null || go install github.com/goreleaser/goreleaser/v2@latest & \
+	command -v go-junit-report > /dev/null || go install github.com/jstemmer/go-junit-report/v2@latest & \
 	wait
 
 .PHONY: lint
