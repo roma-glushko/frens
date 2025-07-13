@@ -17,7 +17,7 @@ One of the major Fren's features is the ability to input all data as a free-form
 
 ### Tags
 
-Tags are one of the common parts of other pieces of information like `Activites`, `Notes`, `Friends` or `Locations`.
+Tags are one of the common parts of other pieces of information like `Activities`, `Notes`, `Friends` or `Locations`.
 
 Tags can be specified via the `#tag` syntax like this:
 
