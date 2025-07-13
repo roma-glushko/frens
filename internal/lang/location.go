@@ -54,11 +54,13 @@ func ExtractLocation(s string) (friend.Location, error) {
 	name := strings.TrimSpace(matches[1])
 	country := strings.TrimSpace(matches[2])
 	aliases := extractNicknames(matches[3])
+	desc := strings.TrimSpace(matches[4])
 
 	return friend.Location{
 		Name:    name,
 		Country: country,
 		Aliases: aliases,
+		Desc:    desc,
 		Tags:    tags,
 	}, nil
 }

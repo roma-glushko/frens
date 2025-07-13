@@ -51,7 +51,7 @@ const Copyright = `2025-Present, Roma Hlushko & Friends (c)`
 func main() {
 	cliApp := cli.App{
 		Name:                 "frens",
-		Usage:                "A friendship management & journaling. Build friendship that lasts.",
+		Usage:                "A friendship management & journaling app. Build friendships that last.",
 		Version:              version.FullVersion,
 		Copyright:            Copyright,
 		Suggest:              true,

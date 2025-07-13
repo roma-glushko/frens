@@ -88,7 +88,12 @@ func TestExtractLocation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := ExtractLocation(tc.input)
 			require.NoError(t, err)
-			require.Equal(t, tc.want.Name, got.Name, "Expected location name to match")
+
+			require.Equal(t, tc.want.Name, got.Name)
+			require.Equal(t, tc.want.Country, got.Country)
+			require.ElementsMatch(t, tc.want.Aliases, got.Aliases)
+			require.Equal(t, tc.want.Desc, got.Desc)
+			require.ElementsMatch(t, tc.want.Tags, got.Tags)
 		})
 	}
 }
