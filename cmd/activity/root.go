@@ -19,11 +19,13 @@ import (
 )
 
 var Commands = &cli.Command{
-	Name:    "activity",
-	Aliases: []string{"a", "act"},
-	Usage:   "Manage your activity logs",
+	Name:        "activity",
+	Aliases:     []string{"a", "act"},
+	Usage:       "Manage your activity logs",
+	Description: `Activity logs are events, interactions with people or locations. They may optionally contain any number of friends, locations, and tags.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
 		EditCommand,
+		DeleteCommand,
 	},
 }

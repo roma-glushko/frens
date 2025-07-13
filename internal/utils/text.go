@@ -15,9 +15,10 @@
 package utils
 
 // P pluralizes a word based on the count.
-func P(word string, count int) string {
+func P(count int, s, p string) string {
 	if count == 1 {
-		return word
+		return s
 	}
-	return word + "s"
+
+	return p
 }

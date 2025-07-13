@@ -15,9 +15,15 @@
 package activity
 
 import (
+	"fmt"
+	"strings"
+
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
-	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
+	"github.com/roma-glushko/frens/internal/lang"
+	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
 
@@ -26,7 +32,7 @@ var AddCommand = &cli.Command{
 	Aliases: []string{"a", "new", "create"},
 	Usage:   "Add a new activity",
 	Args:    true,
-	ArgsUsage: `<DESCR> [<DESCR2> ...]
+	ArgsUsage: `<DESCR>
 
 	<DESCR> is a description of the activity to record.
 	
@@ -35,31 +41,72 @@ var AddCommand = &cli.Command{
 		"yesterday: Jim Halpert put my stuff in jello" - relative date & description
 		"2009/09/08: "Jim and Pam got married at Niagara Falls" - absolute date & description
 `,
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:    "date",
+			Aliases: []string{"d"},
+			Usage:   "Set the date of the activity (format: YYYY/MM/DD or relative like 'yesterday')",
+		},
+	},
 	Action: func(ctx *cli.Context) error {
+		jDir, err := journaldir.DefaultDir()
+		if err != nil {
+			return err
+		}
+
+		jr, err := journaldir.Load(jDir)
+		if err != nil {
+			return err
+		}
+
+		var info string
+
 		if ctx.NArg() == 0 {
+			// TODO: also check if we are in the interactive mode
+			inputForm := tui.NewEditorForm(tui.EditorOptions{
+				Title:      "Add a new activity:",
+				SyntaxHint: lang.FormatActivityInfo,
+			})
+			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
+
+			if _, err := teaUI.Run(); err != nil {
+				log.Error("uh oh", "err", err)
+				return err
+			}
+
+			info = inputForm.Textarea.Value()
+		} else {
+			info = strings.Join(ctx.Args().Slice(), " ")
+		}
+
+		if info == "" {
 			return cli.Exit("You must provide a description for the activity.", 1)
 		}
 
-		journalDir, err := journaldir.DefaultDir()
+		e, err := lang.ExtractActivity(info)
+		if err != nil {
+			return cli.Exit("Failed to parse activity description: "+err.Error(), 1)
+		}
+
+		date := ctx.String("date")
+
+		if date != "" {
+			e.Date = lang.ExtractDate(date)
+		}
+
+		if err := e.Validate(); err != nil {
+			return err
+		}
+
+		err = journaldir.Update(jr, func(j *journal.Data) error {
+			e = j.AddActivity(e)
+			return nil
+		})
 		if err != nil {
 			return err
 		}
 
-		j, err := journaldir.Load(journalDir)
-		if err != nil {
-			return err
-		}
-
-		for _, desc := range ctx.Args().Slice() {
-			if desc == "" {
-				log.Warn("Empty description provided, skipping.")
-				continue
-			}
-
-			e := friend.NewEvent(friend.EventTypeActivity, desc)
-
-			j.AddActivity(e)
-		}
+		fmt.Println("✅ Added new activity: " + e.ID)
 
 		return nil
 	},

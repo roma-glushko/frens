@@ -16,6 +16,7 @@ package friend
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -30,10 +31,11 @@ import (
 )
 
 var AddCommand = &cli.Command{
-	Name:    "add",
-	Aliases: []string{"a", "new", "create"},
-	Usage:   "Add a new friend",
-	Args:    true,
+	Name:      "add",
+	Aliases:   []string{"a", "new", "create"},
+	Usage:     "Add a new friend",
+	UsageText: "frens friend add [OPTIONS] [INFO]",
+	Args:      true,
 	ArgsUsage: `<INFO>
 		If no arguments are provided, a textarea will be shown to fill in the details interactively.
 		Otherwise, the information will be parsed from the command options.
@@ -160,7 +162,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("✅Added new friend: " + f.Name)
+		fmt.Println("✅ Added new friend: " + f.String())
 		if len(f.Locations) > 0 {
 			log.Info("📍 Locations: " + strings.Join(f.Locations, ", "))
 		}

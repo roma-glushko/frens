@@ -16,6 +16,8 @@ package friend
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -26,9 +28,10 @@ import (
 )
 
 var DeleteCommand = &cli.Command{
-	Name:    "delete",
-	Aliases: []string{"del", "rm", "d"},
-	Usage:   `Delete a friend`,
+	Name:      "delete",
+	Aliases:   []string{"del", "rm", "d"},
+	Usage:     `Delete a friend`,
+	UsageText: `frens friend delete [OPTIONS] [INFO]`,
 	Description: `Delete friends from your journal by their name, nickname, or ID.
 	Examples:
 		frens friend delete "Toby Flenderson"
@@ -70,14 +73,15 @@ var DeleteCommand = &cli.Command{
 			friends = append(friends, *f)
 		}
 
-		fmt.Printf("🔍 Found %d %s:\n", len(friends), utils.P("friend", len(friends)))
+		frenWord := utils.P(len(friends), "friend", "friends")
+		fmt.Printf("🔍 Found %d %s:\n", len(friends), frenWord)
 
 		for _, f := range friends {
 			fmt.Printf("   • %s\n", f.String())
 		}
 
 		// TODO: check if interactive mode
-		fmt.Println("\n⚠️  You're about to permanently delete these friends.")
+		fmt.Println("\n⚠️  You're about to permanently delete these " + frenWord + ".")
 		if !ctx.Bool("force") && !tui.ConfirmAction("Are you sure?") {
 			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
@@ -87,12 +91,11 @@ var DeleteCommand = &cli.Command{
 			j.RemoveFriends(friends)
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.", utils.P("Friend", len(friends)))
+		fmt.Printf("\n🗑️  %s deleted.", strings.ToTitle(frenWord))
 
 		return nil
 	},

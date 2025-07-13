@@ -19,9 +19,11 @@ import (
 )
 
 var Commands = &cli.Command{
-	Name:    "location",
-	Aliases: []string{"loc", "l"},
-	Usage:   "Manage your locations",
+	Name:        "location",
+	Aliases:     []string{"loc", "l"},
+	Usage:       "Manage your locations",
+	UsageText:   "frens location [command] [options]",
+	Description: `Locations are places where you meet your friends, have activities, or events.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
 		EditCommand,

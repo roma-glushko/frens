@@ -15,18 +15,14 @@
 package friend
 
 import (
+	"errors"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/roma-glushko/frens/internal/tag"
-
-	"github.com/markusmobius/go-dateparser"
 )
 
-const (
-	DatePartition = ":"
-)
+var ErrEventDescEmpty = errors.New("event description must be provided")
 
 type EventType string
 
@@ -36,60 +32,32 @@ const (
 )
 
 type Event struct {
-	Type EventType
-	Date time.Time
-	Desc string
+	ID   string    `toml:"id"`
+	Type EventType `toml:"type"`
+	Date time.Time `toml:"date"`
+	Desc string    `toml:"desc"`
 
-	Friends   []string
-	Locations []string
-	Tags      []string
+	Friends   []string `toml:"friends,omitempty"`
+	Locations []string `toml:"locations,omitempty"`
+	Tags      []string `toml:"tags,omitempty"`
 }
 
 var _ tag.Tagged = (*Event)(nil)
 
-// NewEvent creates a new event (activity, note, etc.) with date and description.
-//
-//	The original event description comes in the following formats:
-//		"<date>: <description>"
-//		"<description>" (The current date will be used by default.)
-func NewEvent(etype EventType, rawDesc string) Event {
-	parts := strings.SplitN(rawDesc, DatePartition, 2)
-
-	dateStr := ""
-	desc := parts[0]
-
-	if len(parts) > 1 {
-		dateStr = parts[0]
-		desc = parts[1]
+func (e *Event) Validate() error {
+	if e.Desc == "" {
+		return ErrEventDescEmpty
 	}
 
-	desc = strings.TrimSpace(desc)
-
-	ts := time.Now().UTC()
-
-	if dateStr != "" {
-		parsedDate, err := dateparser.Parse(nil, dateStr)
-
-		if err != nil {
-			ts = time.Now().UTC()
-		} else {
-			ts = parsedDate.Time.UTC()
-		}
-	}
-
-	return Event{
-		Type: etype,
-		Date: ts,
-		Desc: desc,
-	}
+	return nil
 }
 
-func (f *Event) SetTags(tags []string) {
-	f.Tags = tags
+func (e *Event) SetTags(tags []string) {
+	e.Tags = tags
 }
 
-func (f *Event) GetTags() []string {
-	return f.Tags
+func (e *Event) GetTags() []string {
+	return e.Tags
 }
 
 type Events []Event

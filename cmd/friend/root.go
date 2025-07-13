@@ -19,9 +19,11 @@ import (
 )
 
 var Commands = &cli.Command{
-	Name:    "friend",
-	Aliases: []string{"f", "fr"},
-	Usage:   "Manage your friends",
+	Name:        "friend",
+	Aliases:     []string{"f", "fr"},
+	Usage:       "Manage your friends",
+	UsageText:   "frens friend [command] [options]",
+	Description: `Friends are people you know, interact with, and share experiences. They can be added to activities, locations, and notes.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
 		EditCommand,
