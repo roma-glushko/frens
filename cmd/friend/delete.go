@@ -77,7 +77,7 @@ var DeleteCommand = &cli.Command{
 
 		// TODO: check if interactive mode
 		if !ctx.Bool("force") && !tui.ConfirmAction("Delete friend(s)?") {
-			fmt.Println("❎ Deletion cancelled.")
+			fmt.Println("❎ Deletion canceled.")
 			return nil
 		}
 
