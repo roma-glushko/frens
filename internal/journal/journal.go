@@ -120,8 +120,8 @@ func (d *Data) UpdateFriend(o, n friend.Person) {
 	d.AddFriend(n)
 }
 
-func (d *Data) RemoveFriends(f []friend.Person) {
-	for _, fr := range f {
+func (d *Data) RemoveFriends(toRemove []friend.Person) {
+	for _, fr := range toRemove {
 		for i, f := range d.Friends {
 			if f.Name == fr.Name {
 				d.Friends = append(d.Friends[:i], d.Friends[i+1:]...)
@@ -195,8 +195,8 @@ func (d *Data) UpdateLocation(o, n friend.Location) {
 	d.AddLocation(n)
 }
 
-func (d *Data) RemoveLocations(l []friend.Location) {
-	for _, loc := range l {
+func (d *Data) RemoveLocations(toRemove []friend.Location) {
+	for _, loc := range toRemove {
 		for i, l := range d.Locations {
 			if l.Name == loc.Name {
 				d.Locations = append(d.Locations[:i], d.Locations[i+1:]...)

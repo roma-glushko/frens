@@ -89,7 +89,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("✅Friend deleted")
+		log.Info("✅Friend(s) deleted")
 
 		return nil
 	},

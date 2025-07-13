@@ -89,7 +89,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("✅Location deleted")
+		log.Info("✅Location(s) deleted")
 
 		return nil
 	},
