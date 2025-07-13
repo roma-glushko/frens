@@ -158,16 +158,17 @@ var AddCommand = &cli.Command{
 			l.AddFriend(f)
 			return nil
 		})
+
 		if err != nil {
 			return err
 		}
 
 		fmt.Println("✅ Added new friend: " + f.String())
 		if len(f.Locations) > 0 {
-			log.Info("📍 Locations: " + strings.Join(f.Locations, ", "))
+			fmt.Println("📍 Locations: " + strings.Join(f.Locations, ", "))
 		}
 		if len(f.Tags) > 0 {
-			log.Info("🏷️ Tags: " + strings.Join(f.Tags, ", "))
+			fmt.Println("🏷️ Tags: " + strings.Join(f.Tags, ", "))
 		}
 
 		return nil
