@@ -218,9 +218,8 @@ func (j *Journal) AddTags(t []tag.Tag) {
 	j.dirty = true
 }
 
-func (j *Journal) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
-	e.ID = ksuid.New().String()
-	matches := j.frenMatcher().Match(e.Desc)
+func (j *Journal) GuessFriends(q string) []friend.Person {
+	matches := j.frenMatcher().Match(q)
 
 	certainPersons := make([]friend.Person, 0, len(matches))
 	ambiguitiesMatches := make([]matcher.Match[friend.Person], 0, len(matches))
@@ -295,6 +294,14 @@ func (j *Journal) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 		}
 	}
 
+	return append(certainPersons, guessedPersons...)
+}
+
+func (j *Journal) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
+	e.ID = ksuid.New().String()
+
+	guessedPersons := j.GuessFriends(e.Desc)
+
 	_ = j.locMatcher().Match(e.Desc)
 
 	// TODO: record locs/friends
@@ -306,9 +313,9 @@ func (j *Journal) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 		tag.Add(&e, tags)
 	}
 
-	e.Friends = make([]string, 0, len(certainPersons)+len(guessedPersons))
+	e.Friends = make([]string, 0, len(guessedPersons))
 
-	for _, p := range certainPersons {
+	for _, p := range guessedPersons {
 		e.Friends = append(e.Friends, p.Name)
 		p.Activities++
 	}

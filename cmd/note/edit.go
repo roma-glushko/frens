@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package activity
+package note
 
 import (
 	"github.com/roma-glushko/frens/internal/friend"
@@ -30,14 +30,14 @@ import (
 var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
-	Usage:     "Update an activity log",
+	Usage:     "Update a node",
 	Args:      true,
-	ArgsUsage: `<ACTIVITY_ID> [<DESCRIPTION>]`,
+	ArgsUsage: `<NOTE_ID> [<DESCRIPTION>]`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "date",
 			Aliases: []string{"d"},
-			Usage:   "Set the date of the activity (format: YYYY/MM/DD or relative like 'yesterday')",
+			Usage:   "Set the date of the note (format: YYYY/MM/DD or relative like 'yesterday')",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
@@ -52,7 +52,7 @@ var EditCommand = &cli.Command{
 		}
 
 		if ctx.NArg() < 1 {
-			return cli.Exit("You must provide an activity ID to edit.", 1)
+			return cli.Exit("You must provide an note ID to edit.", 1)
 		}
 
 		actID := ctx.Args().First()
@@ -60,11 +60,11 @@ var EditCommand = &cli.Command{
 
 		actOld, err := jr.GetActivity(actID)
 		if err != nil {
-			return cli.Exit("Activity not found: "+actID, 1)
+			return cli.Exit("Note not found: "+actID, 1)
 		}
 
 		inputForm := tui.NewEditorForm(tui.EditorOptions{
-			Title:      "Edit activity log (" + actOld.ID + "):",
+			Title:      "Edit note (" + actOld.ID + "):",
 			SyntaxHint: lang.FormatEventInfo,
 		})
 		inputForm.Textarea.SetValue(lang.RenderEvent(actOld))
@@ -83,9 +83,9 @@ var EditCommand = &cli.Command{
 			infoTxt = desc
 		}
 
-		actNew, err := lang.ExtractEvent(friend.EventTypeActivity, infoTxt)
+		actNew, err := lang.ExtractEvent(friend.EventTypeNote, infoTxt)
 		if err != nil {
-			return cli.Exit("Failed to parse activity description: "+err.Error(), 1)
+			return cli.Exit("Failed to parse note description: "+err.Error(), 1)
 		}
 
 		if err := actNew.Validate(); err != nil {
@@ -100,7 +100,7 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("🔄 Updated activity: " + actNew.ID)
+		log.Info("🔄 Updated note: " + actNew.ID)
 
 		return nil
 	},

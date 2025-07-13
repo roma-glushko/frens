@@ -12,19 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package note
+package lang
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/markusmobius/go-dateparser"
+	"time"
+)
 
-var Commands = &cli.Command{
-	Name:        "note",
-	Aliases:     []string{"n"},
-	Usage:       "Manage your notes",
-	UsageText:   "frens note [command] [options]",
-	Description: `Notes helps to remember things about friends and locations with deeper meaning, insights, background, preferences, longer-term context.`,
-	Subcommands: []*cli.Command{
-		AddCommand,
-		EditCommand,
-		DeleteCommand,
-	},
+var (
+	DatePartition = ":"
+)
+
+func ExtractDate(s string) time.Time {
+	ts := time.Now().UTC()
+
+	if s != "" {
+		parsedDate, err := dateparser.Parse(nil, s)
+
+		if err != nil {
+			ts = time.Now().UTC()
+		} else {
+			ts = parsedDate.Time.UTC()
+		}
+	}
+
+	return ts
 }

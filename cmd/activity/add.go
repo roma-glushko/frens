@@ -16,6 +16,7 @@ package activity
 
 import (
 	"fmt"
+	"github.com/roma-glushko/frens/internal/friend"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -65,7 +66,7 @@ var AddCommand = &cli.Command{
 			// TODO: also check if we are in the interactive mode
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
 				Title:      "Add a new activity:",
-				SyntaxHint: lang.FormatActivityInfo,
+				SyntaxHint: lang.FormatEventInfo,
 			})
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
@@ -83,7 +84,7 @@ var AddCommand = &cli.Command{
 			return cli.Exit("You must provide a description for the activity.", 1)
 		}
 
-		e, err := lang.ExtractActivity(info)
+		e, err := lang.ExtractEvent(friend.EventTypeActivity, info)
 		if err != nil {
 			return cli.Exit("Failed to parse activity description: "+err.Error(), 1)
 		}
@@ -102,6 +103,7 @@ var AddCommand = &cli.Command{
 			e = j.AddActivity(e)
 			return nil
 		})
+
 		if err != nil {
 			return err
 		}
