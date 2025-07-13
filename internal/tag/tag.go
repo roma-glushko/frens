@@ -96,7 +96,7 @@ func AddStr(e Tagged, tags []string) {
 
 	ts = utils.Unique(append(ts, tags...))
 
-	e.SetTags(tags)
+	e.SetTags(ts)
 }
 
 func Add(e Tagged, t []Tag) {

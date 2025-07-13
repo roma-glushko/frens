@@ -149,7 +149,6 @@ var AddCommand = &cli.Command{
 
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}

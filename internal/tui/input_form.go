@@ -63,7 +63,7 @@ func (m InputForm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
+		switch msg.Type { //nolint:exhaustive // intentionally not exhaustive
 		case tea.KeyEsc:
 			if m.Textarea.Focused() {
 				m.Textarea.Blur()
