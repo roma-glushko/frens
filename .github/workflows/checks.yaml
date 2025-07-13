@@ -42,6 +42,9 @@ jobs:
           restore-keys: |
             go-cache-${{ runner.os }}-
 
+      - name: Add tools to PATH
+        run: echo "${{ runner.temp }}/tools/bin" >> $GITHUB_PATH
+
       - name: Install dependencies
         run: go mod download
 
@@ -88,6 +91,9 @@ jobs:
           restore-keys: |
             go-cache-${{ runner.os }}-
 
+      - name: Add tools to PATH
+        run: echo "${{ runner.temp }}/tools/bin" >> $GITHUB_PATH
+
       - name: Install dependencies
         run: go mod download
 
@@ -122,6 +128,9 @@ jobs:
           key: go-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             go-cache-${{ runner.os }}-
+
+      - name: Add tools to PATH
+        run: echo "${{ runner.temp }}/tools/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: go mod download
