@@ -43,7 +43,7 @@ jobs:
             go-cache-${{ runner.os }}-
 
       - name: Add tools to PATH
-        run: echo "${{ runner.temp }}/tools/bin" >> $GITHUB_PATH
+        run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: go mod download
@@ -92,7 +92,7 @@ jobs:
             go-cache-${{ runner.os }}-
 
       - name: Add tools to PATH
-        run: echo "${{ runner.temp }}/tools/bin" >> $GITHUB_PATH
+        run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: go mod download
@@ -130,7 +130,7 @@ jobs:
             go-cache-${{ runner.os }}-
 
       - name: Add tools to PATH
-        run: echo "${{ runner.temp }}/tools/bin" >> $GITHUB_PATH
+        run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: go mod download
