@@ -15,19 +15,12 @@
 package tag
 
 import (
-	"regexp"
 	"slices"
 	"sort"
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/utils"
 )
-
-var regex *regexp.Regexp
-
-func init() {
-	regex = regexp.MustCompile(`#[\\p{L}\\p{N}](?:[:-]?[\\p{L}\\p{N}])*`)
-}
 
 type Tag struct {
 	Name string
@@ -36,9 +29,10 @@ type Tag struct {
 func NewTag(t string) Tag {
 	t = strings.TrimLeft(t, "#")
 	t = strings.TrimSpace(t)
+	t = strings.ToLower(t)
 
 	return Tag{
-		Name: strings.ToLower(t),
+		Name: t,
 	}
 }
 
@@ -73,15 +67,19 @@ func (t Tags) ToNames() []string {
 }
 
 func (t Tags) String() string {
-	names := make([]string, 0, len(t))
+	tags := make([]string, 0, len(t))
 
 	for _, tag := range t {
-		names = append(names, tag.String())
+		if tag.Name == "" {
+			continue
+		}
+
+		tags = append(tags, tag.String())
 	}
 
-	slices.Sort(names)
+	slices.Sort(tags)
 
-	return strings.Join(names, " ")
+	return strings.Join(tags, " ")
 }
 
 func (t Tags) Unique() Tags {
@@ -96,13 +94,9 @@ type Tagged interface {
 func AddStr(e Tagged, tags []string) {
 	ts := e.GetTags()
 
-	for _, t := range tags {
-		tags = append(ts, t)
-	}
+	ts = utils.Unique(append(ts, tags...))
 
-	tags = utils.Unique(tags)
-
-	e.SetTags(tags)
+	e.SetTags(ts)
 }
 
 func Add(e Tagged, t []Tag) {
@@ -133,15 +127,4 @@ func HasTag(e Tagged, t string) bool {
 	}
 
 	return false
-}
-
-func Match(s string) []Tag {
-	matches := regex.FindAllString(s, -1)
-	tags := make([]Tag, len(matches))
-
-	for i, match := range matches {
-		tags[i] = NewTag(match)
-	}
-
-	return utils.Unique(tags)
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package journal
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ import (
 var EditCommand = &cli.Command{
 	Name:    "edit",
 	Aliases: []string{"e"},
-	Usage:   "Edit life space raw files",
+	Usage:   "Edit journal raw files",
 	Flags:   []cli.Flag{},
 	Action: func(_ *cli.Context) error {
 		journalDir, err := journaldir.DefaultDir()

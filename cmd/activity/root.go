@@ -12,29 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package journaldir
+package activity
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
+	"github.com/urfave/cli/v2"
 )
 
-const DefaultFrensDir = "frens"
-
-func DefaultDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get user home dir: %w", err)
-	}
-
-	lifePath := filepath.Join(homeDir, ".config", DefaultFrensDir)
-
-	// ensure directory exists
-	err = os.MkdirAll(lifePath, os.ModePerm)
-	if err != nil {
-		return "", fmt.Errorf("failed to create the journal dir at %s: %w", lifePath, err)
-	}
-
-	return lifePath, nil
+var Commands = &cli.Command{
+	Name:    "activity",
+	Aliases: []string{"a", "act"},
+	Usage:   "Manage your activity logs",
+	Subcommands: []*cli.Command{
+		AddCommand,
+	},
 }

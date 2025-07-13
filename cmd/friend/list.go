@@ -12,29 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package journaldir
+package friend
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-)
+import "github.com/urfave/cli/v2"
 
-const DefaultFrensDir = "frens"
-
-func DefaultDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get user home dir: %w", err)
-	}
-
-	lifePath := filepath.Join(homeDir, ".config", DefaultFrensDir)
-
-	// ensure directory exists
-	err = os.MkdirAll(lifePath, os.ModePerm)
-	if err != nil {
-		return "", fmt.Errorf("failed to create the journal dir at %s: %w", lifePath, err)
-	}
-
-	return lifePath, nil
+var ListCommand = &cli.Command{
+	Name:    "list",
+	Aliases: []string{"l", "ls"},
+	Usage:   "List all friends",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:    "location",
+			Aliases: []string{"l", "loc", "in"},
+		},
+		&cli.StringFlag{
+			Name:    "tag",
+			Aliases: []string{"t"},
+			Usage:   "Filter by tag",
+		},
+		&cli.StringFlag{
+			Name: "sort",
+		},
+	},
+	Action: func(_ *cli.Context) error {
+		return nil
+	},
 }

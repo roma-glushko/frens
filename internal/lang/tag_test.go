@@ -12,34 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package lang
 
 import (
 	"testing"
 
+	"github.com/roma-glushko/frens/internal/tag"
+
 	"github.com/stretchr/testify/require"
 )
 
-func TestLocation_Validation(t *testing.T) {
-	var l Location
+func TestExtractTags(t *testing.T) {
+	t.Parallel()
 
-	require.Error(t, l.Validate())
+	testcases := []struct {
+		input string
+		want  []tag.Tag
+	}{
+		{"#tag1 #tag2", []tag.Tag{{Name: "tag1"}, {Name: "tag2"}}},
+		{"#school:biology #school:math", []tag.Tag{{Name: "school:biology"}, {Name: "school:math"}}},
+		{"#tag3#tag4", []tag.Tag{{Name: "tag3"}, {Name: "tag4"}}},
+	}
 
-	l.Name = "Los Angeles"
+	for _, tc := range testcases {
+		t.Run(tc.input, func(t *testing.T) {
+			got := ExtractTags(tc.input)
 
-	require.NoError(t, l.Validate())
-}
-
-func TestLocation_Alias(t *testing.T) {
-	var l Location
-
-	l.AddAlias("LA")
-	l.AddAlias("Los Angeles")
-
-	require.Len(t, l.Aliases, 2)
-
-	l.RemoveAlias("la")
-	l.RemoveAlias("LA")
-
-	require.Len(t, l.Aliases, 1)
+			for _, want := range tc.want {
+				require.Contains(t, got, want, "Expected to find tag %v in %v", want, got)
+			}
+		})
+	}
 }

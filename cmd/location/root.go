@@ -12,29 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package list
+package location
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/urfave/cli/v2"
+)
 
-var friendCommand = &cli.Command{
-	Name:    "friend",
-	Aliases: []string{"f"},
-	Usage:   "List all friends",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "location",
-			Aliases: []string{"l", "loc", "in"},
-		},
-		&cli.StringFlag{
-			Name:    "tag",
-			Aliases: []string{"t"},
-			Usage:   "Filter by tag",
-		},
-		&cli.StringFlag{
-			Name: "sort",
-		},
-	},
-	Action: func(_ *cli.Context) error {
-		return nil
+var Commands = &cli.Command{
+	Name:    "location",
+	Aliases: []string{"loc", "l"},
+	Usage:   "Manage your locations",
+	Subcommands: []*cli.Command{
+		AddCommand,
+		EditCommand,
 	},
 }

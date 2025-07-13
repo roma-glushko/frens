@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package add
+package friend
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/urfave/cli/v2"
+)
 
-var noteCommand = &cli.Command{
-	Name:    "note",
-	Aliases: []string{"n"},
-	Usage:   "Add a new note",
-	Action: func(_ *cli.Context) error {
-		// TODO: implement
-
-		return nil
+var Commands = &cli.Command{
+	Name:    "friend",
+	Aliases: []string{"f", "fr"},
+	Usage:   "Manage your friends",
+	Subcommands: []*cli.Command{
+		AddCommand,
+		EditCommand,
+		ListCommand,
 	},
 }

@@ -20,6 +20,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/roma-glushko/frens/internal/lang"
+
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -84,7 +86,7 @@ func (d *Data) GetFriend(q string) (*friend.Person, error) {
 	m := matches[0]
 
 	if len(m.Entities) == 0 {
-		return nil, fmt.Errorf("no friends found for '%s'", q)
+		return nil, fmt.Errorf("no friend found for '%s'", q)
 	}
 
 	if len(m.Entities) > 1 {
@@ -100,6 +102,22 @@ func (d *Data) GetFriend(q string) (*friend.Person, error) {
 	f := m.Entities[0]
 
 	return &f, nil
+}
+
+func (d *Data) UpdateFriend(o, n friend.Person) {
+	for i, f := range d.Friends {
+		if f.Name == o.Name {
+			d.Friends[i] = n
+			d.dirty = true
+
+			return
+		}
+	}
+
+	// TODO: update friend references in activities and notes
+
+	// If the friend was not found, add it as a new one
+	d.AddFriend(n)
 }
 
 func (d *Data) AddLocation(l friend.Location) {
@@ -146,6 +164,22 @@ func (d *Data) GetLocation(q string) (*friend.Location, error) {
 	l := m.Entities[0]
 
 	return &l, nil
+}
+
+func (d *Data) UpdateLocation(o, n friend.Location) {
+	for i, l := range d.Locations {
+		if l.Name == o.Name {
+			d.Locations[i] = n
+			d.dirty = true
+
+			return
+		}
+	}
+
+	// TODO: update friend references in activities and notes
+
+	// If the friend was not found, add it as a new one
+	d.AddLocation(n)
 }
 
 func (d *Data) AddTags(t []tag.Tag) {
@@ -234,7 +268,7 @@ func (d *Data) AddActivity(e friend.Event) { //nolint:cyclop
 
 	// TODO: record locs/friends
 
-	tags := tag.Match(e.Desc)
+	tags := lang.ExtractTags(e.Desc)
 
 	if len(tags) > 0 {
 		d.AddTags(tags)
