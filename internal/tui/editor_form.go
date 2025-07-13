@@ -21,7 +21,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type FormOptions struct {
+type EditorOptions struct {
 	Title       string
 	Placeholder string
 	SyntaxHint  string
@@ -29,14 +29,14 @@ type FormOptions struct {
 
 type errMsg error
 
-type InputForm struct {
+type EditorForm struct {
 	Title      string
 	SyntaxHint string
 	Textarea   textarea.Model
 	err        error
 }
 
-func NewInputForm(o FormOptions) InputForm {
+func NewEditorForm(o EditorOptions) EditorForm {
 	ti := textarea.New()
 	ti.ShowLineNumbers = false
 	ti.Placeholder = o.Placeholder
@@ -44,7 +44,7 @@ func NewInputForm(o FormOptions) InputForm {
 	ti.SetHeight(10)
 	ti.Focus()
 
-	return InputForm{
+	return EditorForm{
 		Title:      o.Title,
 		Textarea:   ti,
 		err:        nil,
@@ -52,11 +52,11 @@ func NewInputForm(o FormOptions) InputForm {
 	}
 }
 
-func (m InputForm) Init() tea.Cmd {
+func (m EditorForm) Init() tea.Cmd {
 	return textarea.Blink
 }
 
-func (m InputForm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m EditorForm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	var cmd tea.Cmd
@@ -89,7 +89,7 @@ func (m InputForm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m InputForm) View() string {
+func (m EditorForm) View() string {
 	return fmt.Sprintf(
 		"\n%s\n\n%s\n\n%s\n\n%s",
 		m.Title,

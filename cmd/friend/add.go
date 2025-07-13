@@ -91,7 +91,7 @@ var AddCommand = &cli.Command{
 
 		if ctx.NArg() == 0 {
 			// TODO: also check if we are in the interactive mode
-			inputForm := tui.NewInputForm(tui.FormOptions{
+			inputForm := tui.NewEditorForm(tui.EditorOptions{
 				Title:      "Add a new friend information:",
 				SyntaxHint: lang.FormatPersonInfo,
 			})

@@ -72,7 +72,7 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		inputForm := tui.NewInputForm(tui.FormOptions{
+		inputForm := tui.NewEditorForm(tui.EditorOptions{
 			Title:      "Edit " + pOld.Name + " information:",
 			SyntaxHint: lang.FormatPersonInfo,
 		})

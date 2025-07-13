@@ -72,7 +72,7 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		inputForm := tui.NewInputForm(tui.FormOptions{
+		inputForm := tui.NewEditorForm(tui.EditorOptions{
 			Title:      "Edit " + lOld.Name + " information:",
 			SyntaxHint: lang.FormatLocationInfo,
 		})
@@ -93,6 +93,10 @@ var EditCommand = &cli.Command{
 		}
 
 		lNew, err := lang.ExtractLocation(infoTxt)
+
+		if err != nil {
+			return err
+		}
 
 		name := ctx.String("name")
 		desc := ctx.String("desc")
