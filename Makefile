@@ -22,13 +22,11 @@ tools: ## Install static checkers & other binaries
 	@echo "🚚 Downloading tools.."
 	@mkdir -p $(BIN_DIR)
 	@ \
-	go install mvdan.cc/gofumpt@latest & \
-	go install github.com/air-verse/air@latest & \
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
-	go install github.com/g4s8/envdoc@latest & \
-	go install github.com/denis-tingaikin/go-header/cmd/go-header@latest & \
-	go install github.com/goreleaser/goreleaser/v2@latest & \
-	go install github.com/jstemmer/go-junit-report/v2@latest & \
+	test -x gofumpt || go install mvdan.cc/gofumpt@latest & \
+	test -x air || go install github.com/air-verse/air@latest & \
+	test -x golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
+	test -x goreleaser || go install github.com/goreleaser/goreleaser/v2@latest & \
+	test -x go-junit-report || go install github.com/jstemmer/go-junit-report/v2@latest & \
 	wait
 
 .PHONY: lint
