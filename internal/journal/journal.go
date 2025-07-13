@@ -120,6 +120,17 @@ func (d *Data) UpdateFriend(o, n friend.Person) {
 	d.AddFriend(n)
 }
 
+func (d *Data) RemoveFriend(f friend.Person) {
+	for i, fr := range d.Friends {
+		if fr.Name == f.Name {
+			d.Friends = append(d.Friends[:i], d.Friends[i+1:]...)
+			d.dirty = true
+
+			return
+		}
+	}
+}
+
 func (d *Data) AddLocation(l friend.Location) {
 	d.Locations = append(d.Locations, l)
 
@@ -180,6 +191,17 @@ func (d *Data) UpdateLocation(o, n friend.Location) {
 
 	// If the friend was not found, add it as a new one
 	d.AddLocation(n)
+}
+
+func (d *Data) RemoveLocation(l friend.Location) {
+	for i, loc := range d.Locations {
+		if loc.Name == l.Name {
+			d.Locations = append(d.Locations[:i], d.Locations[i+1:]...)
+			d.dirty = true
+
+			return
+		}
+	}
 }
 
 func (d *Data) AddTags(t []tag.Tag) {
