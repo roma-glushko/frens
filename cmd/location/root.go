@@ -25,5 +25,6 @@ var Commands = &cli.Command{
 	Subcommands: []*cli.Command{
 		AddCommand,
 		EditCommand,
+		DeleteCommand,
 	},
 }

@@ -93,7 +93,6 @@ var EditCommand = &cli.Command{
 		}
 
 		lNew, err := lang.ExtractLocation(infoTxt)
-
 		if err != nil {
 			return err
 		}

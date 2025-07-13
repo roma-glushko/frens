@@ -50,8 +50,6 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("Adding a new activity..")
-
 		for _, desc := range ctx.Args().Slice() {
 			if desc == "" {
 				log.Warn("Empty description provided, skipping.")

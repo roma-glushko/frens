@@ -12,20 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package tui
 
 import (
-	"github.com/urfave/cli/v2"
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
 )
 
-var Commands = &cli.Command{
-	Name:    "friend",
-	Aliases: []string{"f", "fr"},
-	Usage:   "Manage your friends",
-	Subcommands: []*cli.Command{
-		AddCommand,
-		EditCommand,
-		ListCommand,
-		DeleteCommand,
-	},
+func ConfirmAction(message string) bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Printf("%s [y/N]: ", message)
+
+	response, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error reading input:", err)
+		return false
+	}
+
+	response = strings.TrimSpace(strings.ToLower(response))
+
+	return response == "y" || response == "yes"
 }
