@@ -5,3 +5,6 @@ dist
 tmp
 
 .env
+
+coverage.xml
+coverage.txt

@@ -12,30 +12,36 @@ VERSION ?= "latest"
 LDFLAGS_COMMON := "-X $(VERSION_PACKAGE).GitCommit=$(COMMIT) -X $(VERSION_PACKAGE).Version=$(VERSION) -X $(VERSION_PACKAGE).BuildDate=$(BUILD_DATE)"
 
 BIN_DIR=$(PWD)/tmp/bin
+GOBIN ?= $(BIN_DIR)
 
-.PHONY: install-tools
-install-tools: ## Install static checkers & other binaries
+export GOBIN
+export PATH := $(BIN_DIR):$(PATH)
+
+.PHONY: tools
+tools: ## Install static checkers & other binaries
 	@echo "🚚 Downloading tools.."
-	@GOBIN=$(BIN_DIR) go install mvdan.cc/gofumpt@latest
-	@GOBIN=$(BIN_DIR) go install github.com/air-verse/air@latest
-	@GOBIN=$(BIN_DIR) go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	@GOBIN=$(BIN_DIR) go install github.com/g4s8/envdoc@latest
-	@GOBIN=$(BIN_DIR) go install github.com/denis-tingaikin/go-header/cmd/go-header@latest
-	@GOBIN=$(BIN_DIR) go install github.com/goreleaser/goreleaser/v2@latest
+	@mkdir -p $(GOBIN)
+	@ \
+	command -v gofumpt > /dev/null || go install mvdan.cc/gofumpt@latest & \
+	command -v air > /dev/null || go install github.com/air-verse/air@latest & \
+	command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
+	command -v goreleaser > /dev/null || go install github.com/goreleaser/goreleaser/v2@latest & \
+	command -v gocover-cobertura > /dev/null || go install github.com/boumenot/gocover-cobertura@latest & \
+	wait
 
 .PHONY: lint
-lint: install-tools ## Lint the source code
+lint: tools ## Lint the source code
 	@echo "🧹 Cleaning go.mod.."
 	@go mod tidy
 	@echo "🧹 Formatting files.."
 	@go fmt ./...
-	@$(BIN_DIR)/gofumpt -l -w .
+	@gofumpt -l -w .
 	@echo "🧹 Vetting go.mod.."
 	@go vet ./...
 	@echo "🧹 GoCI Lint.."
-	@$(BIN_DIR)/golangci-lint run ./...
+	@golangci-lint run ./...
 	@echo "🧹Check GoReleaser.."
-	@$(BIN_DIR)/goreleaser check
+	@goreleaser check
 
 .PHONY: run
 run: ## Run Frens
@@ -58,8 +64,12 @@ gen-check: gen ## Check if Go code needs to be generated
 	@git diff --exit-code
 
 .PHONY: test
-test: ## Run tests
+test: tools ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
+
+.PHONY: test-ci
+test-ci: test ## Run tests in the CI mode
+	@gocover-cobertura < coverage.txt > coverage.xml
 
 copyright: ## Apply copyrights to all files
 	@echo "🧹 Applying license headers"

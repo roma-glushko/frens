@@ -1,7 +1,7 @@
 name: Checks
 
 concurrency:
-  group: ${{ github.head_ref || github.ref_name }}
+  group: static-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 on:
@@ -29,23 +29,24 @@ jobs:
         with:
           go-version: '1.24.2'
 
-      # cache go modules
-      - uses: actions/cache@v4
+      - name: Cache Go tools
+        uses: actions/cache@v4
+        env:
+          GOBIN: ${{ runner.temp }}/tools/bin
         with:
-          # In order:
-          # * Module download cache
-          # * Build cache (Linux)
-          # * Build cache (Mac)
-          # * Build cache (Windows)
           path: |
-            ~/go/pkg/mod
             ~/.cache/go-build
-            ~/Library/Caches/go-build
-            %LocalAppData%\go-build
-            bin
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+            ~/go/pkg/mod
+            ${{ runner.temp }}/tools/bin
+          key: go-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            go-cache-${{ runner.os }}-
+
+      - name: Add tools to PATH
+        run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        run: go mod download
 
       - name: Run Golang Lint Command
         run: |
@@ -77,13 +78,24 @@ jobs:
         with:
           go-version: '1.24.2'
 
-      - name: Install Envdoc
-        run: |
-          go install github.com/g4s8/envdoc@latest
+      - name: Cache Go tools
+        uses: actions/cache@v4
+        env:
+          GOBIN: ${{ runner.temp }}/tools/bin
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+            ${{ runner.temp }}/tools/bin
+          key: go-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-cache-${{ runner.os }}-
 
-      - name: Add Go Bin to PATH
-        run: |
-          echo "${{ github.workspace }}/go/bin" >> "$GITHUB_PATH"
+      - name: Add tools to PATH
+        run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        run: go mod download
 
       - name: Ensure Code Generated
         run: |
@@ -103,6 +115,25 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.24.5'
+
+      - name: Cache Go tools
+        uses: actions/cache@v4
+        env:
+          GOBIN: ${{ runner.temp }}/tools/bin
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+            ${{ runner.temp }}/tools/bin
+          key: go-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-cache-${{ runner.os }}-
+
+      - name: Add tools to PATH
+        run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        run: go mod download
 
       - name: Build The Shop Binary
         run:  make build
