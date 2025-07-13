@@ -16,7 +16,9 @@ package location
 
 import (
 	"fmt"
+
 	"github.com/charmbracelet/log"
+	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -28,8 +30,8 @@ var DeleteCommand = &cli.Command{
 	Aliases:   []string{"del", "rm", "d"},
 	Usage:     "Delete a location",
 	Args:      true,
-	ArgsUsage: `<LOCATION_NAME, LOCATION_NICKNAME, LOCATION_ID>`,
-	Description: `Delete a location from your journal by their name, alias, or ID.
+	ArgsUsage: `<LOCATION_NAME, LOCATION_NICKNAME, LOCATION_ID> [...]`,
+	Description: `Delete locations from your journal by their name, alias, or ID.
 	Examples:
 		frens friend delete "Nashua"
 		frens friend d -f "Utica"
@@ -57,15 +59,21 @@ var DeleteCommand = &cli.Command{
 			return cli.Exit("Please provide a location name, alias, or ID to delete.", 1)
 		}
 
-		lID := ctx.Args().First()
+		locations := make([]friend.Location, 0, len(ctx.Args().Slice()))
 
-		l, err := jr.GetLocation(lID)
+		for _, lID := range ctx.Args().Slice() {
+			l, err := jr.GetLocation(lID)
+			if err != nil {
+				return err
+			}
 
-		if err != nil {
-			return err
+			locations = append(locations, *l)
 		}
 
-		log.Info("Location: " + l.String())
+		log.Infof("%dx Location(s): ", len(locations))
+		for _, l := range locations {
+			fmt.Printf(" • %s \n", l.String())
+		}
 
 		// TODO: check if interactive mode
 		if !ctx.Bool("force") && !tui.ConfirmAction("Delete location?") {
@@ -74,10 +82,9 @@ var DeleteCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Data) error {
-			j.RemoveLocation(*l)
+			j.RemoveLocations(locations)
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}

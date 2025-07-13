@@ -35,13 +35,13 @@ lint: tools ## Lint the source code
 	@go mod tidy
 	@echo "🧹 Formatting files.."
 	@go fmt ./...
-	@gofumpt -l -w .
+	@$(BIN_DIR)/gofumpt -l -w .
 	@echo "🧹 Vetting go.mod.."
 	@go vet ./...
 	@echo "🧹 GoCI Lint.."
-	@golangci-lint run ./...
+	@$(BIN_DIR)/golangci-lint run ./...
 	@echo "🧹Check GoReleaser.."
-	@goreleaser check
+	@$(BIN_DIR)/goreleaser check
 
 .PHONY: run
 run: ## Run Frens

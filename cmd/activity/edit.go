@@ -37,7 +37,7 @@ var EditCommand = &cli.Command{
 			Usage:   "Set description of the friend",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
+	Action: func(_ *cli.Context) error {
 		journalDir, err := journaldir.DefaultDir()
 		if err != nil {
 			return err

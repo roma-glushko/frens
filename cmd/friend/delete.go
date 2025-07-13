@@ -16,7 +16,9 @@ package friend
 
 import (
 	"fmt"
+
 	"github.com/charmbracelet/log"
+	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -27,13 +29,13 @@ var DeleteCommand = &cli.Command{
 	Name:    "delete",
 	Aliases: []string{"del", "rm", "d"},
 	Usage:   `Delete a friend`,
-	Description: `Delete a friend from your journal by their name, nickname, or ID.
+	Description: `Delete friends from your journal by their name, nickname, or ID.
 	Examples:
 		frens friend delete "Toby Flenderson"
 		frens friend d -f "Toby Flenderson"
 	`,
 	Args:      true,
-	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID>`,
+	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID> [...]`,
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "force",
@@ -57,29 +59,32 @@ var DeleteCommand = &cli.Command{
 			return cli.Exit("Please provide a friend name, nickname, or ID to delete.", 1)
 		}
 
-		fID := ctx.Args().First()
+		friends := make([]friend.Person, 0, len(ctx.Args().Slice()))
 
-		f, err := jr.GetFriend(fID)
+		for _, fID := range ctx.Args().Slice() {
+			f, err := jr.GetFriend(fID)
+			if err != nil {
+				return err
+			}
 
-		if err != nil {
-			return err
+			friends = append(friends, *f)
 		}
 
-		log.Info("Friend: " + f.String())
-
-		fmt.Println(ctx.Bool("force"))
+		log.Infof("%dx Friend(s): ", len(friends))
+		for _, f := range friends {
+			fmt.Printf(" • %s \n", f.String())
+		}
 
 		// TODO: check if interactive mode
-		if !ctx.Bool("force") && !tui.ConfirmAction("Delete friend?") {
+		if !ctx.Bool("force") && !tui.ConfirmAction("Delete friend(s)?") {
 			fmt.Println("❎ Deletion cancelled.")
 			return nil
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Data) error {
-			j.RemoveFriend(*f)
+			j.RemoveFriends(friends)
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}
