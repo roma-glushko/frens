@@ -18,17 +18,87 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/tag"
+
 	"github.com/roma-glushko/frens/internal/utils"
 )
 
-var regex *regexp.Regexp
+var (
+	locMarkerRe *regexp.Regexp
+	locRe       *regexp.Regexp
+)
+
+var FormatLocationInfo = "NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2])] :: DESCRIPTION [#tag1, #tag2] [$id:LOCATION_ID]"
 
 func init() {
-	regex = regexp.MustCompile(`@([\p{L}0-9_-]+)`)
+	locMarkerRe = regexp.MustCompile(`@([\p{L}0-9_-]+)`)
+	locRe = regexp.MustCompile(`(?m)^(?P<name>[A-Za-z\s]+)(?:,\s*(?P<country>[A-Za-z\s]+))?(?:\s*\((?:aka|a\.k\.a\.)\s+(?P<aliases>[^)]+)\))?\s*::\s*(?P<description>.*?)?\s*$`)
 }
 
-func ParseLocMarkers(s string) []string {
-	matches := regex.FindAllString(s, -1)
+// ExtractLocation extracts location information from a string.
+func ExtractLocation(s string) (friend.Location, error) {
+	if s == "" {
+		return friend.Location{}, ErrNoInfo
+	}
+
+	tags := tag.Tags(ExtractTags(s)).ToNames()
+	s = RemoveTags(s)
+
+	matches := locRe.FindStringSubmatch(s)
+
+	if matches == nil {
+		return friend.Location{}, ErrNoInfo
+	}
+
+	name := strings.TrimSpace(matches[1])
+	country := strings.TrimSpace(matches[2])
+	aliases := extractNicknames(matches[3])
+
+	return friend.Location{
+		Name:    name,
+		Country: country,
+		Aliases: aliases,
+		Tags:    tags,
+	}, nil
+}
+
+func RenderLocation(l friend.Location) string {
+	var sb strings.Builder
+
+	sb.WriteString(l.Name)
+
+	if l.Country != "" {
+		sb.WriteString(", ")
+		sb.WriteString(l.Country)
+	}
+
+	if len(l.Aliases) > 0 {
+		sb.WriteString(" (a.k.a. ")
+		sb.WriteString(strings.Join(l.Aliases, ", "))
+		sb.WriteString(")")
+	}
+
+	if l.Desc != "" {
+		sb.WriteString(" :: ")
+		sb.WriteString(l.Desc)
+	}
+
+	if len(l.Tags) > 0 {
+		sb.WriteString(" ")
+		sb.WriteString(RenderTags(l.Tags))
+	}
+
+	//if l.ID != "" {
+	//	sb.WriteString(" $id:")
+	//	sb.WriteString(l.ID)
+	//}
+
+	return sb.String()
+}
+
+func ExtractLocMarkers(s string) []string {
+	matches := locMarkerRe.FindAllString(s, -1)
 	locationIDs := make([]string, len(matches))
 
 	for i, match := range matches {
@@ -39,7 +109,7 @@ func ParseLocMarkers(s string) []string {
 }
 
 func RemoveLocMarkers(s string) string {
-	return regex.ReplaceAllString(s, "")
+	return locMarkerRe.ReplaceAllString(s, "")
 }
 
 func RenderLocMarkers(locations []string) string {

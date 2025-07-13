@@ -46,7 +46,7 @@ func TestPersonParser(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.input, func(t *testing.T) {
-			got, err := ParsePerson(tc.input)
+			got, err := ExtractPerson(tc.input)
 			require.NoError(t, err)
 
 			require.NotEmpty(t, got)

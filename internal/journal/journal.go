@@ -16,10 +16,11 @@ package journal
 
 import (
 	"fmt"
-	"github.com/roma-glushko/frens/internal/lang"
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/roma-glushko/frens/internal/lang"
 
 	"github.com/roma-glushko/frens/internal/utils"
 
@@ -165,6 +166,22 @@ func (d *Data) GetLocation(q string) (*friend.Location, error) {
 	return &l, nil
 }
 
+func (d *Data) UpdateLocation(o, n friend.Location) {
+	for i, l := range d.Locations {
+		if l.Name == o.Name {
+			d.Locations[i] = n
+			d.dirty = true
+
+			return
+		}
+	}
+
+	// TODO: update friend references in activities and notes
+
+	// If the friend was not found, add it as a new one
+	d.AddLocation(n)
+}
+
 func (d *Data) AddTags(t []tag.Tag) {
 	d.Tags = append(d.Tags, t...).Unique()
 
@@ -251,7 +268,7 @@ func (d *Data) AddActivity(e friend.Event) { //nolint:cyclop
 
 	// TODO: record locs/friends
 
-	tags := lang.Parse(e.Desc)
+	tags := lang.ExtractTags(e.Desc)
 
 	if len(tags) > 0 {
 		d.AddTags(tags)

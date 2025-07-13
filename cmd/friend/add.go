@@ -43,6 +43,7 @@ var AddCommand = &cli.Command{
 
 		For example:
 			Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss #office @Scranton $id:mscott
+			Jim Halpert (aka Jimbo, Big Tuna) :: my best friend and prankster extraordinaire #office @Scranton
 	`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
@@ -109,7 +110,7 @@ var AddCommand = &cli.Command{
 		var f friend.Person
 
 		if info != "" {
-			f, err = lang.ParsePerson(info)
+			f, err = lang.ExtractPerson(info)
 
 			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
 				log.Error("failed to parse friend info", "err", err)
@@ -126,9 +127,6 @@ var AddCommand = &cli.Command{
 		locs := ctx.StringSlice("location")
 
 		// TODO: add support for ID
-		//if id != "" {
-		//	friend.ID = id
-		//}
 
 		if name != "" {
 			f.Name = name

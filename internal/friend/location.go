@@ -16,7 +16,6 @@ package friend
 
 import (
 	"errors"
-	"fmt"
 	"sort"
 	"strings"
 
@@ -30,7 +29,8 @@ var ErrLocNameEmpty = errors.New("location name must be provided")
 type Location struct {
 	Name    string   `toml:"name"`
 	Country string   `toml:"country,omitempty"`
-	Alias   []string `toml:"alias,omitempty"`
+	Desc    string   `toml:"desc"`
+	Aliases []string `toml:"aliases,omitempty"`
 	Tags    []string `toml:"tags,omitempty"`
 
 	Activities int `toml:"activities,omitempty"`
@@ -50,31 +50,31 @@ func (l *Location) Validate() error {
 }
 
 func (l Location) Refs() []string {
-	names := make([]string, 0, 1+len(l.Alias))
+	names := make([]string, 0, 1+len(l.Aliases))
 
 	names = append(names, l.Name)
 
-	if len(l.Alias) > 0 {
-		names = append(names, l.Alias...)
+	if len(l.Aliases) > 0 {
+		names = append(names, l.Aliases...)
 	}
 
 	return names
 }
 
 func (l *Location) AddAlias(a string) {
-	l.Alias = utils.Unique(append(l.Alias, a))
+	l.Aliases = utils.Unique(append(l.Aliases, a))
 }
 
 func (l *Location) RemoveAlias(a string) {
 	var aliases []string
 
-	for _, alias := range l.Alias {
+	for _, alias := range l.Aliases {
 		if !strings.EqualFold(alias, a) {
 			aliases = append(aliases, alias)
 		}
 	}
 
-	l.Alias = aliases
+	l.Aliases = aliases
 }
 
 func (l *Location) SetTags(tags []string) {
@@ -92,10 +92,6 @@ func (l *Location) String() string {
 
 	if len(l.Country) > 0 {
 		sb.WriteString(", " + l.Country)
-	}
-
-	if len(l.Alias) > 0 {
-		sb.WriteString(fmt.Sprintf(" (%s)", strings.Join(l.Alias, ", ")))
 	}
 
 	return sb.String()

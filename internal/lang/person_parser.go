@@ -24,16 +24,16 @@ import (
 )
 
 var (
-	FormatPersonInfo = "NAME [(aka NICK1[, NICK2])] :: description [#tag1, #tag2] [@location1, @location2] [$id:FRIEND_ID]"
+	FormatPersonInfo = "NAME [(aka NICK1[, NICK2])] :: DESCRIPTION [#tag1, #tag2] [@location1, @location2] [$id:FRIEND_ID]"
 	ErrNoInfo        = errors.New("no information provided")
-	regexPerson      *regexp.Regexp
+	personRe         *regexp.Regexp
 )
 
 func init() {
-	regexPerson = regexp.MustCompile(`(?m)^(?P<name>[^\(\$:\n]+?)\s*(?:\(\s*a\.?k\.?a\.?\s+(?P<nicknames>[^)]*)\))?\s*(?:\$id:(?P<id>[^\s:]+))?\s*(?:::\s*(?P<desc>.+))?$`)
+	personRe = regexp.MustCompile(`(?m)^(?P<name>[^\(\$:\n]+?)\s*(?:\(\s*a\.?k\.?a\.?\s+(?P<nicknames>[^)]*)\))?\s*(?:\$id:(?P<id>[^\s:]+))?\s*(?:::\s*(?P<desc>.+))?$`)
 }
 
-func parseNicknames(raw string) []string {
+func extractNicknames(raw string) []string {
 	raw = strings.ReplaceAll(raw, `"`, "")
 	parts := strings.Split(raw, ",")
 
@@ -49,27 +49,25 @@ func parseNicknames(raw string) []string {
 	return cleaned
 }
 
-func ParsePerson(s string) (friend.Person, error) {
+func ExtractPerson(s string) (friend.Person, error) {
 	if s == "" {
 		return friend.Person{}, ErrNoInfo
 	}
 
-	tags := tag.Tags(Parse(s)).ToNames()
-	locations := ParseLocMarkers(s)
+	tags := tag.Tags(ExtractTags(s)).ToNames()
+	locations := ExtractLocMarkers(s)
 
-	s = RemoveTagMarkers(s)
+	s = RemoveTags(s)
 	s = RemoveLocMarkers(s)
 
-	// TODO: Remove them from the string after parsing.
-
-	matches := regexPerson.FindStringSubmatch(s)
+	matches := personRe.FindStringSubmatch(s)
 
 	if matches == nil {
 		return friend.Person{}, ErrNoInfo
 	}
 
 	name := strings.TrimSpace(matches[1])
-	nicknames := parseNicknames(matches[2])
+	nicknames := extractNicknames(matches[2])
 	desc := strings.TrimSpace(matches[4])
 
 	return friend.Person{

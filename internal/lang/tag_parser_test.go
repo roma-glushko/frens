@@ -15,13 +15,14 @@
 package lang
 
 import (
-	"github.com/roma-glushko/frens/internal/tag"
 	"testing"
+
+	"github.com/roma-glushko/frens/internal/tag"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestParser(t *testing.T) {
+func TestExtractTags(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
@@ -35,7 +36,7 @@ func TestParser(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.input, func(t *testing.T) {
-			got := Parse(tc.input)
+			got := ExtractTags(tc.input)
 
 			for _, want := range tc.want {
 				require.Contains(t, got, want, "Expected to find tag %v in %v", want, got)

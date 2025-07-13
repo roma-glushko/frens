@@ -17,10 +17,12 @@ package lang
 import (
 	"testing"
 
+	"github.com/roma-glushko/frens/internal/friend"
+
 	"github.com/stretchr/testify/require"
 )
 
-func TestLocationParser(t *testing.T) {
+func TestExtractLocMarker(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
@@ -35,11 +37,58 @@ func TestLocationParser(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.input, func(t *testing.T) {
-			got := ParseLocMarkers(tc.input)
+			got := ExtractLocMarkers(tc.input)
 
 			for _, want := range tc.want {
 				require.Contains(t, got, want, "Expected to find location %v in %v", want, got)
 			}
+		})
+	}
+}
+
+func TestExtractLocation(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name  string
+		input string
+		want  friend.Location
+	}{
+		{
+			name:  "full info",
+			input: "Scranton, USA (a.k.a. The Electric City, Scranton) :: Located a branch of Dunder Mifflin #theoffice",
+			want: friend.Location{
+				Name:    "Scranton",
+				Country: "USA",
+				Desc:    "Located a branch of Dunder Mifflin",
+				Aliases: []string{"The Electric City", "Scranton"},
+				Tags:    []string{"theoffice"},
+			},
+		},
+		{
+			name:  "no country",
+			input: "New York City (aka NYC, The Big Apple) :: A bustling metropolis known for its skyscrapers and culture",
+			want: friend.Location{
+				Name:    "New York City",
+				Desc:    "A bustling metropolis known for its skyscrapers and culture",
+				Aliases: []string{"NYC", "The Big Apple"},
+			},
+		},
+		{
+			name:  "no country, no aliases",
+			input: "Nashua :: A city in New Hampshire known for its beautiful parks and vibrant community",
+			want: friend.Location{
+				Name: "Nashua",
+				Desc: "A city in New Hampshire known for its beautiful parks and vibrant community",
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := ExtractLocation(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want.Name, got.Name, "Expected location name to match")
 		})
 	}
 }

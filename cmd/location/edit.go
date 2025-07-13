@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package location
 
 import (
 	"errors"
@@ -30,24 +30,24 @@ import (
 var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
-	Usage:     "Update main friend information",
+	Usage:     "Update main location information",
 	Args:      true,
-	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID>`,
+	ArgsUsage: `<LOCATION_NAME, LOCATION_NICKNAME, LOCATION_ID>`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "name",
 			Aliases: []string{"n"},
-			Usage:   "Set friend's name",
+			Usage:   "Set location's name",
 		},
 		&cli.StringFlag{
 			Name:    "desc",
 			Aliases: []string{"d"},
-			Usage:   "Set description of the friend",
+			Usage:   "Set description of the location",
 		},
 		&cli.StringSliceFlag{
-			Name:    "nickname",
-			Aliases: []string{"a", "aka", "alias", "nick"},
-			Usage:   "Set friend's nicknames (override existing ones)",
+			Name:    "alias",
+			Aliases: []string{"a", "aka", "nick"},
+			Usage:   "Set location's aliases (override existing ones)",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
@@ -62,21 +62,21 @@ var EditCommand = &cli.Command{
 		}
 
 		if ctx.NArg() < 1 {
-			return cli.Exit("You must provide a friend name, nickname, or ID to edit.", 1)
+			return cli.Exit("You must provide a location name, nickname, or ID to edit.", 1)
 		}
 
-		pID := strings.Join(ctx.Args().Slice(), " ")
+		lID := strings.Join(ctx.Args().Slice(), " ")
 
-		pOld, err := jr.GetFriend(pID)
+		lOld, err := jr.GetLocation(lID)
 		if err != nil {
 			return err
 		}
 
 		inputForm := tui.NewInputForm(tui.FormOptions{
-			Title:      "Edit " + pOld.Name + " information:",
-			SyntaxHint: lang.FormatPersonInfo,
+			Title:      "Edit " + lOld.Name + " information:",
+			SyntaxHint: lang.FormatLocationInfo,
 		})
-		inputForm.Textarea.SetValue(lang.RenderPerson(*pOld))
+		inputForm.Textarea.SetValue(lang.RenderLocation(*lOld))
 
 		// TODO: check if interactive mode is enabled
 		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
@@ -89,25 +89,25 @@ var EditCommand = &cli.Command{
 		infoTxt := inputForm.Textarea.Value()
 
 		if infoTxt == "" {
-			return errors.New("no friend info found")
+			return errors.New("no location info found")
 		}
 
-		pNew, err := lang.ExtractPerson(infoTxt)
+		lNew, err := lang.ExtractLocation(infoTxt)
 
 		name := ctx.String("name")
 		desc := ctx.String("desc")
-		nicknames := ctx.StringSlice("nickname")
+		aliases := ctx.StringSlice("alias")
 
 		if name != "" {
-			pNew.Name = name
+			lNew.Name = name
 		}
 
 		if desc != "" {
-			pNew.Desc = desc
+			lNew.Desc = desc
 		}
 
-		if len(nicknames) > 0 {
-			pNew.Nicknames = nicknames
+		if len(aliases) > 0 {
+			lNew.Aliases = aliases
 		}
 
 		if err != nil && !errors.Is(err, lang.ErrNoInfo) {
@@ -115,19 +115,19 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		if err := pNew.Validate(); err != nil {
+		if err := lNew.Validate(); err != nil {
 			return err
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Data) error {
-			j.UpdateFriend(*pOld, pNew)
+			j.UpdateLocation(*lOld, lNew)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 
-		log.Info("🔄 Updated friend: " + pNew.Name)
+		log.Info("🔄 Updated location: " + lNew.String())
 
 		return nil
 	},

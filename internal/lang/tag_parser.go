@@ -15,22 +15,23 @@
 package lang
 
 import (
-	"github.com/roma-glushko/frens/internal/tag"
 	"regexp"
 	"strings"
+
+	"github.com/roma-glushko/frens/internal/tag"
 
 	"github.com/roma-glushko/frens/internal/utils"
 )
 
-var regexTag *regexp.Regexp
+var tagRe *regexp.Regexp
 
 func init() {
-	regexTag = regexp.MustCompile(`#([a-zA-Z0-9]+(?::[a-zA-Z0-9]+)?(?:-[a-zA-Z0-9]+)?)`)
+	tagRe = regexp.MustCompile(`#([a-zA-Z0-9]+(?::[a-zA-Z0-9]+)?(?:-[a-zA-Z0-9]+)?)`)
 }
 
-// Parse extracts tags from a string e.g. "#tag1 #tag2" and returns a slice of unique Tag objects.
-func Parse(s string) []tag.Tag {
-	matches := regexTag.FindAllString(s, -1)
+// ExtractTags extracts tags from a string e.g. "#tag1 #tag2" and returns a slice of unique Tag objects.
+func ExtractTags(s string) []tag.Tag {
+	matches := tagRe.FindAllString(s, -1)
 	tags := make([]tag.Tag, len(matches))
 
 	for i, match := range matches {
@@ -40,8 +41,8 @@ func Parse(s string) []tag.Tag {
 	return utils.Unique(tags)
 }
 
-func RemoveTagMarkers(s string) string {
-	return regex.ReplaceAllString(s, "")
+func RemoveTags(s string) string {
+	return tagRe.ReplaceAllString(s, "")
 }
 
 func RenderTags(ts []string) string {

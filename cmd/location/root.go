@@ -24,5 +24,6 @@ var Commands = &cli.Command{
 	Usage:   "Manage your locations",
 	Subcommands: []*cli.Command{
 		AddCommand,
+		EditCommand,
 	},
 }

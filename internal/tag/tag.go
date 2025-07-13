@@ -29,9 +29,10 @@ type Tag struct {
 func NewTag(t string) Tag {
 	t = strings.TrimLeft(t, "#")
 	t = strings.TrimSpace(t)
+	t = strings.ToLower(t)
 
 	return Tag{
-		Name: strings.ToLower(t),
+		Name: t,
 	}
 }
 
@@ -93,11 +94,7 @@ type Tagged interface {
 func AddStr(e Tagged, tags []string) {
 	ts := e.GetTags()
 
-	for _, t := range tags {
-		tags = append(ts, t)
-	}
-
-	tags = utils.Unique(tags)
+	ts = utils.Unique(append(ts, tags...))
 
 	e.SetTags(tags)
 }

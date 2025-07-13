@@ -36,10 +36,10 @@ func TestLocation_Alias(t *testing.T) {
 	l.AddAlias("LA")
 	l.AddAlias("Los Angeles")
 
-	require.Len(t, l.Alias, 2)
+	require.Len(t, l.Aliases, 2)
 
 	l.RemoveAlias("la")
 	l.RemoveAlias("LA")
 
-	require.Len(t, l.Alias, 1)
+	require.Len(t, l.Aliases, 1)
 }
