@@ -16,8 +16,6 @@ package location
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -94,7 +92,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.", strings.ToTitle(locWord))
+		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(locWord))
 
 		return nil
 	},

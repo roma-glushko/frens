@@ -16,8 +16,6 @@ package activity
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -30,7 +28,7 @@ import (
 var DeleteCommand = &cli.Command{
 	Name:      "delete",
 	Aliases:   []string{"del", "rm", "d"},
-	Usage:     `Delete a activity log`,
+	Usage:     `Delete an activity`,
 	UsageText: `frens activity delete [OPTIONS] [INFO]`,
 	Description: `Delete activity logs from your journal by their ID.
 	Examples:
@@ -95,7 +93,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.", strings.ToTitle(actWord))
+		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(actWord))
 
 		return nil
 	},

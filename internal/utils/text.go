@@ -14,6 +14,13 @@
 
 package utils
 
+import (
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+)
+
+var TitleCaser = cases.Title(language.English)
+
 // P pluralizes a word based on the count.
 func P(count int, s, p string) string {
 	if count == 1 {

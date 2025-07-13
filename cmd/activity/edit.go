@@ -29,7 +29,7 @@ import (
 var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
-	Usage:     "Update activity log",
+	Usage:     "Update an activity log",
 	Args:      true,
 	ArgsUsage: `<ACTIVITY_ID> [<DESCRIPTION>]`,
 	Flags: []cli.Flag{

@@ -16,8 +16,6 @@ package friend
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -95,7 +93,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.", strings.ToTitle(frenWord))
+		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(frenWord))
 
 		return nil
 	},
