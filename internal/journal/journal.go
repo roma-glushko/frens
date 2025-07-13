@@ -15,10 +15,13 @@
 package journal
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/segmentio/ksuid"
 
 	"github.com/roma-glushko/frens/internal/lang"
 
@@ -27,6 +30,8 @@ import (
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/tag"
 )
+
+var ErrEventNotFound = errors.New("event not found")
 
 type ListFriendQuery struct {
 	Location string
@@ -214,7 +219,8 @@ func (d *Data) AddTags(t []tag.Tag) {
 	d.dirty = true
 }
 
-func (d *Data) AddActivity(e friend.Event) { //nolint:cyclop
+func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
+	e.ID = ksuid.New().String()
 	matches := d.frenMatcher().Match(e.Desc)
 
 	certainPersons := make([]friend.Person, 0, len(matches))
@@ -311,6 +317,51 @@ func (d *Data) AddActivity(e friend.Event) { //nolint:cyclop
 	d.Activities = append(d.Activities, e)
 
 	d.dirty = true
+
+	return e
+}
+
+func (d *Data) GetActivity(q string) (friend.Event, error) {
+	for _, act := range d.Activities {
+		if act.ID == q {
+			return act, nil
+		}
+	}
+
+	return friend.Event{}, ErrEventNotFound
+}
+
+func (d *Data) UpdateActivity(o, n friend.Event) friend.Event {
+	n.ID = o.ID
+
+	for i, act := range d.Activities {
+		if act.ID == o.ID {
+			d.Activities[i] = n
+			d.dirty = true
+
+			return n
+		}
+	}
+
+	// TODO: update friend & location references
+
+	// If the activity was not found, add it as a new one
+	d.AddActivity(n)
+
+	return n
+}
+
+func (d *Data) RemoveActivities(toRemove []friend.Event) {
+	for _, act := range toRemove {
+		for i, a := range d.Activities {
+			if a.ID == act.ID {
+				d.Activities = append(d.Activities[:i], d.Activities[i+1:]...)
+				d.dirty = true
+
+				break
+			}
+		}
+	}
 }
 
 func (d *Data) ListFriends(q ListFriendQuery) []friend.Person {

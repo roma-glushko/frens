@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package activity
 
 import (
 	"fmt"
@@ -28,15 +28,15 @@ import (
 var DeleteCommand = &cli.Command{
 	Name:      "delete",
 	Aliases:   []string{"del", "rm", "d"},
-	Usage:     `Delete a friend`,
-	UsageText: `frens friend delete [OPTIONS] [INFO]`,
-	Description: `Delete friends from your journal by their name, nickname, or ID.
+	Usage:     `Delete an activity`,
+	UsageText: `frens activity delete [OPTIONS] [INFO]`,
+	Description: `Delete activity logs from your journal by their ID.
 	Examples:
-		frens friend delete "Toby Flenderson"
-		frens friend d -f "Toby Flenderson"
+		frens activity delete 2zpWoEiUYn6vrSl9w03NAVkWxMn 2zpWoEiUYn6vrSl9w03NAVkWxMx
+		frens activity d -f 2zpWoEiUYn6vrSl9w03NAVkWxMn 
 	`,
 	Args:      true,
-	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID> [...]`,
+	ArgsUsage: `<ACTIVITY_ID> [, <ACTIVITY_ID>...]`,
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "force",
@@ -57,43 +57,43 @@ var DeleteCommand = &cli.Command{
 		}
 
 		if len(ctx.Args().Slice()) == 0 {
-			return cli.Exit("Please provide a friend name, nickname, or ID to delete.", 1)
+			return cli.Exit("Please provide a activity ID to delete.", 1)
 		}
 
-		friends := make([]friend.Person, 0, len(ctx.Args().Slice()))
+		activities := make([]friend.Event, 0, len(ctx.Args().Slice()))
 
-		for _, fID := range ctx.Args().Slice() {
-			f, err := jr.GetFriend(fID)
+		for _, actID := range ctx.Args().Slice() {
+			act, err := jr.GetActivity(actID)
 			if err != nil {
 				return err
 			}
 
-			friends = append(friends, *f)
+			activities = append(activities, act)
 		}
 
-		frenWord := utils.P(len(friends), "friend", "friends")
-		fmt.Printf("🔍 Found %d %s:\n", len(friends), frenWord)
+		actWord := utils.P(len(activities), "activity", "activities")
+		fmt.Printf("🔍 Found %d %s:\n", len(activities), actWord)
 
-		for _, f := range friends {
-			fmt.Printf("   • %s\n", f.String())
+		for _, act := range activities {
+			fmt.Printf("   • %s\n", act.ID)
 		}
 
 		// TODO: check if interactive mode
-		fmt.Println("\n⚠️  You're about to permanently delete these " + frenWord + ".")
+		fmt.Println("\n⚠️  You're about to permanently delete the " + actWord + ".")
 		if !ctx.Bool("force") && !tui.ConfirmAction("Are you sure?") {
 			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Data) error {
-			j.RemoveFriends(friends)
+			j.RemoveActivities(activities)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(frenWord))
+		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(actWord))
 
 		return nil
 	},

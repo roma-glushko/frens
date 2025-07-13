@@ -16,8 +16,8 @@ package location
 
 import (
 	"fmt"
+	"github.com/roma-glushko/frens/internal/utils"
 
-	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
@@ -70,14 +70,17 @@ var DeleteCommand = &cli.Command{
 			locations = append(locations, *l)
 		}
 
-		log.Infof("%dx Location(s): ", len(locations))
+		locWord := utils.P(len(locations), "location", "locations")
+		fmt.Printf("🔍 Found %d %s:\n", len(locations), locWord)
+
 		for _, l := range locations {
-			fmt.Printf(" • %s \n", l.String())
+			fmt.Printf("   • %s \n", l.String())
 		}
 
 		// TODO: check if interactive mode
-		if !ctx.Bool("force") && !tui.ConfirmAction("Delete location?") {
-			fmt.Println("❎ Deletion canceled.")
+		fmt.Println("\n⚠️  You're about to permanently delete the " + locWord + ".")
+		if !ctx.Bool("force") && !tui.ConfirmAction("Are you sure?") {
+			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
 		}
 
@@ -89,7 +92,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("✅Location(s) deleted")
+		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(locWord))
 
 		return nil
 	},

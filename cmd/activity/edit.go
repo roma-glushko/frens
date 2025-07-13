@@ -15,40 +15,91 @@
 package activity
 
 import (
+	"strings"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/log"
+	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
+	"github.com/roma-glushko/frens/internal/lang"
+	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
 
 var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
-	Usage:     "Update activity log",
+	Usage:     "Update an activity log",
 	Args:      true,
-	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID>`,
+	ArgsUsage: `<ACTIVITY_ID> [<DESCRIPTION>]`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:    "name",
-			Aliases: []string{"n"},
-			Usage:   "Set friend's name",
-		},
-		&cli.StringFlag{
-			Name:    "desc",
+			Name:    "date",
 			Aliases: []string{"d"},
-			Usage:   "Set description of the friend",
+			Usage:   "Set the date of the activity (format: YYYY/MM/DD or relative like 'yesterday')",
 		},
 	},
-	Action: func(_ *cli.Context) error {
-		journalDir, err := journaldir.DefaultDir()
+	Action: func(ctx *cli.Context) error {
+		jDir, err := journaldir.DefaultDir()
 		if err != nil {
 			return err
 		}
 
-		_, err = journaldir.Load(journalDir)
+		jr, err := journaldir.Load(jDir)
 		if err != nil {
 			return err
 		}
 
-		// TODO: implement activity editing
+		if ctx.NArg() < 1 {
+			return cli.Exit("You must provide an activity ID to edit.", 1)
+		}
+
+		actID := ctx.Args().First()
+		desc := strings.TrimSpace(strings.Join(ctx.Args().Slice()[1:], " "))
+
+		actOld, err := jr.GetActivity(actID)
+		if err != nil {
+			return cli.Exit("Activity not found: "+actID, 1)
+		}
+
+		inputForm := tui.NewEditorForm(tui.EditorOptions{
+			Title:      "Edit activity log (" + actOld.ID + "):",
+			SyntaxHint: lang.FormatActivityInfo,
+		})
+		inputForm.Textarea.SetValue(lang.RenderActivity(actOld))
+
+		// TODO: check if interactive mode is enabled
+		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
+
+		if _, err := teaUI.Run(); err != nil {
+			log.Error("uh oh", "err", err)
+			return err
+		}
+
+		infoTxt := inputForm.Textarea.Value()
+
+		if desc != "" {
+			infoTxt = desc
+		}
+
+		actNew, err := lang.ExtractActivity(infoTxt)
+		if err != nil {
+			return cli.Exit("Failed to parse activity description: "+err.Error(), 1)
+		}
+
+		if err := actNew.Validate(); err != nil {
+			return err
+		}
+
+		err = journaldir.Update(jr, func(j *journal.Data) error {
+			actNew = j.UpdateActivity(actOld, actNew)
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+		log.Info("🔄 Updated activity: " + actNew.ID)
 
 		return nil
 	},

@@ -12,21 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package location
+package utils
 
 import (
-	"github.com/urfave/cli/v2"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
-var Commands = &cli.Command{
-	Name:        "location",
-	Aliases:     []string{"loc", "l"},
-	Usage:       "Manage your locations",
-	UsageText:   "frens location [command] [options]",
-	Description: `Locations are places where you meet your friends, have activities, or events.`,
-	Subcommands: []*cli.Command{
-		AddCommand,
-		EditCommand,
-		DeleteCommand,
-	},
+var TitleCaser = cases.Title(language.English)
+
+// P pluralizes a word based on the count.
+func P(count int, s, p string) string {
+	if count == 1 {
+		return s
+	}
+
+	return p
 }

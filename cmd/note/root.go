@@ -14,14 +14,14 @@
 
 package note
 
-import (
-	"github.com/urfave/cli/v2"
-)
+import "github.com/urfave/cli/v2"
 
 var Commands = &cli.Command{
-	Name:    "note",
-	Aliases: []string{"n"},
-	Usage:   "Manage your notes",
+	Name:        "note",
+	Aliases:     []string{"n"},
+	Usage:       "Manage your notes",
+	UsageText:   "frens note [command] [options]",
+	Description: `Notes helps to remember things about friends and locations with deeper meaning, insights, background, preferences, longer-term context.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
 	},

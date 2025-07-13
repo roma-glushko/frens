@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package lang
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/roma-glushko/frens/internal/friend"
+
 	"github.com/stretchr/testify/require"
 )
 
-func TestEvent_ParseDate(t *testing.T) {
+func TestExtractDate(t *testing.T) {
 	t.Parallel()
-
-	wantDesc := "Jim put my stuff in jello"
 
 	tests := []struct {
 		dateStr string
@@ -67,16 +67,14 @@ func TestEvent_ParseDate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.dateStr, func(t *testing.T) {
-			e := NewEvent(EventTypeActivity, test.dateStr+": "+wantDesc)
+			gotDate := ExtractDate(test.dateStr)
 
-			require.WithinDuration(t, test.date, e.Date, 1*time.Second)
-			require.Equal(t, EventTypeActivity, e.Type)
-			require.Equal(t, wantDesc, e.Desc)
+			require.WithinDuration(t, test.date, gotDate, 1*time.Second)
 		})
 	}
 }
 
-func TestEvent_ParseDate_Empty(t *testing.T) {
+func TestExtractActivity_EmptyDate(t *testing.T) {
 	t.Parallel()
 
 	wantDesc := "Angela has a little secret with Dwight"
@@ -92,16 +90,17 @@ func TestEvent_ParseDate_Empty(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			e := NewEvent(EventTypeNote, test.desc)
+			e, err := ExtractActivity(test.desc)
+			require.NoError(t, err)
 
 			require.WithinDuration(t, time.Now(), e.Date, 1*time.Second)
-			require.Equal(t, EventTypeNote, e.Type)
+			require.Equal(t, friend.EventTypeActivity, e.Type)
 			require.Equal(t, wantDesc, e.Desc)
 		})
 	}
 }
 
-func TestEvent_DescTrimmed(t *testing.T) {
+func TestExtractActivity_DescTrimmed(t *testing.T) {
 	t.Parallel()
 
 	wantDesc := "I've just met Bob Vance, Vance Refrigeration"
@@ -115,7 +114,8 @@ func TestEvent_DescTrimmed(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			e := NewEvent(EventTypeNote, test.desc)
+			e, err := ExtractActivity(test.desc)
+			require.NoError(t, err)
 
 			require.Equal(t, wantDesc, e.Desc)
 		})

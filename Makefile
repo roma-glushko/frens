@@ -40,7 +40,7 @@ lint: tools ## Lint the source code
 	@go vet ./...
 	@echo "🧹 GoCI Lint.."
 	@$(BIN_DIR)/golangci-lint run ./...
-	@echo "🧹Check GoReleaser.."
+	@echo "🧹 Check GoReleaser.."
 	@$(BIN_DIR)/goreleaser check
 
 .PHONY: run
@@ -49,7 +49,7 @@ run: ## Run Frens
 
 .PHONY: build
 build: ## Build Frens
-	@echo "🔨Building binary.."
+	@echo "🔨 Building binary.."
 	@echo "Version: $(VERSION)"
 	@echo "Commit: $(COMMIT)"
 	@echo "Build Date: $(BUILD_DATE)"
