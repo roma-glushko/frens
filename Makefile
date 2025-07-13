@@ -26,7 +26,7 @@ tools: ## Install static checkers & other binaries
 	command -v air > /dev/null || go install github.com/air-verse/air@latest & \
 	command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
 	command -v goreleaser > /dev/null || go install github.com/goreleaser/goreleaser/v2@latest & \
-	command -v go-junit-report > /dev/null || go install github.com/jstemmer/go-junit-report/v2@latest & \
+	command -v gocover-cobertura > /dev/null || go install github.com/boumenot/gocover-cobertura@latest & \
 	wait
 
 .PHONY: lint
@@ -68,8 +68,8 @@ test: tools ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
 
 .PHONY: test-ci
-test-ci: tools ## Run tests in the CI mode
-	@go test -v -json ./... | go-junit-report -set-exit-code > coverage.xml
+test-ci: test ## Run tests in the CI mode
+	@gocover-cobertura < coverage.txt > coverage.xml
 
 copyright: ## Apply copyrights to all files
 	@echo "🧹 Applying license headers"
