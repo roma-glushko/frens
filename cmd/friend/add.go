@@ -154,7 +154,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		err = journaldir.Update(j, func(l *journal.Data) error {
+		err = journaldir.Update(j, func(l *journal.Journal) error {
 			l.AddFriend(f)
 			return nil
 		})

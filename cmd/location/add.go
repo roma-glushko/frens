@@ -144,7 +144,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		err = journaldir.Update(j, func(j *journal.Data) error {
+		err = journaldir.Update(j, func(j *journal.Journal) error {
 			j.AddLocation(l)
 
 			return nil

@@ -17,6 +17,7 @@ package friend
 import (
 	"errors"
 	"fmt"
+	"github.com/roma-glushko/frens/internal/matcher"
 	"sort"
 	"strings"
 
@@ -49,8 +50,8 @@ type Person struct {
 }
 
 var (
-	_ tag.Tagged      = (*Person)(nil)
-	_ utils.Matchable = (*Person)(nil)
+	_ tag.Tagged        = (*Person)(nil)
+	_ matcher.Matchable = (*Person)(nil)
 )
 
 func (p *Person) Validate() error {

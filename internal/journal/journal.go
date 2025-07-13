@@ -8,7 +8,7 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or impliej.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
@@ -17,6 +17,7 @@ package journal
 import (
 	"errors"
 	"fmt"
+	"github.com/roma-glushko/frens/internal/matcher"
 	"slices"
 	"strings"
 	"sync"
@@ -24,8 +25,6 @@ import (
 	"github.com/segmentio/ksuid"
 
 	"github.com/roma-glushko/frens/internal/lang"
-
-	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/tag"
@@ -38,7 +37,7 @@ type ListFriendQuery struct {
 	Tag      string
 }
 
-type Data struct {
+type Journal struct {
 	DirPath    string
 	Tags       tag.Tags
 	Friends    []friend.Person
@@ -47,30 +46,30 @@ type Data struct {
 
 	dirty           bool
 	matcherMu       sync.Mutex
-	friendMatcher   *utils.Matcher[friend.Person]
-	locationMatcher *utils.Matcher[friend.Location]
+	friendMatcher   *matcher.Matcher[friend.Person]
+	locationMatcher *matcher.Matcher[friend.Location]
 }
 
-func (d *Data) Init() {
+func (j *Journal) Init() {
 	// TODO: implement
 }
 
-func (d *Data) Dirty() bool {
-	return d.dirty
+func (j *Journal) Dirty() bool {
+	return j.dirty
 }
 
-func (d *Data) Path() string {
-	return d.DirPath
+func (j *Journal) Path() string {
+	return j.DirPath
 }
 
-func (d *Data) AddFriend(f friend.Person) {
-	d.Friends = append(d.Friends, f)
+func (j *Journal) AddFriend(f friend.Person) {
+	j.Friends = append(j.Friends, f)
 
-	d.dirty = true
+	j.dirty = true
 }
 
-func (d *Data) GetFriend(q string) (*friend.Person, error) {
-	matches := d.frenMatcher().Match(q)
+func (j *Journal) GetFriend(q string) (*friend.Person, error) {
+	matches := j.frenMatcher().Match(q)
 
 	if len(matches) == 0 {
 		return nil, fmt.Errorf("no friends found for '%s'", q)
@@ -109,11 +108,11 @@ func (d *Data) GetFriend(q string) (*friend.Person, error) {
 	return &f, nil
 }
 
-func (d *Data) UpdateFriend(o, n friend.Person) {
-	for i, f := range d.Friends {
+func (j *Journal) UpdateFriend(o, n friend.Person) {
+	for i, f := range j.Friends {
 		if f.Name == o.Name {
-			d.Friends[i] = n
-			d.dirty = true
+			j.Friends[i] = n
+			j.dirty = true
 
 			return
 		}
@@ -122,15 +121,15 @@ func (d *Data) UpdateFriend(o, n friend.Person) {
 	// TODO: update friend references in activities and notes
 
 	// If the friend was not found, add it as a new one
-	d.AddFriend(n)
+	j.AddFriend(n)
 }
 
-func (d *Data) RemoveFriends(toRemove []friend.Person) {
+func (j *Journal) RemoveFriends(toRemove []friend.Person) {
 	for _, fr := range toRemove {
-		for i, f := range d.Friends {
+		for i, f := range j.Friends {
 			if f.Name == fr.Name {
-				d.Friends = append(d.Friends[:i], d.Friends[i+1:]...)
-				d.dirty = true
+				j.Friends = append(j.Friends[:i], j.Friends[i+1:]...)
+				j.dirty = true
 
 				break
 			}
@@ -138,14 +137,14 @@ func (d *Data) RemoveFriends(toRemove []friend.Person) {
 	}
 }
 
-func (d *Data) AddLocation(l friend.Location) {
-	d.Locations = append(d.Locations, l)
+func (j *Journal) AddLocation(l friend.Location) {
+	j.Locations = append(j.Locations, l)
 
-	d.dirty = true
+	j.dirty = true
 }
 
-func (d *Data) GetLocation(q string) (*friend.Location, error) {
-	matches := d.locMatcher().Match(q)
+func (j *Journal) GetLocation(q string) (*friend.Location, error) {
+	matches := j.locMatcher().Match(q)
 
 	if len(matches) == 0 {
 		return nil, fmt.Errorf("no locations found for '%s'", q)
@@ -184,11 +183,11 @@ func (d *Data) GetLocation(q string) (*friend.Location, error) {
 	return &l, nil
 }
 
-func (d *Data) UpdateLocation(o, n friend.Location) {
-	for i, l := range d.Locations {
+func (j *Journal) UpdateLocation(o, n friend.Location) {
+	for i, l := range j.Locations {
 		if l.Name == o.Name {
-			d.Locations[i] = n
-			d.dirty = true
+			j.Locations[i] = n
+			j.dirty = true
 
 			return
 		}
@@ -197,15 +196,15 @@ func (d *Data) UpdateLocation(o, n friend.Location) {
 	// TODO: update friend references in activities and notes
 
 	// If the friend was not found, add it as a new one
-	d.AddLocation(n)
+	j.AddLocation(n)
 }
 
-func (d *Data) RemoveLocations(toRemove []friend.Location) {
+func (j *Journal) RemoveLocations(toRemove []friend.Location) {
 	for _, loc := range toRemove {
-		for i, l := range d.Locations {
+		for i, l := range j.Locations {
 			if l.Name == loc.Name {
-				d.Locations = append(d.Locations[:i], d.Locations[i+1:]...)
-				d.dirty = true
+				j.Locations = append(j.Locations[:i], j.Locations[i+1:]...)
+				j.dirty = true
 
 				break
 			}
@@ -213,18 +212,18 @@ func (d *Data) RemoveLocations(toRemove []friend.Location) {
 	}
 }
 
-func (d *Data) AddTags(t []tag.Tag) {
-	d.Tags = append(d.Tags, t...).Unique()
+func (j *Journal) AddTags(t []tag.Tag) {
+	j.Tags = append(j.Tags, t...).Unique()
 
-	d.dirty = true
+	j.dirty = true
 }
 
-func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
+func (j *Journal) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 	e.ID = ksuid.New().String()
-	matches := d.frenMatcher().Match(e.Desc)
+	matches := j.frenMatcher().Match(e.Desc)
 
 	certainPersons := make([]friend.Person, 0, len(matches))
-	ambiguitiesMatches := make([]utils.Match[friend.Person], 0, len(matches))
+	ambiguitiesMatches := make([]matcher.Match[friend.Person], 0, len(matches))
 
 	for _, m := range matches {
 		if len(m.Entities) == 1 {
@@ -274,7 +273,7 @@ func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 			}
 		}
 
-		for _, act := range d.Activities {
+		for _, act := range j.Activities {
 			for _, pair := range rankPairs {
 				if slices.Contains(act.Friends, pair.KnownPerson.Name) &&
 					slices.Contains(act.Friends, pair.AmbiguitiesPerson.Name) {
@@ -296,14 +295,14 @@ func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 		}
 	}
 
-	_ = d.locMatcher().Match(e.Desc)
+	_ = j.locMatcher().Match(e.Desc)
 
 	// TODO: record locs/friends
 
 	tags := lang.ExtractTags(e.Desc)
 
 	if len(tags) > 0 {
-		d.AddTags(tags)
+		j.AddTags(tags)
 		tag.Add(&e, tags)
 	}
 
@@ -314,15 +313,15 @@ func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 		p.Activities++
 	}
 
-	d.Activities = append(d.Activities, e)
+	j.Activities = append(j.Activities, e)
 
-	d.dirty = true
+	j.dirty = true
 
 	return e
 }
 
-func (d *Data) GetActivity(q string) (friend.Event, error) {
-	for _, act := range d.Activities {
+func (j *Journal) GetActivity(q string) (friend.Event, error) {
+	for _, act := range j.Activities {
 		if act.ID == q {
 			return act, nil
 		}
@@ -331,13 +330,13 @@ func (d *Data) GetActivity(q string) (friend.Event, error) {
 	return friend.Event{}, ErrEventNotFound
 }
 
-func (d *Data) UpdateActivity(o, n friend.Event) friend.Event {
+func (j *Journal) UpdateActivity(o, n friend.Event) friend.Event {
 	n.ID = o.ID
 
-	for i, act := range d.Activities {
+	for i, act := range j.Activities {
 		if act.ID == o.ID {
-			d.Activities[i] = n
-			d.dirty = true
+			j.Activities[i] = n
+			j.dirty = true
 
 			return n
 		}
@@ -346,17 +345,17 @@ func (d *Data) UpdateActivity(o, n friend.Event) friend.Event {
 	// TODO: update friend & location references
 
 	// If the activity was not found, add it as a new one
-	d.AddActivity(n)
+	j.AddActivity(n)
 
 	return n
 }
 
-func (d *Data) RemoveActivities(toRemove []friend.Event) {
+func (j *Journal) RemoveActivities(toRemove []friend.Event) {
 	for _, act := range toRemove {
-		for i, a := range d.Activities {
+		for i, a := range j.Activities {
 			if a.ID == act.ID {
-				d.Activities = append(d.Activities[:i], d.Activities[i+1:]...)
-				d.dirty = true
+				j.Activities = append(j.Activities[:i], j.Activities[i+1:]...)
+				j.dirty = true
 
 				break
 			}
@@ -364,10 +363,10 @@ func (d *Data) RemoveActivities(toRemove []friend.Event) {
 	}
 }
 
-func (d *Data) ListFriends(q ListFriendQuery) []friend.Person {
+func (j *Journal) ListFriends(q ListFriendQuery) []friend.Person {
 	v := make([]friend.Person, 0, 5)
 
-	for _, f := range d.Friends {
+	for _, f := range j.Friends {
 		if q.Location != "" && !f.HasLocation(q.Location) {
 			continue
 		}
@@ -382,32 +381,32 @@ func (d *Data) ListFriends(q ListFriendQuery) []friend.Person {
 	return v
 }
 
-func (d *Data) locMatcher() *utils.Matcher[friend.Location] {
-	if d.locationMatcher == nil {
-		d.matcherMu.Lock()
-		defer d.matcherMu.Unlock()
+func (j *Journal) locMatcher() *matcher.Matcher[friend.Location] {
+	if j.locationMatcher == nil {
+		j.matcherMu.Lock()
+		defer j.matcherMu.Unlock()
 
-		d.locationMatcher = utils.NewMatcher[friend.Location]()
+		j.locationMatcher = matcher.NewMatcher[friend.Location]()
 
-		for _, l := range d.Locations {
-			d.locationMatcher.Add(l)
+		for _, l := range j.Locations {
+			j.locationMatcher.Add(l)
 		}
 	}
 
-	return d.locationMatcher
+	return j.locationMatcher
 }
 
-func (d *Data) frenMatcher() *utils.Matcher[friend.Person] {
-	if d.friendMatcher == nil {
-		d.matcherMu.Lock()
-		defer d.matcherMu.Unlock()
+func (j *Journal) frenMatcher() *matcher.Matcher[friend.Person] {
+	if j.friendMatcher == nil {
+		j.matcherMu.Lock()
+		defer j.matcherMu.Unlock()
 
-		d.friendMatcher = utils.NewMatcher[friend.Person]()
+		j.friendMatcher = matcher.NewMatcher[friend.Person]()
 
-		for _, f := range d.Friends {
-			d.friendMatcher.Add(f)
+		for _, f := range j.Friends {
+			j.friendMatcher.Add(f)
 		}
 	}
 
-	return d.friendMatcher
+	return j.friendMatcher
 }

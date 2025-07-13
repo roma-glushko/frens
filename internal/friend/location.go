@@ -16,6 +16,7 @@ package friend
 
 import (
 	"errors"
+	"github.com/roma-glushko/frens/internal/matcher"
 	"sort"
 	"strings"
 
@@ -37,8 +38,8 @@ type Location struct {
 }
 
 var (
-	_ tag.Tagged      = (*Location)(nil)
-	_ utils.Matchable = (*Location)(nil)
+	_ tag.Tagged        = (*Location)(nil)
+	_ matcher.Matchable = (*Location)(nil)
 )
 
 func (l *Location) Validate() error {

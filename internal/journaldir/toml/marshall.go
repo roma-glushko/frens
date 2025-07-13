@@ -82,7 +82,7 @@ func Init(journalDir string) error {
 	return errors.Join(errs...)
 }
 
-func Load(journalDir string) (*journal.Data, error) {
+func Load(journalDir string) (*journal.Journal, error) {
 	var errs []error
 
 	entities, err := loadFile[FriendsFile](filepath.Join(journalDir, FileNameFriends))
@@ -99,7 +99,7 @@ func Load(journalDir string) (*journal.Data, error) {
 		return nil, errors.Join(errs...)
 	}
 
-	return &journal.Data{
+	return &journal.Journal{
 		DirPath:    journalDir,
 		Tags:       entities.Tags,
 		Friends:    entities.Friends,
@@ -108,7 +108,7 @@ func Load(journalDir string) (*journal.Data, error) {
 	}, nil
 }
 
-func Save(l *journal.Data) error {
+func Save(l *journal.Journal) error {
 	var errs []error
 
 	entities := FriendsFile{

@@ -85,7 +85,7 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Data) error {
+		err = journaldir.Update(jr, func(j *journal.Journal) error {
 			j.RemoveFriends(friends)
 			return nil
 		})
