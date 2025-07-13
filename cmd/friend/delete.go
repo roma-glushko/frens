@@ -16,8 +16,8 @@ package friend
 
 import (
 	"fmt"
+	"github.com/roma-glushko/frens/internal/utils"
 
-	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
@@ -70,14 +70,16 @@ var DeleteCommand = &cli.Command{
 			friends = append(friends, *f)
 		}
 
-		log.Infof("%dx Friend(s): ", len(friends))
+		fmt.Printf("🔍 Found %d %s:\n", len(friends), utils.P("friend", len(friends)))
+
 		for _, f := range friends {
-			fmt.Printf(" • %s \n", f.String())
+			fmt.Printf("   • %s\n", f.String())
 		}
 
 		// TODO: check if interactive mode
-		if !ctx.Bool("force") && !tui.ConfirmAction("Delete friend(s)?") {
-			fmt.Println("❎ Deletion canceled.")
+		fmt.Println("\n⚠️  You're about to permanently delete these friends.")
+		if !ctx.Bool("force") && !tui.ConfirmAction("Are you sure?") {
+			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
 		}
 
@@ -85,11 +87,12 @@ var DeleteCommand = &cli.Command{
 			j.RemoveFriends(friends)
 			return nil
 		})
+
 		if err != nil {
 			return err
 		}
 
-		log.Info("✅Friend(s) deleted")
+		fmt.Printf("\n🗑️  %s deleted.", utils.P("Friend", len(friends)))
 
 		return nil
 	},
