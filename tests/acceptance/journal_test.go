@@ -25,7 +25,7 @@ import (
 func TestJournal_Init(t *testing.T) {
 	app := cmd.NewApp()
 
-	jDir, err := initJournal(t, app)
+	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Check if the journal was initialized correctly

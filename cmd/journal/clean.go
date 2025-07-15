@@ -18,10 +18,10 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var SyncCommand = &cli.Command{
-	Name:    "sync",
-	Aliases: []string{"s"},
-	Usage:   "Sync all outdated data in the journal",
+var CleanCommand = &cli.Command{
+	Name:    "clean",
+	Aliases: []string{"c"},
+	Usage:   "Clean up journal data in case it has been corrupted or stale",
 	Action: func(_ *cli.Context) error {
 		// TODO: implement
 

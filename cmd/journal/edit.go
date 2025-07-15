@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/roma-glushko/frens/internal/journal"
 
@@ -34,7 +35,10 @@ var EditCommand = &cli.Command{
 
 		editor := GetEditor()
 
-		cmd := exec.Command(editor, jr.DirPath+"/friends.toml") // TODO: make it configurable
+		cmd := exec.Command(
+			editor,
+			filepath.Join(jr.DirPath, "friends.toml"),
+		) // TODO: make it configurable
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

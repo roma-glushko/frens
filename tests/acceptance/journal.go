@@ -20,7 +20,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func initJournal(t *testing.T, c cli.App) (string, error) {
+func InitJournal(t *testing.T, c cli.App) (string, error) {
 	jDir := t.TempDir()
 	a := []string{
 		"frens",
