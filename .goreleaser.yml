@@ -211,7 +211,7 @@ homebrew_casks:
       #
       # Default depends on the client.
       # Templates: allowed.
-      template: "https://github.mycompany.com/roma-glushko/frens/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+      template: "https://github.com/roma-glushko/frens/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
       verified: "github.com/roma-glushko/frens/"
 
@@ -231,7 +231,7 @@ homebrew_casks:
     # The project name and current git tag are used in the format string.
     #
     # Templates: allowed.
-    commit_msg_template: "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
+    commit_msg_template: "📦 Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
 
     directory: Casks
 
@@ -244,22 +244,3 @@ homebrew_casks:
       owner: roma-glushko
       name: frens
       branch: main
-
-      # Sets up pull request creation instead of just pushing to the given branch.
-      # Make sure the 'branch' property is different from base before enabling
-      # it.
-      #
-      # This might require a personal access token.
-      pull_request:
-        # Whether to enable it or not.
-        enabled: true
-
-        # Whether to open the PR as a draft or not.
-        draft: true
-
-        # Base can also be another repository, in which case the owner and name
-        # above will be used as HEAD, allowing cross-repository pull requests.
-        base:
-          owner: roma-glushko
-          name: frens
-          branch: main
