@@ -31,14 +31,11 @@ jobs:
 
       - name: Cache Go tools
         uses: actions/cache@v4
-        env:
-          GOBIN: ${{ runner.temp }}/tools/bin
         with:
           path: |
             ~/.cache/go-build
             ~/.local/go/bin
             ~/go/pkg/mod
-            ${{ runner.temp }}/tools/bin
           key: go-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             go-cache-${{ runner.os }}-
@@ -90,19 +87,14 @@ jobs:
 
       - name: Cache Go tools
         uses: actions/cache@v4
-        env:
-          GOBIN: ${{ runner.temp }}/tools/bin
         with:
           path: |
             ~/.cache/go-build
+            ~/.local/go/bin
             ~/go/pkg/mod
-            ${{ runner.temp }}/tools/bin
           key: go-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             go-cache-${{ runner.os }}-
-
-      - name: Add tools to PATH
-        run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: go mod download
@@ -128,19 +120,14 @@ jobs:
 
       - name: Cache Go tools
         uses: actions/cache@v4
-        env:
-          GOBIN: ${{ runner.temp }}/tools/bin
         with:
           path: |
             ~/.cache/go-build
+            ~/.local/go/bin
             ~/go/pkg/mod
-            ${{ runner.temp }}/tools/bin
           key: go-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             go-cache-${{ runner.os }}-
-
-      - name: Add tools to PATH
-        run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: go mod download

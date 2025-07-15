@@ -35,13 +35,11 @@ jobs:
 
       - name: Cache Go tools
         uses: actions/cache@v4
-        env:
-          GOBIN: ${{ runner.temp }}/tools/bin
         with:
           path: |
             ~/.cache/go-build
+            ~/.local/go/bin
             ~/go/pkg/mod
-            ${{ runner.temp }}/tools/bin
           key: go-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             go-cache-${{ runner.os }}-
@@ -50,7 +48,10 @@ jobs:
         run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
 
       - name: Install GolangCI Lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ${{ runner.temp }}/tools/bin v2.2.2
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- v2.2.2
+
+      - name: Install GolangCI Lint
+        run: curl -sfL https://goreleaser.com/static/run | bash VERSION=v2.11.0 -s -- check
 
       - name: Install dependencies
         run: go mod download
