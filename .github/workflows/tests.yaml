@@ -51,7 +51,7 @@ jobs:
         run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- v2.2.2
 
       - name: Install GolangCI Lint
-        run: curl -sfL https://goreleaser.com/static/run | bash VERSION=v2.11.0 -s -- check
+        run: curl -sfL https://goreleaser.com/static/run | bash
 
       - name: Install dependencies
         run: go mod download
