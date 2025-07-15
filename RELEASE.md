@@ -2,7 +2,7 @@
 
 The release process is based around tags:
 
-- Create a new tag in the format `vX.Y.Z` where `X`, `Y`, and `Z` are integers (e.g., `v0.0.1`, `v0.0.2-alpha.2`):
+- Create a new tag in [the semver format](https://semver.org/) `vX.Y.Z` (e.g. `v0.0.1`, `v0.0.2-alpha.2`):
 
 ```bash
 git tag v0.0.2-alpha.1
