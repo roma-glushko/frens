@@ -1,5 +1,6 @@
 run:
   go: "1.24.2"
+  tests: false
 
 output:
   # Make output more digestible with quickfix in vim/emacs/etc.
@@ -17,6 +18,8 @@ linters:
     - cyclop
     - dupword
     - errname
+    - gosec
+    - nakedret
     - exhaustive
     - loggercheck
     - misspell
@@ -25,9 +28,16 @@ linters:
     - prealloc
     - predeclared
     - testifylint
-    - unconvert
     - usestdlibvars
+    - tparallel
+    - unconvert
+    - unparam
     - wsl
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
 
 linters-settings:
   govet:

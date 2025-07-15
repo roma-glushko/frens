@@ -46,17 +46,24 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      - name: Install GolangCI Lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- v2.2.2
-
-      - name: Install GoReleaser
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: curl -sfL https://goreleaser.com/static/run | bash -s -- check
-
       - name: Run Golang Lint Command
         run: |
-          make lint
+          make lint-ci
+
+      - name: GolangCI-Lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          args: --timeout 5m
+
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   copyright:
     runs-on: ubuntu-latest
@@ -99,8 +106,7 @@ jobs:
         run: go mod download
 
       - name: Ensure Code Generated
-        run: |
-          make gen-check
+        run: make gen-check
 
   build:
     strategy:

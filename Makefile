@@ -22,7 +22,6 @@ tools: ## Install static checkers & other binaries
 	@echo "🚚 Downloading tools.."
 	@mkdir -p $(GOBIN)
 	@ \
-	command -v gofumpt > /dev/null || go install mvdan.cc/gofumpt@latest & \
 	command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
 	command -v goreleaser > /dev/null || go install github.com/goreleaser/goreleaser/v2@latest & \
 	command -v gocover-cobertura > /dev/null || go install github.com/boumenot/gocover-cobertura@latest & \
@@ -34,13 +33,21 @@ lint: tools ## Lint the source code
 	@go mod tidy
 	@echo "🧹 Formatting files.."
 	@go fmt ./...
-	@$(BIN_DIR)/gofumpt -l -w .
 	@echo "🧹 Vetting go.mod.."
 	@go vet ./...
 	@echo "🧹 GoCI Lint.."
 	@$(BIN_DIR)/golangci-lint run ./...
 	@echo "🧹 Check GoReleaser.."
 	@$(BIN_DIR)/goreleaser check
+
+.PHONY: lint-ci
+lint-ci: ## Lint the source code in CI mode
+	@echo "🧹 Cleaning go.mod.."
+	@go mod tidy
+	@echo "🧹 Formatting files.."
+	@go fmt ./...
+	@echo "🧹 Vetting go.mod.."
+	@go vet ./...
 
 .PHONY: run
 run: ## Run Frens
@@ -67,7 +74,7 @@ test: ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
 
 .PHONY: test-ci
-test-ci: tools ## Run tests in the CI mode
+test-ci: tools-dev ## Run tests in the CI mode
 	@gocover-cobertura < coverage.txt > coverage.xml
 
 copyright: ## Apply copyrights to all files
