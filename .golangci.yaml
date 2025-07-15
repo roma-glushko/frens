@@ -1,5 +1,6 @@
+version: "2"
 run:
-  go: "1.24.2"
+  go: "1.24.5"
   tests: false
 
 output:
@@ -26,6 +27,9 @@ linters:
     - nestif
     - perfsprint
     - prealloc
+    - nilerr
+    - noctx
+    - misspell
     - predeclared
     - testifylint
     - usestdlibvars
@@ -33,11 +37,17 @@ linters:
     - unconvert
     - unparam
     - wsl
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
 
 formatters:
   enable:
     - gofumpt
     - goimports
+  exclusions:
+    generated: lax
 
 linters-settings:
   govet:
