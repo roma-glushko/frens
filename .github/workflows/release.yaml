@@ -19,13 +19,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          fetch-tags: true
 
-      - name: Fetch all tags
-        run: git fetch --tags --force
-
-      - name: List tags
-        run: git tag
+      - name: Fetch Git History
+        run: git fetch origin main --tags
 
       - name: Set up Go
         uses: actions/setup-go@v5
