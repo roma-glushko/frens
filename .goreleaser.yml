@@ -233,7 +233,7 @@ homebrew_casks:
     # Templates: allowed.
     commit_msg_template: "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
 
-    directory: casks
+    directory: Casks
 
     caveats: "frens --help"
     homepage: "https://github.com/roma-glushko/frens"
