@@ -21,6 +21,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gosimple/slug"
+
 	"github.com/roma-glushko/frens/internal/matcher"
 
 	"github.com/segmentio/ksuid"
@@ -65,8 +67,14 @@ func (j *Journal) Path() string {
 }
 
 func (j *Journal) AddFriend(f friend.Person) {
-	j.Friends = append(j.Friends, f)
+	if f.ID == "" {
+		f.ID = slug.Make(f.Name)
+	}
 
+	// TODO: check for duplicated IDs
+	// TODO: check for duplicated aliases
+
+	j.Friends = append(j.Friends, f)
 	j.dirty = true
 }
 
@@ -138,8 +146,14 @@ func (j *Journal) RemoveFriends(toRemove []friend.Person) {
 }
 
 func (j *Journal) AddLocation(l friend.Location) {
-	j.Locations = append(j.Locations, l)
+	if l.ID == "" {
+		l.ID = slug.Make(l.Name)
+	}
 
+	// TODO: check for duplicated IDs
+	// TODO: check for duplicated aliases
+
+	j.Locations = append(j.Locations, l)
 	j.dirty = true
 }
 
@@ -322,7 +336,7 @@ func (j *Journal) AddEvent(e friend.Event) (friend.Event, error) {
 	e.Friends = make([]string, 0, len(guessedPersons))
 
 	for _, p := range guessedPersons {
-		e.Friends = append(e.Friends, p.Name)
+		e.Friends = append(e.Friends, p.ID)
 
 		if e.Type == friend.EventTypeActivity {
 			p.Activities++

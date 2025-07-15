@@ -76,7 +76,7 @@ func TestPersonFormatter(t *testing.T) {
 				Locations: []string{"Scranton"},
 				Tags:      []string{"office"},
 			},
-			want: "Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss #office @Scranton",
+			want: "Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss @Scranton #office",
 		},
 	}
 
