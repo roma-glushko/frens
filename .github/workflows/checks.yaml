@@ -43,17 +43,16 @@ jobs:
       - name: Inspect env vars
         run: env
 
-      - name: Add tools to PATH
-        run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
-
       - name: Install dependencies
         run: go mod download
 
       - name: Install GolangCI Lint
         run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- v2.2.2
 
-      - name: Install GolangCI Lint
-        run: curl -sfL https://goreleaser.com/static/run | bash
+      - name: Install GoReleaser
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: curl -sfL https://goreleaser.com/static/run | bash -s -- check
 
       - name: Run Golang Lint Command
         run: |
