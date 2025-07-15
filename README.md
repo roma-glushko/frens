@@ -1,6 +1,6 @@
 # Frens
 
-A friendship management application for introverts and not only.
+A friendship management & journaling application for introverts and not only.
 Build relationships with people that lasts.
 
 ## Get Started
