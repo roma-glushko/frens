@@ -18,12 +18,18 @@ export GOBIN
 export PATH := $(BIN_DIR):$(PATH)
 
 .PHONY: tools
-tools: ## Install static checkers & other binaries
+tools: tools-test ## Install static checkers & other binaries
 	@echo "🚚 Downloading tools.."
 	@mkdir -p $(GOBIN)
 	@ \
 	command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
 	command -v goreleaser > /dev/null || go install github.com/goreleaser/goreleaser/v2@latest & \
+	wait
+
+tools-test: ## Install tools for testing
+	@echo "🚚 Downloading tools for testing.."
+	@mkdir -p $(GOBIN)
+	@ \
 	command -v gocover-cobertura > /dev/null || go install github.com/boumenot/gocover-cobertura@latest & \
 	wait
 
@@ -74,7 +80,7 @@ test: ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
 
 .PHONY: test-ci
-test-ci: tools-dev ## Run tests in the CI mode
+test-ci: tools-test ## Run tests in the CI mode
 	@gocover-cobertura < coverage.txt > coverage.xml
 
 copyright: ## Apply copyrights to all files
