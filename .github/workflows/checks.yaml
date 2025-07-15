@@ -52,6 +52,8 @@ jobs:
         run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ${{ runner.temp }}/tools/bin v2.2.2
 
       - name: Run Golang Lint Command
+        env:
+          GOBIN: ${{ runner.temp }}/tools/bin
         run: |
           make lint
 
