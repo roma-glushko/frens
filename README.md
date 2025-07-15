@@ -1,7 +1,11 @@
 # Frens
 
 A friendship management & journaling application for introverts and not only.
-Build relationships with people that lasts.
+Build relationships with people that last.
+
+## Features
+
+- TBU
 
 ## Get Started
 
@@ -74,4 +78,4 @@ yesterday :: Jim put my stuff in jello #office @Scranton
 
 Inspired by awesome [JacobEvelyn/friends](https://github.com/JacobEvelyn/friends).
 
-Made with ❤️ by [Roman Glushko]().
+Made with ❤️ by [Roman Glushko](https://github.com/roma-glushko).
