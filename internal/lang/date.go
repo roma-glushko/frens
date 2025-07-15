@@ -27,7 +27,6 @@ func ExtractDate(s string) time.Time {
 
 	if s != "" {
 		parsedDate, err := dateparser.Parse(nil, s)
-
 		if err != nil {
 			ts = time.Now().UTC()
 		} else {

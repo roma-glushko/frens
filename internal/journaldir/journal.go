@@ -28,7 +28,6 @@ import (
 // Init loads the journal from the specific path or `~/.config/frens/` is used by default
 func Init(path string) error {
 	_, err := os.Stat(path)
-
 	if err != nil && errors.Is(err, fs.ErrNotExist) {
 		return fmt.Errorf("life already exists at %s", path)
 	}
@@ -49,9 +48,11 @@ func Init(path string) error {
 // Load loads the journal from the specific path or `~/.frens/` is used by default
 func Load(path string) (*journal.Journal, error) {
 	_, err := os.Stat(path)
-
 	if err != nil && errors.Is(err, fs.ErrNotExist) {
-		return nil, fmt.Errorf("couldn't find life space at %s. Please init a life space via the init command", path)
+		return nil, fmt.Errorf(
+			"couldn't find life space at %s. Please init a life space via the init command",
+			path,
+		)
 	}
 
 	data, err := toml.Load(path)

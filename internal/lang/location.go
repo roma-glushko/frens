@@ -33,7 +33,9 @@ var FormatLocationInfo = "NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] :: DESCRIP
 
 func init() {
 	locMarkerRe = regexp.MustCompile(`@([\p{L}0-9_-]+)`)
-	locRe = regexp.MustCompile(`(?m)^(?P<name>[A-Za-z\s]+)(?:,\s*(?P<country>[A-Za-z\s]+))?(?:\s*\((?:aka|a\.k\.a\.)\s+(?P<aliases>[^)]+)\))?\s*::\s*(?P<description>.*?)?\s*$`)
+	locRe = regexp.MustCompile(
+		`(?m)^(?P<name>[A-Za-z\s]+)(?:,\s*(?P<country>[A-Za-z\s]+))?(?:\s*\((?:aka|a\.k\.a\.)\s+(?P<aliases>[^)]+)\))?\s*::\s*(?P<description>.*?)?\s*$`,
+	)
 }
 
 // ExtractLocation extracts location information from a string.
