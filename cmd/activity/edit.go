@@ -43,22 +43,14 @@ var EditCommand = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		jDir, err := journaldir.DefaultDir()
-		if err != nil {
-			return err
-		}
-
-		jr, err := journaldir.Load(jDir)
-		if err != nil {
-			return err
-		}
-
 		if ctx.NArg() < 1 {
 			return cli.Exit("You must provide an activity ID to edit.", 1)
 		}
 
 		actID := ctx.Args().First()
 		desc := strings.TrimSpace(strings.Join(ctx.Args().Slice()[1:], " "))
+
+		jr := journal.FromCtx(ctx.Context)
 
 		actOld, err := jr.GetEvent(friend.EventTypeActivity, actID)
 		if err != nil {

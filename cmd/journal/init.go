@@ -17,6 +17,7 @@ package journal
 import (
 	"fmt"
 
+	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/tui"
 
 	"github.com/roma-glushko/frens/internal/journaldir"
@@ -28,11 +29,9 @@ var InitCommand = &cli.Command{
 	Aliases: []string{"i"},
 	Usage:   "Init a new journal",
 	Flags:   []cli.Flag{},
-	Action: func(_ *cli.Context) error {
-		jDir, err := journaldir.DefaultDir()
-		if err != nil {
-			return err
-		}
+	Action: func(ctx *cli.Context) error {
+		jCtx := jctx.FromCtx(ctx.Context)
+		jDir := jCtx.JournalDir
 
 		if journaldir.Exists(jDir) {
 			// TODO: check if interactive mode is enabled
@@ -45,8 +44,7 @@ var InitCommand = &cli.Command{
 			}
 		}
 
-		err = journaldir.Init(jDir)
-		if err != nil {
+		if err := journaldir.Init(jDir); err != nil {
 			return fmt.Errorf("failed to initialize the journal at %s: %w", jDir, err)
 		}
 

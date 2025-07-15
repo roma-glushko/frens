@@ -14,17 +14,20 @@
 
 package journal
 
-import (
-	"github.com/urfave/cli/v2"
-)
+import "context"
 
-var SyncCommand = &cli.Command{
-	Name:    "sync",
-	Aliases: []string{"s"},
-	Usage:   "Sync all outdated data in the journal",
-	Action: func(_ *cli.Context) error {
-		// TODO: implement
+type journalCtxKey struct{}
 
-		return nil
-	},
+func WithCtx(ctx context.Context, j *Journal) context.Context {
+	return context.WithValue(ctx, journalCtxKey{}, j)
+}
+
+func FromCtx(ctx context.Context) *Journal {
+	if val := ctx.Value(journalCtxKey{}); val != nil {
+		if j, ok := val.(*Journal); ok && j != nil {
+			return j
+		}
+	}
+
+	return nil
 }

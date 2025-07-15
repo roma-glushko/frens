@@ -72,16 +72,6 @@ var AddCommand = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		journalDir, err := journaldir.DefaultDir()
-		if err != nil {
-			return err
-		}
-
-		j, err := journaldir.Load(journalDir)
-		if err != nil {
-			return err
-		}
-
 		var info string
 
 		if ctx.NArg() == 0 {
@@ -103,6 +93,7 @@ var AddCommand = &cli.Command{
 		}
 
 		var l friend.Location
+		var err error
 
 		if info != "" {
 			l, err = lang.ExtractLocation(info)
@@ -144,7 +135,9 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		err = journaldir.Update(j, func(j *journal.Journal) error {
+		jr := journal.FromCtx(ctx.Context)
+
+		err = journaldir.Update(jr, func(j *journal.Journal) error {
 			j.AddLocation(l)
 
 			return nil

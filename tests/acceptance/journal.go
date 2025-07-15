@@ -15,20 +15,20 @@
 package acceptance
 
 import (
-	"path/filepath"
 	"testing"
 
-	"github.com/roma-glushko/frens/cmd"
-	"github.com/stretchr/testify/require"
+	"github.com/urfave/cli/v2"
 )
 
-func TestJournal_Init(t *testing.T) {
-	app := cmd.NewApp()
+func InitJournal(t *testing.T, c cli.App) (string, error) {
+	jDir := t.TempDir()
+	a := []string{
+		"frens",
+		"-j",
+		jDir,
+		"journal",
+		"init",
+	}
 
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	// Check if the journal was initialized correctly
-	require.FileExists(t, filepath.Join(jDir, "friends.toml"))
-	require.FileExists(t, filepath.Join(jDir, "activities.toml"))
+	return jDir, c.RunContext(t.Context(), a)
 }

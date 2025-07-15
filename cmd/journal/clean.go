@@ -12,23 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package acceptance
+package journal
 
 import (
-	"path/filepath"
-	"testing"
-
-	"github.com/roma-glushko/frens/cmd"
-	"github.com/stretchr/testify/require"
+	"github.com/urfave/cli/v2"
 )
 
-func TestJournal_Init(t *testing.T) {
-	app := cmd.NewApp()
+var CleanCommand = &cli.Command{
+	Name:    "clean",
+	Aliases: []string{"c"},
+	Usage:   "Clean up journal data in case it has been corrupted or stale",
+	Action: func(_ *cli.Context) error {
+		// TODO: implement
 
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	// Check if the journal was initialized correctly
-	require.FileExists(t, filepath.Join(jDir, "friends.toml"))
-	require.FileExists(t, filepath.Join(jDir, "activities.toml"))
+		return nil
+	},
 }

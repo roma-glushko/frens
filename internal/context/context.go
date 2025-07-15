@@ -12,23 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package acceptance
+package context
 
-import (
-	"path/filepath"
-	"testing"
+import "context"
 
-	"github.com/roma-glushko/frens/cmd"
-	"github.com/stretchr/testify/require"
-)
+type AppContext struct {
+	JournalDir string
+}
 
-func TestJournal_Init(t *testing.T) {
-	app := cmd.NewApp()
+type ctxKey struct{}
 
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
+func WithCtx(ctx context.Context, j *AppContext) context.Context {
+	return context.WithValue(ctx, ctxKey{}, j)
+}
 
-	// Check if the journal was initialized correctly
-	require.FileExists(t, filepath.Join(jDir, "friends.toml"))
-	require.FileExists(t, filepath.Join(jDir, "activities.toml"))
+func FromCtx(ctx context.Context) *AppContext {
+	if val := ctx.Value(ctxKey{}); val != nil {
+		if jCtx, ok := val.(*AppContext); ok && jCtx != nil {
+			return jCtx
+		}
+	}
+
+	return nil
 }

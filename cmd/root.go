@@ -15,18 +15,22 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"time"
 
-	"github.com/mattn/go-isatty"
+	"github.com/roma-glushko/frens/internal/journaldir"
 
 	"github.com/charmbracelet/log"
+	"github.com/mattn/go-isatty"
 	"github.com/muesli/termenv"
 	"github.com/roma-glushko/frens/cmd/activity"
 	"github.com/roma-glushko/frens/cmd/friend"
 	"github.com/roma-glushko/frens/cmd/journal"
 	"github.com/roma-glushko/frens/cmd/location"
 	"github.com/roma-glushko/frens/cmd/note"
+	jctx "github.com/roma-glushko/frens/internal/context"
+	jrnal "github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/version"
 	"github.com/urfave/cli/v2"
 )
@@ -74,10 +78,31 @@ func NewApp() cli.App {
 				Usage:   "path to the journal directory (default: ~/.config/frens/)",
 			},
 		},
-		Before: func(c *cli.Context) error {
-			debugLevel := c.Bool("debug")
+		Before: func(ctx *cli.Context) error {
+			debugLevel := ctx.Bool("debug")
 
 			InitLogging(debugLevel)
+
+			jDir, err := journaldir.Dir(ctx.String("journal"))
+			if err != nil {
+				return fmt.Errorf("could not load journal directory from %s: %v", jDir, err)
+			}
+
+			jCtx := jctx.AppContext{
+				JournalDir: jDir,
+			}
+
+			ctx.Context = jctx.WithCtx(ctx.Context, &jCtx)
+
+			if journaldir.Exists(jDir) {
+				// load only if the journal directory exists (it may not if this is the first run or a new journal path)
+				jr, err := journaldir.Load(jDir)
+				if err != nil {
+					return fmt.Errorf("failed to load journal from %s: %w", jDir, err)
+				}
+
+				ctx.Context = jrnal.WithCtx(ctx.Context, jr)
+			}
 
 			return nil
 		},

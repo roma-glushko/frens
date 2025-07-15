@@ -22,19 +22,23 @@ import (
 
 const DefaultFrensDir = "frens"
 
-func DefaultDir() (string, error) {
+func Dir(overridePath string) (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("failed to get user home dir: %w", err)
 	}
 
-	lifePath := filepath.Join(homeDir, ".config", DefaultFrensDir)
+	journalPath := filepath.Join(homeDir, ".config", DefaultFrensDir)
 
-	// ensure directory exists
-	err = os.MkdirAll(lifePath, os.ModePerm)
-	if err != nil {
-		return "", fmt.Errorf("failed to create the journal dir at %s: %w", lifePath, err)
+	if overridePath != "" {
+		journalPath = overridePath
 	}
 
-	return lifePath, nil
+	// ensure directory exists
+	err = os.MkdirAll(journalPath, os.ModePerm)
+	if err != nil {
+		return "", fmt.Errorf("failed to create the journal dir at %s: %w", journalPath, err)
+	}
+
+	return journalPath, nil
 }

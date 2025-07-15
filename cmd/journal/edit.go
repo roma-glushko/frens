@@ -18,8 +18,10 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
-	"github.com/roma-glushko/frens/internal/journaldir"
+	"github.com/roma-glushko/frens/internal/journal"
+
 	"github.com/urfave/cli/v2"
 )
 
@@ -28,20 +30,20 @@ var EditCommand = &cli.Command{
 	Aliases: []string{"e"},
 	Usage:   "Edit journal raw files",
 	Flags:   []cli.Flag{},
-	Action: func(_ *cli.Context) error {
-		journalDir, err := journaldir.DefaultDir()
-		if err != nil {
-			return err
-		}
+	Action: func(ctx *cli.Context) error {
+		jr := journal.FromCtx(ctx.Context)
 
 		editor := GetEditor()
 
-		cmd := exec.Command(editor, journalDir+"/friends.toml") // TODO: make it configurable
+		cmd := exec.Command(
+			editor,
+			filepath.Join(jr.DirPath, "friends.toml"),
+		) // TODO: make it configurable
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		err = cmd.Run()
+		err := cmd.Run()
 		if err != nil {
 			return fmt.Errorf("error running editor: %s", err)
 		}
