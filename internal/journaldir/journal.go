@@ -45,7 +45,11 @@ func Init(path string) error {
 	return nil
 }
 
-// Load loads the journal from the specific path or `~/.frens/` is used by default
+func Exists(path string) bool {
+	return toml.Exists(path)
+}
+
+// Load loads the journal from the specific path or `~/.config/frens/` is used by default
 func Load(path string) (*journal.Journal, error) {
 	_, err := os.Stat(path)
 	if err != nil && errors.Is(err, fs.ErrNotExist) {

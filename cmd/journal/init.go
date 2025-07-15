@@ -17,6 +17,8 @@ package journal
 import (
 	"fmt"
 
+	"github.com/roma-glushko/frens/internal/tui"
+
 	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/urfave/cli/v2"
 )
@@ -27,17 +29,28 @@ var InitCommand = &cli.Command{
 	Usage:   "Init a new journal",
 	Flags:   []cli.Flag{},
 	Action: func(_ *cli.Context) error {
-		journalDir, err := journaldir.DefaultDir()
+		jDir, err := journaldir.DefaultDir()
 		if err != nil {
 			return err
 		}
 
-		err = journaldir.Init(journalDir)
-		if err != nil {
-			return err
+		if journaldir.Exists(jDir) {
+			// TODO: check if interactive mode is enabled
+			fmt.Println("A journal already exists at", jDir)
+			if tui.ConfirmAction("\n⚠️  Do you want to overwrite the existing journal under?") {
+				fmt.Println("Overwriting the existing journal...")
+			} else {
+				fmt.Println("\n↩️  Journal initialization cancelled.")
+				return nil
+			}
 		}
 
-		fmt.Println("A new journal's initialized at", journalDir)
+		err = journaldir.Init(jDir)
+		if err != nil {
+			return fmt.Errorf("failed to initialize the journal at %s: %w", jDir, err)
+		}
+
+		fmt.Println("✅ A new journal's initialized at", jDir)
 
 		return nil
 	},

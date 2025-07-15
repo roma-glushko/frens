@@ -90,6 +90,21 @@ func Init(journalDir string) error {
 	return errors.Join(errs...)
 }
 
+func Exists(journalDir string) bool {
+	friendsFilePath := filepath.Join(journalDir, FileNameFriends)
+	activitiesFilePath := filepath.Join(journalDir, FileNameActivities)
+
+	if _, err := os.Stat(friendsFilePath); err == nil {
+		return true
+	}
+
+	if _, err := os.Stat(activitiesFilePath); err == nil {
+		return true
+	}
+
+	return false
+}
+
 func Load(journalDir string) (*journal.Journal, error) {
 	var errs []error
 
