@@ -15,6 +15,7 @@
 package note
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -101,7 +102,7 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("🔄 Updated note: " + actNew.ID)
+		fmt.Println("🔄 Updated note: " + actNew.ID)
 
 		return nil
 	},

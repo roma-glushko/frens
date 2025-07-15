@@ -16,6 +16,7 @@ package location
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -130,7 +131,7 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("🔄 Updated location: " + lNew.String())
+		fmt.Println("🔄 Updated location: " + lNew.String())
 
 		return nil
 	},

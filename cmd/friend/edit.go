@@ -16,6 +16,7 @@ package friend
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -127,7 +128,7 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("🔄 Updated friend: " + pNew.Name)
+		fmt.Println("🔄 Updated friend: " + pNew.Name)
 
 		return nil
 	},

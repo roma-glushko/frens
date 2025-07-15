@@ -15,6 +15,7 @@
 package activity
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -101,7 +102,7 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("🔄 Updated activity: " + actNew.ID)
+		fmt.Println("🔄 Updated activity: " + actNew.ID)
 
 		return nil
 	},

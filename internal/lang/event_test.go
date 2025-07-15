@@ -83,9 +83,9 @@ func TestExtractActivity_EmptyDate(t *testing.T) {
 		desc string
 	}{
 		{desc: wantDesc},
-		{desc: ": " + wantDesc},
-		{desc: " : " + wantDesc},
-		{desc: " :" + wantDesc},
+		{desc: ":: " + wantDesc},
+		{desc: " :: " + wantDesc},
+		{desc: " :: " + wantDesc},
 	}
 
 	for _, test := range tests {
