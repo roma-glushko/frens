@@ -3,11 +3,29 @@
 A friendship management & journaling application for introverts and not only.
 Build relationships with people that last.
 
+`frens` is a command-line application that helps you to keep track of your relationships 
+with other people you care about.
+
+`frens` gives you:
+
+- More organization around staying in touch with friends and family.
+- A low-cost way to record and remember big moments in your life.
+- A way to track how your relationships develop over time.
+
 ## Features
 
-- TBU
+- Record your relationships with friends, family, colleagues, and acquaintances using a simple set of concepts like `Friends`, `Locations`, `Activities`, and `Notes`.
+- A simple journaling language (`frentxt`) to simplify the process of recording your thoughts and activities.
 
-## Get Started
+## Philosophy
+
+- **Simplicity**: Should be quick and easy to use. As few concepts as possible to keep in mind. Little to no manual record maintenance.
+- **Journaling First**: Should focus you on journaling and jotting down your thoughts.
+- **Intelligence**: Guessing your friends' names, understanding relative dates (e.g. "yesterday", "tomorrow").
+- **Privacy & Transparency**: All data is stored locally on your machine in TOML file format. You can optionally share it across your laptops via Git.
+- **Hackable**: Should be possible to use the collected data in automations and scripts.
+
+## Installation
 
 ### MacOS
 
@@ -16,13 +34,22 @@ brew tap roma-glushko/frens https://github.com/roma-glushko/frens
 brew install frens
 ```
 
+### Download Binaries
+
+For other platforms and architectures, you can download `fren's` binaries right from [Github Releases](https://github.com/roma-glushko/frens/releases).
+
 ## Main Concepts
 
 ![Diagram](./docs/friens-data-model.png?raw=true)
 
+- **Friends**: People you know and care about. Can be family, colleagues, or acquaintances.
+- **Locations**: Places where you and your friends live, work, or spend time together.
+- **Activities**: Things you do with your friends, like going to the movies, having dinner, or attending events.
+- **Notes**: Insights, preferences, deep meaning information with long-term value about your friends, activities, or locations.
+
 ## Language
 
-One of the major Fren's features is the ability to input all data as a free-form text using a simple and straightforward syntax.
+One of the major `fren`'s features is the ability to input all data as a free-form text using a simple and straightforward syntax.
 
 ### Tags
 
@@ -58,19 +85,6 @@ You can also specify ID of the friend via `$id:nickname` syntax like this:
 
 ```text
 Michael Harry Scott (aka "The World's Best Boss") $id:mscott, ...
-```
-
-#### Contacts
-
-```text
-
-```
-
-#### Wishlist
-
-You can add a wishlist to your Friend like this:
-
-```text
 ```
 
 ### Activities & Notes
