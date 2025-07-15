@@ -6,7 +6,7 @@ The release process is based around tags:
 
 ```bash
 git tag v0.0.2-alpha.1
-git push origin v0.0.2-alpha.1
+git push --tags
 ```
 
 - This should trigger a GitHub Action that builds the release and uploads it to the `Releases` section of the repository.
