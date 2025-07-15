@@ -16,14 +16,14 @@ cask "frens" do
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "4f53f9f82ed43acc7c789df8287c62aadf08de840a05a5c9466a0942e2a1d9a1"
+      sha256 "c874f31781d5455cce625e0484dbf47f650772c5bc51b705a72c92322f1777b0"
     end
     on_arm do
       url "https://github.com/roma-glushko/frens/releases/download/v0.0.2-post1/frens_v0.0.2-post1_darwin_arm64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "a058c85382539cec0198933ef46cc2353636018add10098268e5dd506efcc7b4"
+      sha256 "d9ef897337dc53bffd04994ce1170783de6b22cc63205c3f825f1c4240797cb4"
     end
   end
 
@@ -33,14 +33,14 @@ cask "frens" do
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "c299d71feafdfa8801bb1dda17abe08413de8a4d44e78f555a232bb8a77e1617"
+      sha256 "782eeba5f017024ee18d416021ce2a0e4a1405dfd7c14d0fe66353ecdcbe8a23"
     end
     on_arm do
       url "https://github.com/roma-glushko/frens/releases/download/v0.0.2-post1/frens_v0.0.2-post1_linux_arm64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "33c95e82bca994c08690a1e1f0ba95775e8411a066f226612939544f2e0c6c9a"
+      sha256 "f869a3543dd4720fa4ca05f43eb24c07d165b906500717c2d9e70db7837eb0a5"
     end
   end
 
