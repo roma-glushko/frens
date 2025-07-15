@@ -20,7 +20,7 @@ import (
 	"github.com/markusmobius/go-dateparser"
 )
 
-var DatePartition = "::"
+var DateSeparator = "::"
 
 func ExtractDate(s string) time.Time {
 	ts := time.Now().UTC()
