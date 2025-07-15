@@ -30,7 +30,10 @@ func TestExtractTags(t *testing.T) {
 		want  []tag.Tag
 	}{
 		{"#tag1 #tag2", []tag.Tag{{Name: "tag1"}, {Name: "tag2"}}},
-		{"#school:biology #school:math", []tag.Tag{{Name: "school:biology"}, {Name: "school:math"}}},
+		{
+			"#school:biology #school:math",
+			[]tag.Tag{{Name: "school:biology"}, {Name: "school:math"}},
+		},
 		{"#tag3#tag4", []tag.Tag{{Name: "tag3"}, {Name: "tag4"}}},
 	}
 

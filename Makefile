@@ -22,7 +22,7 @@ tools: tools-test ## Install static checkers & other binaries
 	@echo "🚚 Downloading tools.."
 	@mkdir -p $(GOBIN)
 	@ \
-	command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
+	command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest & \
 	command -v goreleaser > /dev/null || go install github.com/goreleaser/goreleaser/v2@latest & \
 	wait
 
@@ -42,6 +42,7 @@ lint: tools ## Lint the source code
 	@echo "🧹 Vetting go.mod.."
 	@go vet ./...
 	@echo "🧹 GoCI Lint.."
+	@$(BIN_DIR)/golangci-lint fmt ./...
 	@$(BIN_DIR)/golangci-lint run ./...
 	@echo "🧹 Check GoReleaser.."
 	@$(BIN_DIR)/goreleaser check

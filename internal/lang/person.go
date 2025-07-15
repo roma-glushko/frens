@@ -30,7 +30,9 @@ var (
 )
 
 func init() {
-	personRe = regexp.MustCompile(`(?m)^(?P<name>[^\(\$:\n]+?)\s*(?:\(\s*a\.?k\.?a\.?\s+(?P<nicknames>[^)]*)\))?\s*(?:\$id:(?P<id>[^\s:]+))?\s*(?:::\s*(?P<desc>.+))?$`)
+	personRe = regexp.MustCompile(
+		`(?m)^(?P<name>[^\(\$:\n]+?)\s*(?:\(\s*a\.?k\.?a\.?\s+(?P<nicknames>[^)]*)\))?\s*(?:\$id:(?P<id>[^\s:]+))?\s*(?:::\s*(?P<desc>.+))?$`,
+	)
 }
 
 func extractNicknames(raw string) []string {

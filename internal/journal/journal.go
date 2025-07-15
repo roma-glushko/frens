@@ -159,7 +159,11 @@ func (j *Journal) GetLocation(q string) (*friend.Location, error) {
 			}
 		}
 
-		return nil, fmt.Errorf("multiple locations found for '%s': %s", q, strings.Join(names, ", "))
+		return nil, fmt.Errorf(
+			"multiple locations found for '%s': %s",
+			q,
+			strings.Join(names, ", "),
+		)
 	}
 
 	m := matches[0]
@@ -175,7 +179,11 @@ func (j *Journal) GetLocation(q string) (*friend.Location, error) {
 			names = append(names, f.Name)
 		}
 
-		return nil, fmt.Errorf("multiple locations found for '%s': %s", q, strings.Join(names, ", "))
+		return nil, fmt.Errorf(
+			"multiple locations found for '%s': %s",
+			q,
+			strings.Join(names, ", "),
+		)
 	}
 
 	return m.Entities[0], nil

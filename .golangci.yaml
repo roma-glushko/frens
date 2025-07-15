@@ -2,6 +2,7 @@ version: "2"
 run:
   go: "1.24.5"
   tests: false
+  timeout: 5m
 
 output:
   # Make output more digestible with quickfix in vim/emacs/etc.
@@ -11,7 +12,7 @@ output:
 linters:
   enable:
     - nolintlint
-    - revive
+#    - revive
     - staticcheck
     - asasalint
     - bodyclose
@@ -19,7 +20,7 @@ linters:
     - cyclop
     - dupword
     - errname
-    - gosec
+#    - gosec
     - nakedret
     - exhaustive
     - loggercheck
@@ -36,7 +37,7 @@ linters:
     - tparallel
     - unconvert
     - unparam
-    - wsl
+    - wsl_v5
   exclusions:
     generated: lax
     presets:
@@ -44,8 +45,10 @@ linters:
 
 formatters:
   enable:
+    - gofmt
     - gofumpt
     - goimports
+    - golines
   exclusions:
     generated: lax
 

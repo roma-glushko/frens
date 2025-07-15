@@ -28,13 +28,17 @@ type Files interface {
 	FriendsFile | EventsFile
 }
 
-func saveFile[T Files](filePath string, content T) error {
+func saveFile[T Files](filePath string, content T) (err error) {
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to save file %s: %w", filePath, err)
 	}
 
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			err = fmt.Errorf("failed to close file %s: %w", filePath, closeErr)
+		}
+	}()
 
 	encoder := toml.NewEncoder(file)
 
@@ -45,13 +49,17 @@ func saveFile[T Files](filePath string, content T) error {
 	return nil
 }
 
-func loadFile[T Files](filePath string) (*T, error) {
+func loadFile[T Files](filePath string) (c *T, err error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)
 	}
 
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			err = fmt.Errorf("failed to close file %s: %w", filePath, closeErr)
+		}
+	}()
 
 	var content T
 
