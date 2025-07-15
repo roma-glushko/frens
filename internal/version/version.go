@@ -21,6 +21,8 @@ import (
 
 const AppName = "frens"
 
+var Version = "dev"
+
 // GitCommit is the commit hash of the current version.
 var GitCommit = "unknown"
 
@@ -30,5 +32,11 @@ var BuildDate = "unknown"
 var FullVersion string
 
 func init() {
-	FullVersion = fmt.Sprintf("%s (%s, runtime: %s)", GitCommit, BuildDate, runtime.Version())
+	FullVersion = fmt.Sprintf(
+		"%s (commit: %s, built at: %s, runtime: %s)",
+		Version,
+		GitCommit,
+		BuildDate,
+		runtime.Version(),
+	)
 }
