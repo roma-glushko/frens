@@ -59,7 +59,7 @@ var EditCommand = &cli.Command{
 		actID := ctx.Args().First()
 		desc := strings.TrimSpace(strings.Join(ctx.Args().Slice()[1:], " "))
 
-		actOld, err := jr.GetActivity(actID)
+		actOld, err := jr.GetEvent(friend.EventTypeNote, actID)
 		if err != nil {
 			return cli.Exit("Note not found: "+actID, 1)
 		}
@@ -94,7 +94,7 @@ var EditCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			actNew, err = j.UpdateActivity(actOld, actNew)
+			actNew, err = j.UpdateEvent(actOld, actNew)
 			return err
 		})
 		if err != nil {

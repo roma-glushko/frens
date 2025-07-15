@@ -67,6 +67,7 @@ func RenderEvent(e friend.Event) string {
 
 	if !e.Date.IsZero() {
 		sb.WriteString(e.Date.Format("2006-01-02 15:04:05"))
+		sb.WriteString(" ")
 		sb.WriteString(DatePartition)
 		sb.WriteString(" ")
 	}

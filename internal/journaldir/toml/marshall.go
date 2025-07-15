@@ -25,7 +25,7 @@ import (
 )
 
 type Files interface {
-	FriendsFile | ActivitiesFile
+	FriendsFile | EventsFile
 }
 
 func saveFile[T Files](filePath string, content T) error {
@@ -73,7 +73,7 @@ func Init(journalDir string) error {
 		errs = append(errs, fmt.Errorf("failed to create friends file: %w", err))
 	}
 
-	var activities ActivitiesFile
+	var activities EventsFile
 
 	if err := saveFile(filepath.Join(journalDir, FileNameActivities), activities); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
@@ -90,7 +90,7 @@ func Load(journalDir string) (*journal.Journal, error) {
 		errs = append(errs, fmt.Errorf("failed to load friends file: %w", err))
 	}
 
-	activities, err := loadFile[ActivitiesFile](filepath.Join(journalDir, FileNameActivities))
+	events, err := loadFile[EventsFile](filepath.Join(journalDir, FileNameActivities))
 	if err != nil {
 		errs = append(errs, fmt.Errorf("failed to load activities file: %w", err))
 	}
@@ -104,7 +104,8 @@ func Load(journalDir string) (*journal.Journal, error) {
 		Tags:       entities.Tags,
 		Friends:    entities.Friends,
 		Locations:  entities.Locations,
-		Activities: activities.Activities,
+		Activities: events.Activities,
+		Notes:      events.Notes,
 	}, nil
 }
 
@@ -121,11 +122,12 @@ func Save(l *journal.Journal) error {
 		errs = append(errs, fmt.Errorf("failed to create friends file: %w", err))
 	}
 
-	activities := ActivitiesFile{
+	events := EventsFile{
+		Notes:      l.Notes,
 		Activities: l.Activities,
 	}
 
-	if err := saveFile(filepath.Join(l.DirPath, FileNameActivities), activities); err != nil {
+	if err := saveFile(filepath.Join(l.DirPath, FileNameActivities), events); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
 	}
 

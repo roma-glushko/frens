@@ -94,7 +94,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(frenWord))
+		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(frenWord))
 
 		return nil
 	},

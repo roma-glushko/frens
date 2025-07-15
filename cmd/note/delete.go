@@ -15,7 +15,10 @@
 package note
 
 import (
+	"errors"
 	"fmt"
+
+	"github.com/charmbracelet/log"
 
 	"github.com/roma-glushko/frens/internal/utils"
 
@@ -33,8 +36,8 @@ var DeleteCommand = &cli.Command{
 	UsageText: `frens note delete [OPTIONS] [INFO]`,
 	Description: `Delete notes from your journal by their ID.
 	Examples:
-		frens note delete 2zpWoEiUYn6vrSl9w03NAVkWxMn 2zpWoEiUYn6vrSl9w03NAVkWxMx
-		frens note d -f 2zpWoEiUYn6vrSl9w03NAVkWxMn 
+		frens note delete 2zpWoEiUYn6vrSl9w03NAVkWxMn 2zu4V8MAQSvQv9IpAKNYJwaielS
+		frens note d -f 2zu4V8MAQSvQv9IpAKNYJwaielS 
 	`,
 	Args:      true,
 	ArgsUsage: `<NOTE_ID> [, <NOTE_ID>...]`,
@@ -61,21 +64,26 @@ var DeleteCommand = &cli.Command{
 			return cli.Exit("Please provide a note ID to delete.", 1)
 		}
 
-		activities := make([]friend.Event, 0, len(ctx.Args().Slice()))
+		events := make([]friend.Event, 0, len(ctx.Args().Slice()))
 
 		for _, actID := range ctx.Args().Slice() {
-			act, err := jr.GetActivity(actID)
+			act, err := jr.GetEvent(friend.EventTypeNote, actID)
 			if err != nil {
+				if errors.Is(err, journal.ErrEventNotFound) {
+					return cli.Exit("Note not found: "+actID, 1)
+				}
+
+				log.Error("Failed to get note", "err", err, "note_id", actID)
 				return err
 			}
 
-			activities = append(activities, act)
+			events = append(events, act)
 		}
 
-		actWord := utils.P(len(activities), "note", "notes")
-		fmt.Printf("🔍 Found %d %s:\n", len(activities), actWord)
+		actWord := utils.P(len(events), "note", "notes")
+		fmt.Printf("🔍 Found %d %s:\n", len(events), actWord)
 
-		for _, act := range activities {
+		for _, act := range events {
 			fmt.Printf("   • %s\n", act.ID)
 		}
 
@@ -87,14 +95,14 @@ var DeleteCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			j.RemoveActivities(activities)
+			j.RemoveEvents(friend.EventTypeNote, events)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(actWord))
+		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(actWord))
 
 		return nil
 	},

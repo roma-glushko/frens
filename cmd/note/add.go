@@ -91,7 +91,7 @@ var AddCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			e, err = j.AddActivity(e)
+			e, err = j.AddEvent(e)
 
 			return err
 		})

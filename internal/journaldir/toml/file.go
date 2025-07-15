@@ -30,6 +30,7 @@ type FriendsFile struct {
 	Locations []friend.Location `toml:"locations"`
 }
 
-type ActivitiesFile struct {
+type EventsFile struct {
 	Activities []friend.Event `toml:"activities"`
+	Notes      []friend.Event `toml:"notes"`
 }

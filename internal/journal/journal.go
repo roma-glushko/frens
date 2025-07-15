@@ -299,7 +299,7 @@ func (j *Journal) GuessFriends(q string) []friend.Person { //nolint:cyclop
 	return append(certainPersons, guessedPersons...)
 }
 
-func (j *Journal) AddActivity(e friend.Event) (friend.Event, error) {
+func (j *Journal) AddEvent(e friend.Event) (friend.Event, error) {
 	e.ID = ksuid.New().String()
 
 	guessedPersons := j.GuessFriends(e.Desc)
@@ -341,42 +341,78 @@ func (j *Journal) AddActivity(e friend.Event) (friend.Event, error) {
 	return e, nil
 }
 
-func (j *Journal) GetActivity(q string) (friend.Event, error) {
-	for _, act := range j.Activities {
-		if act.ID == q {
-			return act, nil
+func (j *Journal) GetEvent(t friend.EventType, q string) (friend.Event, error) {
+	if t == friend.EventTypeActivity {
+		for _, act := range j.Activities {
+			if act.ID == q {
+				return act, nil
+			}
+		}
+	}
+
+	if t == friend.EventTypeNote {
+		for _, note := range j.Notes {
+			if note.ID == q {
+				return note, nil
+			}
 		}
 	}
 
 	return friend.Event{}, ErrEventNotFound
 }
 
-func (j *Journal) UpdateActivity(o, n friend.Event) (friend.Event, error) {
+func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	n.ID = o.ID
 
-	for i, act := range j.Activities {
-		if act.ID == o.ID {
-			j.Activities[i] = n
-			j.dirty = true
+	if o.Type == friend.EventTypeActivity {
+		for i, act := range j.Activities {
+			if act.ID == o.ID {
+				j.Activities[i] = n
+				j.dirty = true
 
-			return n, nil
+				return n, nil
+			}
+		}
+	}
+
+	if o.Type == friend.EventTypeNote {
+		for i, note := range j.Notes {
+			if note.ID == o.ID {
+				j.Notes[i] = n
+				j.dirty = true
+
+				return n, nil
+			}
 		}
 	}
 
 	// TODO: update friend & location references
 
 	// If the activity was not found, add it as a new one
-	return j.AddActivity(n)
+	return j.AddEvent(n)
 }
 
-func (j *Journal) RemoveActivities(toRemove []friend.Event) {
+func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
 	for _, act := range toRemove {
-		for i, a := range j.Activities {
-			if a.ID == act.ID {
-				j.Activities = append(j.Activities[:i], j.Activities[i+1:]...)
-				j.dirty = true
+		if t == friend.EventTypeActivity {
+			for i, a := range j.Activities {
+				if a.ID == act.ID {
+					j.Activities = append(j.Activities[:i], j.Activities[i+1:]...)
+					j.dirty = true
 
-				break
+					break
+				}
+			}
+		}
+
+		if t == friend.EventTypeNote {
+			for i, n := range j.Notes {
+				if n.ID == act.ID {
+					j.Notes = append(j.Notes[:i], j.Notes[i+1:]...)
+					j.dirty = true
+
+					break
+				}
 			}
 		}
 	}
