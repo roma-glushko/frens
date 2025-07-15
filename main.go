@@ -15,7 +15,10 @@
 package main
 
 import (
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/cmd"
@@ -24,7 +27,10 @@ import (
 func main() {
 	cliApp := cmd.NewApp()
 
-	if err := cliApp.Run(os.Args); err != nil {
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	if err := cliApp.RunContext(ctx, os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
