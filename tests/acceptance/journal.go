@@ -12,33 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package journaldir
+package acceptance
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
+	"testing"
+
+	"github.com/urfave/cli/v2"
 )
 
-const DefaultFrensDir = "frens"
-
-func Dir(path string) (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get user home dir: %w", err)
+func initJournal(t *testing.T, c cli.App) (string, error) {
+	jDir := t.TempDir()
+	a := []string{
+		"frens",
+		"-j",
+		jDir,
+		"journal",
+		"init",
 	}
 
-	journalPath := filepath.Join(homeDir, ".config", DefaultFrensDir)
-
-	if path != "" {
-		journalPath = path
-	}
-
-	// ensure directory exists
-	err = os.MkdirAll(journalPath, os.ModePerm)
-	if err != nil {
-		return "", fmt.Errorf("failed to create the journal dir at %s: %w", journalPath, err)
-	}
-
-	return journalPath, nil
+	return jDir, c.RunContext(t.Context(), a)
 }

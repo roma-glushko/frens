@@ -41,16 +41,6 @@ var AddCommand = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		jDir, err := journaldir.DefaultDir()
-		if err != nil {
-			return err
-		}
-
-		jr, err := journaldir.Load(jDir)
-		if err != nil {
-			return err
-		}
-
 		var info string
 
 		if ctx.NArg() == 0 {
@@ -89,6 +79,8 @@ var AddCommand = &cli.Command{
 		if err := e.Validate(); err != nil {
 			return err
 		}
+
+		jr := journal.FromCtx(ctx.Context)
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
 			e, err = j.AddEvent(e)

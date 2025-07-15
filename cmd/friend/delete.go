@@ -47,21 +47,13 @@ var DeleteCommand = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		journalDir, err := journaldir.DefaultDir()
-		if err != nil {
-			return err
-		}
-
-		jr, err := journaldir.Load(journalDir)
-		if err != nil {
-			return err
-		}
-
 		if len(ctx.Args().Slice()) == 0 {
 			return cli.Exit("Please provide a friend name, nickname, or ID to delete.", 1)
 		}
 
 		friends := make([]friend.Person, 0, len(ctx.Args().Slice()))
+
+		jr := journal.FromCtx(ctx.Context)
 
 		for _, fID := range ctx.Args().Slice() {
 			f, err := jr.GetFriend(fID)
@@ -86,7 +78,7 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
+		err := journaldir.Update(jr, func(j *journal.Journal) error {
 			j.RemoveFriends(friends)
 			return nil
 		})

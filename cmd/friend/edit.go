@@ -52,21 +52,13 @@ var EditCommand = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		journalDir, err := journaldir.DefaultDir()
-		if err != nil {
-			return err
-		}
-
-		jr, err := journaldir.Load(journalDir)
-		if err != nil {
-			return err
-		}
-
 		if ctx.NArg() < 1 {
 			return cli.Exit("You must provide a friend name, nickname, or ID to edit.", 1)
 		}
 
 		pID := strings.Join(ctx.Args().Slice(), " ")
+
+		jr := journal.FromCtx(ctx.Context)
 
 		pOld, err := jr.GetFriend(pID)
 		if err != nil {

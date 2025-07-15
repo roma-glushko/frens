@@ -61,7 +61,7 @@ func Load(path string) (*journal.Journal, error) {
 
 	data, err := toml.Load(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load life space: %w", err)
+		return nil, fmt.Errorf("failed to load journal directory: %w", err)
 	}
 
 	data.Init()

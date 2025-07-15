@@ -46,21 +46,13 @@ var DeleteCommand = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		journalDir, err := journaldir.DefaultDir()
-		if err != nil {
-			return err
-		}
-
-		jr, err := journaldir.Load(journalDir)
-		if err != nil {
-			return err
-		}
-
 		if len(ctx.Args().Slice()) == 0 {
 			return cli.Exit("Please provide a location name, alias, or ID to delete.", 1)
 		}
 
 		locations := make([]friend.Location, 0, len(ctx.Args().Slice()))
+
+		jr := journal.FromCtx(ctx.Context)
 
 		for _, lID := range ctx.Args().Slice() {
 			l, err := jr.GetLocation(lID)
@@ -85,7 +77,7 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
+		err := journaldir.Update(jr, func(j *journal.Journal) error {
 			j.RemoveLocations(locations)
 			return nil
 		})

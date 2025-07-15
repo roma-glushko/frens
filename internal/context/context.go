@@ -12,33 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package journaldir
+package context
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-)
+import "context"
 
-const DefaultFrensDir = "frens"
+type Context struct {
+	JournalDir string
+}
 
-func Dir(path string) (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get user home dir: %w", err)
+type ctxKey struct{}
+
+func WithCtx(ctx context.Context, j *Context) context.Context {
+	return context.WithValue(ctx, ctxKey{}, j)
+}
+
+func FromCtx(ctx context.Context) *Context {
+	if val := ctx.Value(ctxKey{}); val != nil {
+		if jCtx, ok := val.(*Context); ok && jCtx != nil {
+			return jCtx
+		}
 	}
 
-	journalPath := filepath.Join(homeDir, ".config", DefaultFrensDir)
-
-	if path != "" {
-		journalPath = path
-	}
-
-	// ensure directory exists
-	err = os.MkdirAll(journalPath, os.ModePerm)
-	if err != nil {
-		return "", fmt.Errorf("failed to create the journal dir at %s: %w", journalPath, err)
-	}
-
-	return journalPath, nil
+	return nil
 }

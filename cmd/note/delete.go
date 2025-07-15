@@ -50,21 +50,13 @@ var DeleteCommand = &cli.Command{
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		journalDir, err := journaldir.DefaultDir()
-		if err != nil {
-			return err
-		}
-
-		jr, err := journaldir.Load(journalDir)
-		if err != nil {
-			return err
-		}
-
 		if len(ctx.Args().Slice()) == 0 {
 			return cli.Exit("Please provide a note ID to delete.", 1)
 		}
 
 		events := make([]friend.Event, 0, len(ctx.Args().Slice()))
+
+		jr := journal.FromCtx(ctx.Context)
 
 		for _, actID := range ctx.Args().Slice() {
 			act, err := jr.GetEvent(friend.EventTypeNote, actID)
@@ -94,7 +86,7 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
+		err := journaldir.Update(jr, func(j *journal.Journal) error {
 			j.RemoveEvents(friend.EventTypeNote, events)
 			return nil
 		})
