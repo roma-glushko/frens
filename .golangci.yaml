@@ -4,11 +4,6 @@ run:
   tests: false
   timeout: 5m
 
-output:
-  # Make output more digestible with quickfix in vim/emacs/etc.
-  sort-results: true
-  print-issued-lines: false
-
 linters:
   enable:
     - nolintlint
@@ -38,6 +33,19 @@ linters:
     - unconvert
     - unparam
     - wsl_v5
+  settings:
+    govet:
+      enable:
+        - nilness
+        - reflectvaluecompare
+        - sortslice
+        - unusedwrite
+        - defers
+        - atomic
+        - nilfunc
+        - printf
+        - sortslice
+        - tests
   exclusions:
     generated: lax
     presets:
@@ -52,17 +60,3 @@ formatters:
   exclusions:
     generated: lax
 
-linters-settings:
-  govet:
-    # These govet checks are disabled by default, but they're useful.
-    enable:
-      - nilness
-      - reflectvaluecompare
-      - sortslice
-      - unusedwrite
-      - defers
-      - atomic
-      - nilfunc
-      - printf
-      - sortslice
-      - tests
