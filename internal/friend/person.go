@@ -41,10 +41,10 @@ type Person struct {
 	Desc       string   `toml:"desc,omitempty"`
 	Nicknames  []string `toml:"nicknames,omitempty"`
 	Tags       []string `toml:"tags,omitempty"`
-	Notes      []Event  `toml:"notes,omitempty"`
 	Locations  []string `toml:"locations,omitempty"`
 	Reminders  []string `toml:"reminders,omitempty"`
 	Activities int      `toml:"activities,omitempty"`
+	Notes      int      `toml:"notes,omitempty"`
 	// internal use only
 	Score int `toml:"-"`
 }

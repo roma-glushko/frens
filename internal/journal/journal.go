@@ -43,6 +43,7 @@ type Journal struct {
 	Friends    []friend.Person
 	Locations  friend.Locations
 	Activities []friend.Event
+	Notes      []friend.Event
 
 	dirty           bool
 	matcherMu       sync.Mutex
@@ -317,10 +318,19 @@ func (j *Journal) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 
 	for _, p := range guessedPersons {
 		e.Friends = append(e.Friends, p.Name)
-		p.Activities++
+
+		if e.Type == friend.EventTypeActivity {
+			p.Activities++
+		} else {
+			p.Notes++
+		}
 	}
 
-	j.Activities = append(j.Activities, e)
+	if e.Type == friend.EventTypeActivity {
+		j.Activities = append(j.Activities, e)
+	} else {
+		j.Notes = append(j.Notes, e)
+	}
 
 	j.dirty = true
 

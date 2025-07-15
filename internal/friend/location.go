@@ -34,6 +34,7 @@ type Location struct {
 	Aliases []string `toml:"aliases,omitempty"`
 	Tags    []string `toml:"tags,omitempty"`
 
+	Notes      int `toml:"notes,omitempty"`
 	Activities int `toml:"activities,omitempty"`
 }
 
