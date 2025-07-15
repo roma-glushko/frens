@@ -16,19 +16,19 @@ package context
 
 import "context"
 
-type Context struct {
+type AppContext struct {
 	JournalDir string
 }
 
 type ctxKey struct{}
 
-func WithCtx(ctx context.Context, j *Context) context.Context {
+func WithCtx(ctx context.Context, j *AppContext) context.Context {
 	return context.WithValue(ctx, ctxKey{}, j)
 }
 
-func FromCtx(ctx context.Context) *Context {
+func FromCtx(ctx context.Context) *AppContext {
 	if val := ctx.Value(ctxKey{}); val != nil {
-		if jCtx, ok := val.(*Context); ok && jCtx != nil {
+		if jCtx, ok := val.(*AppContext); ok && jCtx != nil {
 			return jCtx
 		}
 	}

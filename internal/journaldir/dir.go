@@ -22,7 +22,7 @@ import (
 
 const DefaultFrensDir = "frens"
 
-func Dir(path string) (string, error) {
+func Dir(overridePath string) (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("failed to get user home dir: %w", err)
@@ -30,8 +30,8 @@ func Dir(path string) (string, error) {
 
 	journalPath := filepath.Join(homeDir, ".config", DefaultFrensDir)
 
-	if path != "" {
-		journalPath = path
+	if overridePath != "" {
+		journalPath = overridePath
 	}
 
 	// ensure directory exists
