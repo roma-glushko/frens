@@ -43,6 +43,9 @@ jobs:
           restore-keys: |
             go-cache-${{ runner.os }}-
 
+      - name: Inspect env vars
+        run: env
+
       - name: Add tools to PATH
         run: echo "${{ runner.temp }}/tools/bin" >> "$GITHUB_PATH"
 
