@@ -8,7 +8,7 @@ with other people you care about.
 
 `frens` gives you:
 
-- An organized and system way around staying in touch with friends and family.
+- An organized and systematic way around staying in touch with friends and family.
 - A low-effort way to record and remember big moments in your life.
 - A way to track how your relationships develop over time.
 
