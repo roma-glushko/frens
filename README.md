@@ -8,14 +8,14 @@ with other people you care about.
 
 `frens` gives you:
 
-- More organization around staying in touch with friends and family.
-- A low-cost way to record and remember big moments in your life.
+- An organized and system way around staying in touch with friends and family.
+- A low-effort way to record and remember big moments in your life.
 - A way to track how your relationships develop over time.
 
 ## Features
 
 - Record your relationships with friends, family, colleagues, and acquaintances using a simple set of concepts like `Friends`, `Locations`, `Activities`, and `Notes`.
-- A simple journaling language (`frentxt`) to simplify the process of recording your thoughts and activities.
+- A simple journaling language (called `frentxt`) to simplify the process of recording your thoughts and activities.
 
 ## Philosophy
 
@@ -36,7 +36,7 @@ brew install frens
 
 ### Download Binaries
 
-For other platforms and architectures, you can download `fren's` binaries right from [Github Releases](https://github.com/roma-glushko/frens/releases).
+For other platforms and architectures, you can download `fren`'s binaries right from [Github Releases](https://github.com/roma-glushko/frens/releases).
 
 ## Main Concepts
 
@@ -49,7 +49,8 @@ For other platforms and architectures, you can download `fren's` binaries right 
 
 ## Language
 
-One of the major `fren`'s features is the ability to input all data as a free-form text using a simple and straightforward syntax.
+One of the major `fren`'s features is the ability to input all data as a free-form text 
+using a simple and straightforward syntax.
 
 ### Tags
 
@@ -63,11 +64,13 @@ Tags can be specified via the `#tag` syntax like this:
 
 ### Locations
 
+`Locations` can be added like this:
+
 ```text
 Scranton, USA (aka "The Electric City") :: a great place to live and work #office @Scranton $id:scranton
 ```
 
-Then, you can set location for your Friends via the `@location` syntax like this:
+Then, you can set location for your `Friends`, `Activities` and `Notes` via the `@location` syntax like this:
 
 ```text
 @NewYork @LosAngeles @Scranton
@@ -75,13 +78,13 @@ Then, you can set location for your Friends via the `@location` syntax like this
 
 ### Friends
 
-The basic Friend information can be inputted like this:
+Similarly to `Locations`, The basic information about `Friend` can be added using the similar syntax:
 
 ```text
 Michael Harry Scott (aka "The World's Best Boss"), my Dunder Mifflin boss, is a great friend of mine #office @Scranton
 ```
 
-You can also specify ID of the friend via `$id:nickname` syntax like this:
+You can also specify ID of the friend via `$id:friendid` syntax like this:
 
 ```text
 Michael Harry Scott (aka "The World's Best Boss") $id:mscott, ...
@@ -89,8 +92,16 @@ Michael Harry Scott (aka "The World's Best Boss") $id:mscott, ...
 
 ### Activities & Notes
 
+`Activities` and `Notes` are events that have the same syntax:
+
 ```text
 yesterday :: Jim put my stuff in jello #office @Scranton
+```
+
+You can also completely omit the date, so it will be set to the current date:
+
+```text
+Dwight bought a new beet farm #office @Scranton
 ```
 
 ## Credits
