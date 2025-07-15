@@ -81,7 +81,7 @@ test: ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
 
 .PHONY: test-ci
-test-ci: tools-test ## Run tests in the CI mode
+test-ci: tools-test test ## Run tests in the CI mode
 	@gocover-cobertura < coverage.txt > coverage.xml
 
 copyright: ## Apply copyrights to all files
