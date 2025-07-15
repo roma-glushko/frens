@@ -12,35 +12,35 @@ cask "frens" do
 
   on_macos do
     on_intel do
-      url "https://github.mycompany.com/roma-glushko/frens/releases/download/v0.0.2/frens_v0.0.2_darwin_amd64.tar.gz",
+      url "https://github.com/roma-glushko/frens/releases/download/v0.0.2/frens_v0.0.2_darwin_amd64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "2352e8db72b4efd342630d534a0c1cec599d4ee0e3e41f6744800fb8d690087d"
+      sha256 "358d6acc9fb2153bce8a05440fd291f4dbc676d5ff0fccd92c58cca07e3bf16d"
     end
     on_arm do
-      url "https://github.mycompany.com/roma-glushko/frens/releases/download/v0.0.2/frens_v0.0.2_darwin_arm64.tar.gz",
+      url "https://github.com/roma-glushko/frens/releases/download/v0.0.2/frens_v0.0.2_darwin_arm64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "75070fc5fb17f4349aa543851a723011d37cf6a17a7ac48d17d6d379086d7ef9"
+      sha256 "414b576a478b6c294b9fb7a3e46e6c17a4c79081eac12366c3b638c79e4dc7c4"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.mycompany.com/roma-glushko/frens/releases/download/v0.0.2/frens_v0.0.2_linux_amd64.tar.gz",
+      url "https://github.com/roma-glushko/frens/releases/download/v0.0.2/frens_v0.0.2_linux_amd64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "0cd63eb2bbe700f50740042b35258696f8813a5e7479a0a6b887892f34ae8692"
+      sha256 "a71a7bf787d3f75d64c10b972155ab5fb223fa1819588af25b6c691e92e1242c"
     end
     on_arm do
-      url "https://github.mycompany.com/roma-glushko/frens/releases/download/v0.0.2/frens_v0.0.2_linux_arm64.tar.gz",
+      url "https://github.com/roma-glushko/frens/releases/download/v0.0.2/frens_v0.0.2_linux_arm64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "2befade6dcc5d50c9bedbbd9d58e302164e756b78dcde9ab1d420a763dc7b4b0"
+      sha256 "3e96f320ede9d287d80a505de77493c01e4139664a11162cc4cd654b807cf2f2"
     end
   end
 
