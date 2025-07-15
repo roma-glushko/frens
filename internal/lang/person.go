@@ -119,8 +119,10 @@ func RenderPerson(p friend.Person) string {
 		sb.WriteString(RenderTags(p.Tags))
 	}
 
-	sb.WriteString(" ")
-	sb.WriteString(RenderProps(personProps{ID: p.ID}))
+	if p.ID != "" {
+		sb.WriteString(" ")
+		sb.WriteString(RenderProps(personProps{ID: p.ID}))
+	}
 
 	return sb.String()
 }
