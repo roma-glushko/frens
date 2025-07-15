@@ -15,9 +15,10 @@
 package cmd
 
 import (
-	"github.com/mattn/go-isatty"
 	"os"
 	"time"
+
+	"github.com/mattn/go-isatty"
 
 	"github.com/charmbracelet/log"
 	"github.com/muesli/termenv"

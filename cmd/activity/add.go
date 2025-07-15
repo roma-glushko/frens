@@ -40,8 +40,8 @@ var AddCommand = &cli.Command{
 	
 	Examples:
 		"Michael wrote a book 'Somehow I managed'" - no date, will be recorded as today
-		"yesterday: Jim Halpert put my stuff in jello" - relative date & description
-		"2009/09/08: "Jim and Pam got married at Niagara Falls" - absolute date & description
+		"yesterday :: Jim Halpert put my stuff in jello #pranks" - relative date & description
+		"2009/09/08 :: "Jim and Pam got married at Niagara Falls #theoffice" - absolute date & description
 `,
 	Flags: []cli.Flag{
 		&cli.StringFlag{

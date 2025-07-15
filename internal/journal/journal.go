@@ -105,9 +105,7 @@ func (j *Journal) GetFriend(q string) (*friend.Person, error) {
 		return nil, fmt.Errorf("multiple friends found for '%s': %s", q, strings.Join(names, ", "))
 	}
 
-	f := m.Entities[0]
-
-	return &f, nil
+	return m.Entities[0], nil
 }
 
 func (j *Journal) UpdateFriend(o, n friend.Person) {
@@ -180,9 +178,7 @@ func (j *Journal) GetLocation(q string) (*friend.Location, error) {
 		return nil, fmt.Errorf("multiple locations found for '%s': %s", q, strings.Join(names, ", "))
 	}
 
-	l := m.Entities[0]
-
-	return &l, nil
+	return m.Entities[0], nil
 }
 
 func (j *Journal) UpdateLocation(o, n friend.Location) {
@@ -220,10 +216,10 @@ func (j *Journal) AddTags(t []tag.Tag) {
 	j.dirty = true
 }
 
-func (j *Journal) GuessFriends(q string) []friend.Person { //nolint:cyclop
+func (j *Journal) GuessFriends(q string) []*friend.Person { //nolint:cyclop
 	matches := j.frenMatcher().Match(q)
 
-	certainPersons := make([]friend.Person, 0, len(matches))
+	certainPersons := make([]*friend.Person, 0, len(matches))
 	ambiguitiesMatches := make([]matcher.Match[friend.Person], 0, len(matches))
 
 	for _, m := range matches {
@@ -232,7 +228,7 @@ func (j *Journal) GuessFriends(q string) []friend.Person { //nolint:cyclop
 			continue
 		}
 
-		shortestNameFriend := slices.MinFunc(m.Entities, func(a, b friend.Person) int {
+		shortestNameFriend := slices.MinFunc(m.Entities, func(a, b *friend.Person) int {
 			return strings.Compare(a.Name, b.Name)
 		})
 
@@ -258,7 +254,7 @@ func (j *Journal) GuessFriends(q string) []friend.Person { //nolint:cyclop
 		AmbiguitiesPerson friend.Person
 	}
 
-	guessedPersons := make([]friend.Person, 0, len(ambiguitiesMatches))
+	guessedPersons := make([]*friend.Person, 0, len(ambiguitiesMatches))
 
 	if len(ambiguitiesMatches) > 0 {
 		rankPairs := make([]friendPair, 0, len(certainPersons)*len(ambiguitiesMatches))
@@ -267,8 +263,8 @@ func (j *Journal) GuessFriends(q string) []friend.Person { //nolint:cyclop
 			for _, am := range ambiguitiesMatches {
 				for _, ap := range am.Entities {
 					rankPairs = append(rankPairs, friendPair{
-						KnownPerson:       cp,
-						AmbiguitiesPerson: ap,
+						KnownPerson:       *cp,
+						AmbiguitiesPerson: *ap,
 					})
 				}
 			}
@@ -284,7 +280,7 @@ func (j *Journal) GuessFriends(q string) []friend.Person { //nolint:cyclop
 		}
 
 		for _, am := range ambiguitiesMatches {
-			guessedPerson := slices.MaxFunc(am.Entities, func(a, b friend.Person) int {
+			guessedPerson := slices.MaxFunc(am.Entities, func(a, b *friend.Person) int {
 				if a.Score != b.Score {
 					return b.Score - a.Score
 				}
@@ -444,7 +440,7 @@ func (j *Journal) locMatcher() *matcher.Matcher[friend.Location] {
 		j.locationMatcher = matcher.NewMatcher[friend.Location]()
 
 		for _, l := range j.Locations {
-			j.locationMatcher.Add(l)
+			j.locationMatcher.Add(&l)
 		}
 	}
 
@@ -459,7 +455,7 @@ func (j *Journal) frenMatcher() *matcher.Matcher[friend.Person] {
 		j.friendMatcher = matcher.NewMatcher[friend.Person]()
 
 		for _, f := range j.Friends {
-			j.friendMatcher.Add(f)
+			j.friendMatcher.Add(&f)
 		}
 	}
 

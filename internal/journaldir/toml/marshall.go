@@ -128,7 +128,7 @@ func Save(l *journal.Journal) error {
 	}
 
 	if err := saveFile(filepath.Join(l.DirPath, FileNameActivities), events); err != nil {
-		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
+		errs = append(errs, fmt.Errorf("failed to create events file: %w", err))
 	}
 
 	return errors.Join(errs...)
