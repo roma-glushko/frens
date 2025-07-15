@@ -16,8 +16,9 @@ package activity
 
 import (
 	"fmt"
-	"github.com/roma-glushko/frens/internal/friend"
 	"strings"
+
+	"github.com/roma-glushko/frens/internal/friend"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
@@ -100,10 +101,9 @@ var AddCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			e = j.AddActivity(e)
-			return nil
+			e, err = j.AddActivity(e)
+			return err
 		})
-
 		if err != nil {
 			return err
 		}

@@ -16,6 +16,8 @@ package note
 
 import (
 	"fmt"
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
@@ -24,7 +26,6 @@ import (
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
-	"strings"
 )
 
 var AddCommand = &cli.Command{
@@ -90,10 +91,10 @@ var AddCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			e = j.AddActivity(e)
-			return nil
-		})
+			e, err = j.AddActivity(e)
 
+			return err
+		})
 		if err != nil {
 			return err
 		}

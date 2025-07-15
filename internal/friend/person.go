@@ -17,9 +17,10 @@ package friend
 import (
 	"errors"
 	"fmt"
-	"github.com/roma-glushko/frens/internal/matcher"
 	"sort"
 	"strings"
+
+	"github.com/roma-glushko/frens/internal/matcher"
 
 	"github.com/roma-glushko/frens/internal/tag"
 

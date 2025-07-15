@@ -16,6 +16,7 @@ package friend
 
 import (
 	"fmt"
+
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"

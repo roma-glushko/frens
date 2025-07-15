@@ -8,7 +8,7 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or impliej.
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
@@ -17,10 +17,11 @@ package journal
 import (
 	"errors"
 	"fmt"
-	"github.com/roma-glushko/frens/internal/matcher"
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/roma-glushko/frens/internal/matcher"
 
 	"github.com/segmentio/ksuid"
 
@@ -219,7 +220,7 @@ func (j *Journal) AddTags(t []tag.Tag) {
 	j.dirty = true
 }
 
-func (j *Journal) GuessFriends(q string) []friend.Person {
+func (j *Journal) GuessFriends(q string) []friend.Person { //nolint:cyclop
 	matches := j.frenMatcher().Match(q)
 
 	certainPersons := make([]friend.Person, 0, len(matches))
@@ -298,7 +299,7 @@ func (j *Journal) GuessFriends(q string) []friend.Person {
 	return append(certainPersons, guessedPersons...)
 }
 
-func (j *Journal) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
+func (j *Journal) AddActivity(e friend.Event) (friend.Event, error) {
 	e.ID = ksuid.New().String()
 
 	guessedPersons := j.GuessFriends(e.Desc)
@@ -326,15 +327,18 @@ func (j *Journal) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 		}
 	}
 
-	if e.Type == friend.EventTypeActivity {
+	switch e.Type {
+	case friend.EventTypeActivity:
 		j.Activities = append(j.Activities, e)
-	} else {
+	case friend.EventTypeNote:
 		j.Notes = append(j.Notes, e)
+	default:
+		return friend.Event{}, fmt.Errorf("unknown event type: %s", e.Type)
 	}
 
 	j.dirty = true
 
-	return e
+	return e, nil
 }
 
 func (j *Journal) GetActivity(q string) (friend.Event, error) {
@@ -347,7 +351,7 @@ func (j *Journal) GetActivity(q string) (friend.Event, error) {
 	return friend.Event{}, ErrEventNotFound
 }
 
-func (j *Journal) UpdateActivity(o, n friend.Event) friend.Event {
+func (j *Journal) UpdateActivity(o, n friend.Event) (friend.Event, error) {
 	n.ID = o.ID
 
 	for i, act := range j.Activities {
@@ -355,16 +359,14 @@ func (j *Journal) UpdateActivity(o, n friend.Event) friend.Event {
 			j.Activities[i] = n
 			j.dirty = true
 
-			return n
+			return n, nil
 		}
 	}
 
 	// TODO: update friend & location references
 
 	// If the activity was not found, add it as a new one
-	j.AddActivity(n)
-
-	return n
+	return j.AddActivity(n)
 }
 
 func (j *Journal) RemoveActivities(toRemove []friend.Event) {

@@ -90,7 +90,7 @@ func TestExtractActivity_EmptyDate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			e, err := ExtractActivity(test.desc)
+			e, err := ExtractEvent(friend.EventTypeActivity, test.desc)
 			require.NoError(t, err)
 
 			require.WithinDuration(t, time.Now(), e.Date, 1*time.Second)
@@ -114,7 +114,7 @@ func TestExtractActivity_DescTrimmed(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			e, err := ExtractActivity(test.desc)
+			e, err := ExtractEvent(friend.EventTypeActivity, test.desc)
 			require.NoError(t, err)
 
 			require.Equal(t, wantDesc, e.Desc)
