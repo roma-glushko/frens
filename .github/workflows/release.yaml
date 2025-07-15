@@ -18,6 +18,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
+      - name: List tags
+        run: git tags
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
