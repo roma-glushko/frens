@@ -22,7 +22,7 @@ jobs:
         run: git fetch --tags --force
 
       - name: List tags
-        run: git tags
+        run: git tag
 
       - name: Set up Go
         uses: actions/setup-go@v5
