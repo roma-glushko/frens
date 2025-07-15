@@ -1,7 +1,11 @@
 # Frens
 
-A friendship management application for introverts and not only.
-Build relationships with people that lasts.
+A friendship management & journaling application for introverts and not only.
+Build relationships with people that last.
+
+## Features
+
+- TBU
 
 ## Get Started
 
@@ -28,13 +32,13 @@ Tags can be specified via the `#tag` syntax like this:
 ### Locations
 
 ```text
-
+Scranton, USA (aka "The Electric City") :: a great place to live and work #office @Scranton $id:scranton
 ```
 
 Then, you can set location for your Friends via the `@location` syntax like this:
 
 ```text
-@NewYork @LosAngeles @SanFrancisco
+@NewYork @LosAngeles @Scranton
 ```
 
 ### Friends
@@ -64,35 +68,14 @@ You can add a wishlist to your Friend like this:
 ```text
 ```
 
-### Activities
+### Activities & Notes
 
-TBU
-
-### Notes
-
-TBU
-
-## Refs
-
-- https://github.com/charmbracelet/huh/blob/main/examples/bubbletea/main.go
-- https://github.com/stefanlogue/meteor/blob/main/main.go
-- https://github.com/maaslalani/nap
-- https://github.com/mritd/bubbles
-- https://github.com/getsavvyinc/savvy-cli
-- https://github.com/pg-goose/togo/blob/main/togo.go
-- https://github.com/jonathanruiz/wakey
-- https://github.com/Guillex387/cli-chat
-
-## Refs
-
-- https://github.com/charmbracelet/huh/blob/main/examples/bubbletea/main.go
-- https://github.com/stefanlogue/meteor/blob/main/main.go
-- https://github.com/maaslalani/nap
-- https://github.com/mritd/bubbles
-- https://github.com/getsavvyinc/savvy-cli
+```text
+yesterday :: Jim put my stuff in jello #office @Scranton
+```
 
 ## Credits
 
 Inspired by awesome [JacobEvelyn/friends](https://github.com/JacobEvelyn/friends).
 
-Made with ❤️ by [Roman Glushko]().
+Made with ❤️ by [Roman Glushko](https://github.com/roma-glushko).

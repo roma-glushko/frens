@@ -7,6 +7,7 @@ on:
       - 'v*.*.*.*'
 
 permissions:
+  pull-requests: write
   contents: write
   packages: write
 
