@@ -23,7 +23,6 @@ tools: ## Install static checkers & other binaries
 	@mkdir -p $(GOBIN)
 	@ \
 	command -v gofumpt > /dev/null || go install mvdan.cc/gofumpt@latest & \
-	command -v air > /dev/null || go install github.com/air-verse/air@latest & \
 	command -v golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest & \
 	command -v goreleaser > /dev/null || go install github.com/goreleaser/goreleaser/v2@latest & \
 	command -v gocover-cobertura > /dev/null || go install github.com/boumenot/gocover-cobertura@latest & \
@@ -64,11 +63,11 @@ gen-check: gen ## Check if Go code needs to be generated
 	@git diff --exit-code
 
 .PHONY: test
-test: tools ## Run tests
+test: ## Run tests
 	@go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
 
 .PHONY: test-ci
-test-ci: test ## Run tests in the CI mode
+test-ci: tools ## Run tests in the CI mode
 	@gocover-cobertura < coverage.txt > coverage.xml
 
 copyright: ## Apply copyrights to all files
