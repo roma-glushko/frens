@@ -184,8 +184,8 @@ release:
     Your feedback is more than welcome, feel free to open issues/discussions.
     You can reach out to the team using:
 
-    - [Github Discussions](https://github.com/roma-glushko/frens/discussions)
-    - [Github Issues](https://github.com/roma-glushko/frens/issues)
+    - [Github Discussions.](https://github.com/roma-glushko/frens/discussions)
+    - [Github Issues.](https://github.com/roma-glushko/frens/issues)
 
 
 homebrew_casks:
@@ -265,13 +265,6 @@ homebrew_casks:
 
         # Whether to open the PR as a draft or not.
         draft: true
-
-        # If the pull request template has checkboxes, enabling this will
-        # check all of them.
-        #
-        # This feature is only available in GoReleaser Pro, and when the pull
-        # request is being opened on GitHub.
-        check_boxes: true
 
         # Base can also be another repository, in which case the owner and name
         # above will be used as HEAD, allowing cross-repository pull requests.
