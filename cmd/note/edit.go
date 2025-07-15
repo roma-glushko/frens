@@ -32,7 +32,7 @@ import (
 var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
-	Usage:     "Update a node",
+	Usage:     "Update a note",
 	Args:      true,
 	ArgsUsage: `<NOTE_ID> [<DESCRIPTION>]`,
 	Flags: []cli.Flag{
