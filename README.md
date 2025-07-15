@@ -36,7 +36,7 @@ brew install frens
 
 ### Download Binaries
 
-For other platforms and architectures, you can download `fren`'s binaries right from [Github Releases](https://github.com/roma-glushko/frens/releases).
+For other platforms and architectures, you can download `frens`' binaries right from [Github Releases](https://github.com/roma-glushko/frens/releases).
 
 ## Main Concepts
 
@@ -78,7 +78,7 @@ Then, you can set location for your `Friends`, `Activities` and `Notes` via the 
 
 ### Friends
 
-Similarly to `Locations`, The basic information about `Friend` can be added using the similar syntax:
+Similarly to `Locations`, the basic information about `Friend` can be added using a similar syntax:
 
 ```text
 Michael Harry Scott (aka "The World's Best Boss"), my Dunder Mifflin boss, is a great friend of mine #office @Scranton
