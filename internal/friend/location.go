@@ -29,6 +29,7 @@ import (
 var ErrLocNameEmpty = errors.New("location name must be provided")
 
 type Location struct {
+	ID      string   `toml:"id"`
 	Name    string   `toml:"name"`
 	Country string   `toml:"country,omitempty"`
 	Desc    string   `toml:"desc,omitempty"`

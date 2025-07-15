@@ -38,6 +38,7 @@ func (p Persons) Less(i, j int) bool { return p[i].Name < p[j].Name }
 func (p Persons) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 type Person struct {
+	ID         string   `toml:"id"`
 	Name       string   `toml:"name"`
 	Desc       string   `toml:"desc,omitempty"`
 	Nicknames  []string `toml:"nicknames,omitempty"`
