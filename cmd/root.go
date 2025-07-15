@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"github.com/mattn/go-isatty"
 	"os"
 	"time"
 
@@ -59,6 +60,12 @@ func NewApp() cli.App {
 				Name:    "debug",
 				Aliases: []string{"d"},
 				Usage:   "set verbose level",
+			},
+			&cli.BoolFlag{
+				Name:    "interactive",
+				Aliases: []string{"i"},
+				Value:   isatty.IsTerminal(os.Stdin.Fd()),
+				Usage:   "Enable interactive questions and prompts",
 			},
 			&cli.StringFlag{
 				Name:    "journal",
