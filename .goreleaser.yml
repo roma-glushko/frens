@@ -239,6 +239,14 @@ homebrew_casks:
     homepage: "https://github.com/roma-glushko/frens"
     description: "A friendship management & journaling application for introverts and not only."
 
+    hooks:
+      post:
+        # We don't have a certificate to sign the app, so we have to remove the quarantine attribute
+        install: |
+          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/frens"]
+          end
+
     # Repository to push the generated files to.
     repository:
       owner: roma-glushko

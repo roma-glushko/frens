@@ -9,7 +9,12 @@ Build relationships with people that last.
 
 ## Get Started
 
-TBU
+### MacOS
+
+```bash
+brew tap roma-glushko/frens https://github.com/roma-glushko/frens
+brew install frens
+```
 
 ## Main Concepts
 
