@@ -16,6 +16,7 @@ package lang
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -33,6 +34,10 @@ func init() {
 	personRe = regexp.MustCompile(
 		`(?m)^(?P<name>[^\(\$:\n]+?)\s*(?:\(\s*a\.?k\.?a\.?\s+(?P<nicknames>[^)]*)\))?\s*(?:\$id:(?P<id>[^\s:]+))?\s*(?:::\s*(?P<desc>.+))?$`,
 	)
+}
+
+type personProps struct {
+	ID string `frentxt:"id"`
 }
 
 func extractNicknames(raw string) []string {
@@ -56,11 +61,17 @@ func ExtractPerson(s string) (friend.Person, error) {
 		return friend.Person{}, ErrNoInfo
 	}
 
+	props, err := ExtractProps[personProps](s)
+	if err != nil {
+		return friend.Person{}, fmt.Errorf("failed to parse person properties: %w", err)
+	}
+
 	tags := tag.Tags(ExtractTags(s)).ToNames()
 	locations := ExtractLocMarkers(s)
 
 	s = RemoveTags(s)
 	s = RemoveLocMarkers(s)
+	s = RemoveProps(s)
 
 	matches := personRe.FindStringSubmatch(s)
 
@@ -73,6 +84,7 @@ func ExtractPerson(s string) (friend.Person, error) {
 	desc := strings.TrimSpace(matches[4])
 
 	return friend.Person{
+		ID:        props.ID,
 		Name:      name,
 		Nicknames: nicknames,
 		Desc:      desc,
@@ -97,15 +109,18 @@ func RenderPerson(p friend.Person) string {
 		sb.WriteString(p.Desc)
 	}
 
+	if len(p.Locations) > 0 {
+		sb.WriteString(" ")
+		sb.WriteString(RenderLocMarkers(p.Locations))
+	}
+
 	if len(p.Tags) > 0 {
 		sb.WriteString(" ")
 		sb.WriteString(RenderTags(p.Tags))
 	}
 
-	if len(p.Locations) > 0 {
-		sb.WriteString(" ")
-		sb.WriteString(RenderLocMarkers(p.Locations))
-	}
+	sb.WriteString(" ")
+	sb.WriteString(RenderProps(personProps{ID: p.ID}))
 
 	return sb.String()
 }

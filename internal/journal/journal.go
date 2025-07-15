@@ -67,7 +67,9 @@ func (j *Journal) Path() string {
 }
 
 func (j *Journal) AddFriend(f friend.Person) {
-	f.ID = slug.Make(f.Name)
+	if f.ID == "" {
+		f.ID = slug.Make(f.Name)
+	}
 
 	// TODO: check for duplicated IDs
 	// TODO: check for duplicated aliases
@@ -144,7 +146,9 @@ func (j *Journal) RemoveFriends(toRemove []friend.Person) {
 }
 
 func (j *Journal) AddLocation(l friend.Location) {
-	l.ID = slug.Make(l.Name)
+	if l.ID == "" {
+		l.ID = slug.Make(l.Name)
+	}
 
 	// TODO: check for duplicated IDs
 	// TODO: check for duplicated aliases
@@ -332,7 +336,7 @@ func (j *Journal) AddEvent(e friend.Event) (friend.Event, error) {
 	e.Friends = make([]string, 0, len(guessedPersons))
 
 	for _, p := range guessedPersons {
-		e.Friends = append(e.Friends, p.Name)
+		e.Friends = append(e.Friends, p.ID)
 
 		if e.Type == friend.EventTypeActivity {
 			p.Activities++

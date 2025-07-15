@@ -15,6 +15,7 @@
 package lang
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -38,14 +39,25 @@ func init() {
 	)
 }
 
+type locProps struct {
+	ID string `frentxt:"id"`
+}
+
 // ExtractLocation extracts location information from a string.
 func ExtractLocation(s string) (friend.Location, error) {
 	if s == "" {
 		return friend.Location{}, ErrNoInfo
 	}
 
+	props, err := ExtractProps[locProps](s)
+	if err != nil {
+		return friend.Location{}, fmt.Errorf("failed to parse location properties: %w", err)
+	}
+
 	tags := tag.Tags(ExtractTags(s)).ToNames()
+
 	s = RemoveTags(s)
+	s = RemoveProps(s)
 
 	matches := locRe.FindStringSubmatch(s)
 
@@ -59,6 +71,7 @@ func ExtractLocation(s string) (friend.Location, error) {
 	desc := strings.TrimSpace(matches[4])
 
 	return friend.Location{
+		ID:      props.ID,
 		Name:    name,
 		Country: country,
 		Aliases: aliases,
@@ -93,10 +106,8 @@ func RenderLocation(l friend.Location) string {
 		sb.WriteString(RenderTags(l.Tags))
 	}
 
-	//if l.ID != "" {
-	//	sb.WriteString(" $id:")
-	//	sb.WriteString(l.ID)
-	//}
+	sb.WriteString(" ")
+	sb.WriteString(RenderProps(locProps{ID: l.ID}))
 
 	return sb.String()
 }
