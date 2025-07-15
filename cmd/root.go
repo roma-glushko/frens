@@ -88,7 +88,7 @@ func NewApp() cli.App {
 				return fmt.Errorf("could not load journal directory from %s: %v", jDir, err)
 			}
 
-			jCtx := jctx.Context{
+			jCtx := jctx.AppContext{
 				JournalDir: jDir,
 			}
 
