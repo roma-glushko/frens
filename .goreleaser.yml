@@ -239,15 +239,6 @@ homebrew_casks:
     homepage: "https://github.com/roma-glushko/frens"
     description: "A friendship management & journaling application for introverts and not only."
 
-    # Setting this will prevent goreleaser to actually try to commit the updated
-    # cask - instead, the cask file will be stored on the dist directory
-    # only, leaving the responsibility of publishing it to the user.
-    # If set to auto, the release will not be uploaded to the homebrew tap
-    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-    #
-    # Templates: allowed.
-    skip_upload: true
-
     # Repository to push the generated files to.
     repository:
       owner: roma-glushko
