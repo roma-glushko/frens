@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package location
+package note
 
 import (
-	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/roma-glushko/frens/internal/friend"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
@@ -31,53 +32,44 @@ import (
 var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
-	Usage:     "Update main location information",
+	Usage:     "Update a note",
 	Args:      true,
-	ArgsUsage: `<LOCATION_NAME, LOCATION_NICKNAME, LOCATION_ID>`,
+	ArgsUsage: `<NOTE_ID> [<DESCRIPTION>]`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:    "name",
-			Aliases: []string{"n"},
-			Usage:   "Set location's name",
-		},
-		&cli.StringFlag{
-			Name:    "desc",
+			Name:    "date",
 			Aliases: []string{"d"},
-			Usage:   "Set description of the location",
-		},
-		&cli.StringSliceFlag{
-			Name:    "alias",
-			Aliases: []string{"a", "aka", "nick"},
-			Usage:   "Set location's aliases (override existing ones)",
+			Usage:   "Set the date of the note (format: YYYY/MM/DD or relative like 'yesterday')",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
-		journalDir, err := journaldir.DefaultDir()
+		jDir, err := journaldir.DefaultDir()
 		if err != nil {
 			return err
 		}
 
-		jr, err := journaldir.Load(journalDir)
+		jr, err := journaldir.Load(jDir)
 		if err != nil {
 			return err
 		}
 
 		if ctx.NArg() < 1 {
-			return cli.Exit("You must provide a location name, nickname, or ID to edit.", 1)
+			return cli.Exit("You must provide an note ID to edit.", 1)
 		}
 
-		lID := strings.Join(ctx.Args().Slice(), " ")
+		actID := ctx.Args().First()
+		desc := strings.TrimSpace(strings.Join(ctx.Args().Slice()[1:], " "))
 
-		lOld, err := jr.GetLocation(lID)
+		actOld, err := jr.GetEvent(friend.EventTypeNote, actID)
 		if err != nil {
-			return err
+			return cli.Exit("Note not found: "+actID, 1)
 		}
 
 		inputForm := tui.NewEditorForm(tui.EditorOptions{
-			Title:      "Edit " + lOld.Name + " information:",
-			SyntaxHint: lang.FormatLocationInfo,
+			Title:      "Edit note (" + actOld.ID + "):",
+			SyntaxHint: lang.FormatEventInfo,
 		})
-		inputForm.Textarea.SetValue(lang.RenderLocation(*lOld))
+		inputForm.Textarea.SetValue(lang.RenderEvent(actOld))
 
 		// TODO: check if interactive mode is enabled
 		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
@@ -89,49 +81,28 @@ var EditCommand = &cli.Command{
 
 		infoTxt := inputForm.Textarea.Value()
 
-		if infoTxt == "" {
-			return errors.New("no location info found")
-		}
-
-		lNew, err := lang.ExtractLocation(infoTxt)
-		if err != nil {
-			return err
-		}
-
-		name := ctx.String("name")
-		desc := ctx.String("desc")
-		aliases := ctx.StringSlice("alias")
-
-		if name != "" {
-			lNew.Name = name
-		}
-
 		if desc != "" {
-			lNew.Desc = desc
+			infoTxt = desc
 		}
 
-		if len(aliases) > 0 {
-			lNew.Aliases = aliases
+		actNew, err := lang.ExtractEvent(friend.EventTypeNote, infoTxt)
+		if err != nil {
+			return cli.Exit("Failed to parse note description: "+err.Error(), 1)
 		}
 
-		if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-			log.Error("failed to parse friend info", "err", err)
-			return err
-		}
-
-		if err := lNew.Validate(); err != nil {
+		if err := actNew.Validate(); err != nil {
 			return err
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			j.UpdateLocation(*lOld, lNew)
-			return nil
+			actNew, err = j.UpdateEvent(actOld, actNew)
+			return err
 		})
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("🔄 Updated location: " + lNew.String())
+		fmt.Println("🔄 Updated note: " + actNew.ID)
 
 		return nil
 	},

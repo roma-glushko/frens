@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utils
+package matcher
 
 import (
 	"maps"
@@ -29,7 +29,7 @@ type Matchable interface {
 
 type Pattern[T Matchable] struct {
 	Ref      string
-	Entities []T
+	Entities []*T
 }
 
 type Matcher[T Matchable] struct {
@@ -37,7 +37,7 @@ type Matcher[T Matchable] struct {
 }
 
 type Match[T any] struct {
-	Entities   []T
+	Entities   []*T
 	MatchedRef string
 }
 
@@ -47,8 +47,8 @@ func NewMatcher[T Matchable]() *Matcher[T] {
 	}
 }
 
-func (m *Matcher[T]) Add(entity T) {
-	for _, ref := range entity.Refs() {
+func (m *Matcher[T]) Add(entity *T) {
+	for _, ref := range (*entity).Refs() {
 		if pattern, exists := m.EntityPatterns[ref]; exists {
 			pattern.Entities = append(pattern.Entities, entity)
 
@@ -57,7 +57,7 @@ func (m *Matcher[T]) Add(entity T) {
 			continue
 		}
 
-		m.EntityPatterns[ref] = Pattern[T]{Ref: ref, Entities: []T{entity}}
+		m.EntityPatterns[ref] = Pattern[T]{Ref: ref, Entities: []*T{entity}}
 	}
 }
 

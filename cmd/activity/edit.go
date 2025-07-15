@@ -15,7 +15,10 @@
 package activity
 
 import (
+	"fmt"
 	"strings"
+
+	"github.com/roma-glushko/frens/internal/friend"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
@@ -57,16 +60,16 @@ var EditCommand = &cli.Command{
 		actID := ctx.Args().First()
 		desc := strings.TrimSpace(strings.Join(ctx.Args().Slice()[1:], " "))
 
-		actOld, err := jr.GetActivity(actID)
+		actOld, err := jr.GetEvent(friend.EventTypeActivity, actID)
 		if err != nil {
 			return cli.Exit("Activity not found: "+actID, 1)
 		}
 
 		inputForm := tui.NewEditorForm(tui.EditorOptions{
 			Title:      "Edit activity log (" + actOld.ID + "):",
-			SyntaxHint: lang.FormatActivityInfo,
+			SyntaxHint: lang.FormatEventInfo,
 		})
-		inputForm.Textarea.SetValue(lang.RenderActivity(actOld))
+		inputForm.Textarea.SetValue(lang.RenderEvent(actOld))
 
 		// TODO: check if interactive mode is enabled
 		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
@@ -82,7 +85,7 @@ var EditCommand = &cli.Command{
 			infoTxt = desc
 		}
 
-		actNew, err := lang.ExtractActivity(infoTxt)
+		actNew, err := lang.ExtractEvent(friend.EventTypeActivity, infoTxt)
 		if err != nil {
 			return cli.Exit("Failed to parse activity description: "+err.Error(), 1)
 		}
@@ -91,15 +94,15 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Data) error {
-			actNew = j.UpdateActivity(actOld, actNew)
-			return nil
+		err = journaldir.Update(jr, func(j *journal.Journal) error {
+			actNew, err = j.UpdateEvent(actOld, actNew)
+			return err
 		})
 		if err != nil {
 			return err
 		}
 
-		log.Info("🔄 Updated activity: " + actNew.ID)
+		fmt.Println("🔄 Updated activity: " + actNew.ID)
 
 		return nil
 	},

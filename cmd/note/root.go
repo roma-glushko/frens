@@ -24,5 +24,7 @@ var Commands = &cli.Command{
 	Description: `Notes helps to remember things about friends and locations with deeper meaning, insights, background, preferences, longer-term context.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
+		EditCommand,
+		DeleteCommand,
 	},
 }

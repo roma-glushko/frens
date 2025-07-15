@@ -154,7 +154,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		err = journaldir.Update(j, func(l *journal.Data) error {
+		err = journaldir.Update(j, func(l *journal.Journal) error {
 			l.AddFriend(f)
 			return nil
 		})
@@ -164,10 +164,10 @@ var AddCommand = &cli.Command{
 
 		fmt.Println("✅ Added new friend: " + f.String())
 		if len(f.Locations) > 0 {
-			log.Info("📍 Locations: " + strings.Join(f.Locations, ", "))
+			fmt.Println("📍 Locations: " + strings.Join(f.Locations, ", "))
 		}
 		if len(f.Tags) > 0 {
-			log.Info("🏷️ Tags: " + strings.Join(f.Tags, ", "))
+			fmt.Println("🏷️ Tags: " + strings.Join(f.Tags, ", "))
 		}
 
 		return nil

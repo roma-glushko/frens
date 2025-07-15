@@ -16,40 +16,19 @@ package lang
 
 import (
 	"strings"
-	"time"
 
-	"github.com/markusmobius/go-dateparser"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/tag"
 )
 
-var (
-	DatePartition      = ":"
-	FormatActivityInfo = "[DATE or RELATIVE DATE]: DESCRIPTION [#tag1, #tag2...] [@location1, @location2...]"
-)
+var FormatEventInfo = "[DATE or RELATIVE DATE] :: DESCRIPTION [#tag1, #tag2...] [@location1, @location2...]"
 
-func ExtractDate(s string) time.Time {
-	ts := time.Now().UTC()
-
-	if s != "" {
-		parsedDate, err := dateparser.Parse(nil, s)
-
-		if err != nil {
-			ts = time.Now().UTC()
-		} else {
-			ts = parsedDate.Time.UTC()
-		}
-	}
-
-	return ts
-}
-
-func ExtractActivity(s string) (friend.Event, error) {
+func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 	if s == "" {
 		return friend.Event{}, ErrNoInfo
 	}
 
-	parts := strings.SplitN(s, DatePartition, 2)
+	parts := strings.SplitN(s, DateSeparator, 2)
 
 	dateStr := ""
 	desc := parts[0]
@@ -75,7 +54,7 @@ func ExtractActivity(s string) (friend.Event, error) {
 	desc = RemoveLocMarkers(desc)
 
 	return friend.Event{
-		Type:      friend.EventTypeActivity,
+		Type:      t,
 		Date:      ts,
 		Desc:      desc,
 		Tags:      tags,
@@ -83,25 +62,26 @@ func ExtractActivity(s string) (friend.Event, error) {
 	}, nil
 }
 
-func RenderActivity(a friend.Event) string {
+func RenderEvent(e friend.Event) string {
 	var sb strings.Builder
 
-	if !a.Date.IsZero() {
-		sb.WriteString(a.Date.Format("2006-01-02 15:04:05"))
-		sb.WriteString(DatePartition)
+	if !e.Date.IsZero() {
+		sb.WriteString(e.Date.Format("2006-01-02 15:04:05"))
+		sb.WriteString(" ")
+		sb.WriteString(DateSeparator)
 		sb.WriteString(" ")
 	}
 
-	sb.WriteString(a.Desc)
+	sb.WriteString(e.Desc)
 
-	if len(a.Locations) > 0 {
+	if len(e.Locations) > 0 {
 		sb.WriteString(" ")
-		sb.WriteString(RenderLocMarkers(a.Locations))
+		sb.WriteString(RenderLocMarkers(e.Locations))
 	}
 
-	if len(a.Tags) > 0 {
+	if len(e.Tags) > 0 {
 		sb.WriteString(" ")
-		sb.WriteString(RenderTags(a.Tags))
+		sb.WriteString(RenderTags(e.Tags))
 	}
 
 	return sb.String()

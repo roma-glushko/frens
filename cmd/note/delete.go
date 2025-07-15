@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package location
+package note
 
 import (
+	"errors"
 	"fmt"
+
+	"github.com/charmbracelet/log"
 
 	"github.com/roma-glushko/frens/internal/utils"
 
@@ -29,14 +32,15 @@ import (
 var DeleteCommand = &cli.Command{
 	Name:      "delete",
 	Aliases:   []string{"del", "rm", "d"},
-	Usage:     "Delete a location",
-	Args:      true,
-	ArgsUsage: `<LOCATION_NAME, LOCATION_NICKNAME, LOCATION_ID> [...]`,
-	Description: `Delete locations from your journal by their name, alias, or ID.
+	Usage:     `Delete a note`,
+	UsageText: `frens note delete [OPTIONS] [INFO]`,
+	Description: `Delete notes from your journal by their ID.
 	Examples:
-		frens friend delete "Nashua"
-		frens friend d -f "Utica"
+		frens note delete 2zpWoEiUYn6vrSl9w03NAVkWxMn 2zu4V8MAQSvQv9IpAKNYJwaielS
+		frens note d -f 2zu4V8MAQSvQv9IpAKNYJwaielS 
 	`,
+	Args:      true,
+	ArgsUsage: `<NOTE_ID> [, <NOTE_ID>...]`,
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "force",
@@ -57,43 +61,48 @@ var DeleteCommand = &cli.Command{
 		}
 
 		if len(ctx.Args().Slice()) == 0 {
-			return cli.Exit("Please provide a location name, alias, or ID to delete.", 1)
+			return cli.Exit("Please provide a note ID to delete.", 1)
 		}
 
-		locations := make([]friend.Location, 0, len(ctx.Args().Slice()))
+		events := make([]friend.Event, 0, len(ctx.Args().Slice()))
 
-		for _, lID := range ctx.Args().Slice() {
-			l, err := jr.GetLocation(lID)
+		for _, actID := range ctx.Args().Slice() {
+			act, err := jr.GetEvent(friend.EventTypeNote, actID)
 			if err != nil {
+				if errors.Is(err, journal.ErrEventNotFound) {
+					return cli.Exit("Note not found: "+actID, 1)
+				}
+
+				log.Error("Failed to get note", "err", err, "note_id", actID)
 				return err
 			}
 
-			locations = append(locations, *l)
+			events = append(events, act)
 		}
 
-		locWord := utils.P(len(locations), "location", "locations")
-		fmt.Printf("🔍 Found %d %s:\n", len(locations), locWord)
+		actWord := utils.P(len(events), "note", "notes")
+		fmt.Printf("🔍 Found %d %s:\n", len(events), actWord)
 
-		for _, l := range locations {
-			fmt.Printf("   • %s \n", l.String())
+		for _, act := range events {
+			fmt.Printf("   • %s\n", act.ID)
 		}
 
 		// TODO: check if interactive mode
-		fmt.Println("\n⚠️  You're about to permanently delete the " + locWord + ".")
+		fmt.Println("\n⚠️  You're about to permanently delete the " + actWord + ".")
 		if !ctx.Bool("force") && !tui.ConfirmAction("Are you sure?") {
 			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			j.RemoveLocations(locations)
+			j.RemoveEvents(friend.EventTypeNote, events)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(locWord))
+		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(actWord))
 
 		return nil
 	},

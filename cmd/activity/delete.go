@@ -16,6 +16,7 @@ package activity
 
 import (
 	"fmt"
+
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -63,7 +64,7 @@ var DeleteCommand = &cli.Command{
 		activities := make([]friend.Event, 0, len(ctx.Args().Slice()))
 
 		for _, actID := range ctx.Args().Slice() {
-			act, err := jr.GetActivity(actID)
+			act, err := jr.GetEvent(friend.EventTypeActivity, actID)
 			if err != nil {
 				return err
 			}
@@ -85,15 +86,15 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Data) error {
-			j.RemoveActivities(activities)
+		err = journaldir.Update(jr, func(j *journal.Journal) error {
+			j.RemoveEvents(friend.EventTypeActivity, activities)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(actWord))
+		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(actWord))
 
 		return nil
 	},

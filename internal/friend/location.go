@@ -19,6 +19,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/matcher"
+
 	"github.com/roma-glushko/frens/internal/tag"
 
 	"github.com/roma-glushko/frens/internal/utils"
@@ -33,12 +35,13 @@ type Location struct {
 	Aliases []string `toml:"aliases,omitempty"`
 	Tags    []string `toml:"tags,omitempty"`
 
+	Notes      int `toml:"notes,omitempty"`
 	Activities int `toml:"activities,omitempty"`
 }
 
 var (
-	_ tag.Tagged      = (*Location)(nil)
-	_ utils.Matchable = (*Location)(nil)
+	_ tag.Tagged        = (*Location)(nil)
+	_ matcher.Matchable = (*Location)(nil)
 )
 
 func (l *Location) Validate() error {

@@ -16,6 +16,7 @@ package friend
 
 import (
 	"fmt"
+
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -85,7 +86,7 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Data) error {
+		err = journaldir.Update(jr, func(j *journal.Journal) error {
 			j.RemoveFriends(friends)
 			return nil
 		})
@@ -93,7 +94,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.", utils.TitleCaser.String(frenWord))
+		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(frenWord))
 
 		return nil
 	},

@@ -20,6 +20,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/matcher"
+
 	"github.com/roma-glushko/frens/internal/tag"
 
 	"github.com/roma-glushko/frens/internal/utils"
@@ -40,17 +42,17 @@ type Person struct {
 	Desc       string   `toml:"desc,omitempty"`
 	Nicknames  []string `toml:"nicknames,omitempty"`
 	Tags       []string `toml:"tags,omitempty"`
-	Notes      []Event  `toml:"notes,omitempty"`
 	Locations  []string `toml:"locations,omitempty"`
 	Reminders  []string `toml:"reminders,omitempty"`
 	Activities int      `toml:"activities,omitempty"`
+	Notes      int      `toml:"notes,omitempty"`
 	// internal use only
 	Score int `toml:"-"`
 }
 
 var (
-	_ tag.Tagged      = (*Person)(nil)
-	_ utils.Matchable = (*Person)(nil)
+	_ tag.Tagged        = (*Person)(nil)
+	_ matcher.Matchable = (*Person)(nil)
 )
 
 func (p *Person) Validate() error {

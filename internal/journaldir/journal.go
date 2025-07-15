@@ -47,7 +47,7 @@ func Init(path string) error {
 }
 
 // Load loads the journal from the specific path or `~/.frens/` is used by default
-func Load(path string) (*journal.Data, error) {
+func Load(path string) (*journal.Journal, error) {
 	_, err := os.Stat(path)
 
 	if err != nil && errors.Is(err, fs.ErrNotExist) {
@@ -65,13 +65,13 @@ func Load(path string) (*journal.Data, error) {
 }
 
 // Save saves the life files from the specific path or `~/.config/frens/` is used by default
-func Save(data *journal.Data) error {
+func Save(data *journal.Journal) error {
 	return toml.Save(data)
 }
 
-type LifeUpdateFunc = func(data *journal.Data) error
+type LifeUpdateFunc = func(data *journal.Journal) error
 
-func Update(l *journal.Data, updater LifeUpdateFunc) error {
+func Update(l *journal.Journal, updater LifeUpdateFunc) error {
 	err := updater(l)
 	if err != nil {
 		return err

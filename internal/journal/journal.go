@@ -21,11 +21,11 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/roma-glushko/frens/internal/matcher"
+
 	"github.com/segmentio/ksuid"
 
 	"github.com/roma-glushko/frens/internal/lang"
-
-	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/tag"
@@ -38,39 +38,40 @@ type ListFriendQuery struct {
 	Tag      string
 }
 
-type Data struct {
+type Journal struct {
 	DirPath    string
 	Tags       tag.Tags
 	Friends    []friend.Person
 	Locations  friend.Locations
 	Activities []friend.Event
+	Notes      []friend.Event
 
 	dirty           bool
 	matcherMu       sync.Mutex
-	friendMatcher   *utils.Matcher[friend.Person]
-	locationMatcher *utils.Matcher[friend.Location]
+	friendMatcher   *matcher.Matcher[friend.Person]
+	locationMatcher *matcher.Matcher[friend.Location]
 }
 
-func (d *Data) Init() {
+func (j *Journal) Init() {
 	// TODO: implement
 }
 
-func (d *Data) Dirty() bool {
-	return d.dirty
+func (j *Journal) Dirty() bool {
+	return j.dirty
 }
 
-func (d *Data) Path() string {
-	return d.DirPath
+func (j *Journal) Path() string {
+	return j.DirPath
 }
 
-func (d *Data) AddFriend(f friend.Person) {
-	d.Friends = append(d.Friends, f)
+func (j *Journal) AddFriend(f friend.Person) {
+	j.Friends = append(j.Friends, f)
 
-	d.dirty = true
+	j.dirty = true
 }
 
-func (d *Data) GetFriend(q string) (*friend.Person, error) {
-	matches := d.frenMatcher().Match(q)
+func (j *Journal) GetFriend(q string) (*friend.Person, error) {
+	matches := j.frenMatcher().Match(q)
 
 	if len(matches) == 0 {
 		return nil, fmt.Errorf("no friends found for '%s'", q)
@@ -104,16 +105,14 @@ func (d *Data) GetFriend(q string) (*friend.Person, error) {
 		return nil, fmt.Errorf("multiple friends found for '%s': %s", q, strings.Join(names, ", "))
 	}
 
-	f := m.Entities[0]
-
-	return &f, nil
+	return m.Entities[0], nil
 }
 
-func (d *Data) UpdateFriend(o, n friend.Person) {
-	for i, f := range d.Friends {
+func (j *Journal) UpdateFriend(o, n friend.Person) {
+	for i, f := range j.Friends {
 		if f.Name == o.Name {
-			d.Friends[i] = n
-			d.dirty = true
+			j.Friends[i] = n
+			j.dirty = true
 
 			return
 		}
@@ -122,15 +121,15 @@ func (d *Data) UpdateFriend(o, n friend.Person) {
 	// TODO: update friend references in activities and notes
 
 	// If the friend was not found, add it as a new one
-	d.AddFriend(n)
+	j.AddFriend(n)
 }
 
-func (d *Data) RemoveFriends(toRemove []friend.Person) {
+func (j *Journal) RemoveFriends(toRemove []friend.Person) {
 	for _, fr := range toRemove {
-		for i, f := range d.Friends {
+		for i, f := range j.Friends {
 			if f.Name == fr.Name {
-				d.Friends = append(d.Friends[:i], d.Friends[i+1:]...)
-				d.dirty = true
+				j.Friends = append(j.Friends[:i], j.Friends[i+1:]...)
+				j.dirty = true
 
 				break
 			}
@@ -138,14 +137,14 @@ func (d *Data) RemoveFriends(toRemove []friend.Person) {
 	}
 }
 
-func (d *Data) AddLocation(l friend.Location) {
-	d.Locations = append(d.Locations, l)
+func (j *Journal) AddLocation(l friend.Location) {
+	j.Locations = append(j.Locations, l)
 
-	d.dirty = true
+	j.dirty = true
 }
 
-func (d *Data) GetLocation(q string) (*friend.Location, error) {
-	matches := d.locMatcher().Match(q)
+func (j *Journal) GetLocation(q string) (*friend.Location, error) {
+	matches := j.locMatcher().Match(q)
 
 	if len(matches) == 0 {
 		return nil, fmt.Errorf("no locations found for '%s'", q)
@@ -179,16 +178,14 @@ func (d *Data) GetLocation(q string) (*friend.Location, error) {
 		return nil, fmt.Errorf("multiple locations found for '%s': %s", q, strings.Join(names, ", "))
 	}
 
-	l := m.Entities[0]
-
-	return &l, nil
+	return m.Entities[0], nil
 }
 
-func (d *Data) UpdateLocation(o, n friend.Location) {
-	for i, l := range d.Locations {
+func (j *Journal) UpdateLocation(o, n friend.Location) {
+	for i, l := range j.Locations {
 		if l.Name == o.Name {
-			d.Locations[i] = n
-			d.dirty = true
+			j.Locations[i] = n
+			j.dirty = true
 
 			return
 		}
@@ -197,15 +194,15 @@ func (d *Data) UpdateLocation(o, n friend.Location) {
 	// TODO: update friend references in activities and notes
 
 	// If the friend was not found, add it as a new one
-	d.AddLocation(n)
+	j.AddLocation(n)
 }
 
-func (d *Data) RemoveLocations(toRemove []friend.Location) {
+func (j *Journal) RemoveLocations(toRemove []friend.Location) {
 	for _, loc := range toRemove {
-		for i, l := range d.Locations {
+		for i, l := range j.Locations {
 			if l.Name == loc.Name {
-				d.Locations = append(d.Locations[:i], d.Locations[i+1:]...)
-				d.dirty = true
+				j.Locations = append(j.Locations[:i], j.Locations[i+1:]...)
+				j.dirty = true
 
 				break
 			}
@@ -213,18 +210,17 @@ func (d *Data) RemoveLocations(toRemove []friend.Location) {
 	}
 }
 
-func (d *Data) AddTags(t []tag.Tag) {
-	d.Tags = append(d.Tags, t...).Unique()
+func (j *Journal) AddTags(t []tag.Tag) {
+	j.Tags = append(j.Tags, t...).Unique()
 
-	d.dirty = true
+	j.dirty = true
 }
 
-func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
-	e.ID = ksuid.New().String()
-	matches := d.frenMatcher().Match(e.Desc)
+func (j *Journal) GuessFriends(q string) []*friend.Person { //nolint:cyclop
+	matches := j.frenMatcher().Match(q)
 
-	certainPersons := make([]friend.Person, 0, len(matches))
-	ambiguitiesMatches := make([]utils.Match[friend.Person], 0, len(matches))
+	certainPersons := make([]*friend.Person, 0, len(matches))
+	ambiguitiesMatches := make([]matcher.Match[friend.Person], 0, len(matches))
 
 	for _, m := range matches {
 		if len(m.Entities) == 1 {
@@ -232,7 +228,7 @@ func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 			continue
 		}
 
-		shortestNameFriend := slices.MinFunc(m.Entities, func(a, b friend.Person) int {
+		shortestNameFriend := slices.MinFunc(m.Entities, func(a, b *friend.Person) int {
 			return strings.Compare(a.Name, b.Name)
 		})
 
@@ -258,7 +254,7 @@ func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 		AmbiguitiesPerson friend.Person
 	}
 
-	guessedPersons := make([]friend.Person, 0, len(ambiguitiesMatches))
+	guessedPersons := make([]*friend.Person, 0, len(ambiguitiesMatches))
 
 	if len(ambiguitiesMatches) > 0 {
 		rankPairs := make([]friendPair, 0, len(certainPersons)*len(ambiguitiesMatches))
@@ -267,14 +263,14 @@ func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 			for _, am := range ambiguitiesMatches {
 				for _, ap := range am.Entities {
 					rankPairs = append(rankPairs, friendPair{
-						KnownPerson:       cp,
-						AmbiguitiesPerson: ap,
+						KnownPerson:       *cp,
+						AmbiguitiesPerson: *ap,
 					})
 				}
 			}
 		}
 
-		for _, act := range d.Activities {
+		for _, act := range j.Activities {
 			for _, pair := range rankPairs {
 				if slices.Contains(act.Friends, pair.KnownPerson.Name) &&
 					slices.Contains(act.Friends, pair.AmbiguitiesPerson.Name) {
@@ -284,7 +280,7 @@ func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 		}
 
 		for _, am := range ambiguitiesMatches {
-			guessedPerson := slices.MaxFunc(am.Entities, func(a, b friend.Person) int {
+			guessedPerson := slices.MaxFunc(am.Entities, func(a, b *friend.Person) int {
 				if a.Score != b.Score {
 					return b.Score - a.Score
 				}
@@ -296,78 +292,132 @@ func (d *Data) AddActivity(e friend.Event) friend.Event { //nolint:cyclop
 		}
 	}
 
-	_ = d.locMatcher().Match(e.Desc)
+	return append(certainPersons, guessedPersons...)
+}
+
+func (j *Journal) AddEvent(e friend.Event) (friend.Event, error) {
+	e.ID = ksuid.New().String()
+
+	guessedPersons := j.GuessFriends(e.Desc)
+
+	_ = j.locMatcher().Match(e.Desc)
 
 	// TODO: record locs/friends
 
 	tags := lang.ExtractTags(e.Desc)
 
 	if len(tags) > 0 {
-		d.AddTags(tags)
+		j.AddTags(tags)
 		tag.Add(&e, tags)
 	}
 
-	e.Friends = make([]string, 0, len(certainPersons)+len(guessedPersons))
+	e.Friends = make([]string, 0, len(guessedPersons))
 
-	for _, p := range certainPersons {
+	for _, p := range guessedPersons {
 		e.Friends = append(e.Friends, p.Name)
-		p.Activities++
+
+		if e.Type == friend.EventTypeActivity {
+			p.Activities++
+		} else {
+			p.Notes++
+		}
 	}
 
-	d.Activities = append(d.Activities, e)
+	switch e.Type {
+	case friend.EventTypeActivity:
+		j.Activities = append(j.Activities, e)
+	case friend.EventTypeNote:
+		j.Notes = append(j.Notes, e)
+	default:
+		return friend.Event{}, fmt.Errorf("unknown event type: %s", e.Type)
+	}
 
-	d.dirty = true
+	j.dirty = true
 
-	return e
+	return e, nil
 }
 
-func (d *Data) GetActivity(q string) (friend.Event, error) {
-	for _, act := range d.Activities {
-		if act.ID == q {
-			return act, nil
+func (j *Journal) GetEvent(t friend.EventType, q string) (friend.Event, error) {
+	if t == friend.EventTypeActivity {
+		for _, act := range j.Activities {
+			if act.ID == q {
+				return act, nil
+			}
+		}
+	}
+
+	if t == friend.EventTypeNote {
+		for _, note := range j.Notes {
+			if note.ID == q {
+				return note, nil
+			}
 		}
 	}
 
 	return friend.Event{}, ErrEventNotFound
 }
 
-func (d *Data) UpdateActivity(o, n friend.Event) friend.Event {
+func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	n.ID = o.ID
 
-	for i, act := range d.Activities {
-		if act.ID == o.ID {
-			d.Activities[i] = n
-			d.dirty = true
+	if o.Type == friend.EventTypeActivity {
+		for i, act := range j.Activities {
+			if act.ID == o.ID {
+				j.Activities[i] = n
+				j.dirty = true
 
-			return n
+				return n, nil
+			}
+		}
+	}
+
+	if o.Type == friend.EventTypeNote {
+		for i, note := range j.Notes {
+			if note.ID == o.ID {
+				j.Notes[i] = n
+				j.dirty = true
+
+				return n, nil
+			}
 		}
 	}
 
 	// TODO: update friend & location references
 
 	// If the activity was not found, add it as a new one
-	d.AddActivity(n)
-
-	return n
+	return j.AddEvent(n)
 }
 
-func (d *Data) RemoveActivities(toRemove []friend.Event) {
+func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
 	for _, act := range toRemove {
-		for i, a := range d.Activities {
-			if a.ID == act.ID {
-				d.Activities = append(d.Activities[:i], d.Activities[i+1:]...)
-				d.dirty = true
+		if t == friend.EventTypeActivity {
+			for i, a := range j.Activities {
+				if a.ID == act.ID {
+					j.Activities = append(j.Activities[:i], j.Activities[i+1:]...)
+					j.dirty = true
 
-				break
+					break
+				}
+			}
+		}
+
+		if t == friend.EventTypeNote {
+			for i, n := range j.Notes {
+				if n.ID == act.ID {
+					j.Notes = append(j.Notes[:i], j.Notes[i+1:]...)
+					j.dirty = true
+
+					break
+				}
 			}
 		}
 	}
 }
 
-func (d *Data) ListFriends(q ListFriendQuery) []friend.Person {
+func (j *Journal) ListFriends(q ListFriendQuery) []friend.Person {
 	v := make([]friend.Person, 0, 5)
 
-	for _, f := range d.Friends {
+	for _, f := range j.Friends {
 		if q.Location != "" && !f.HasLocation(q.Location) {
 			continue
 		}
@@ -382,32 +432,32 @@ func (d *Data) ListFriends(q ListFriendQuery) []friend.Person {
 	return v
 }
 
-func (d *Data) locMatcher() *utils.Matcher[friend.Location] {
-	if d.locationMatcher == nil {
-		d.matcherMu.Lock()
-		defer d.matcherMu.Unlock()
+func (j *Journal) locMatcher() *matcher.Matcher[friend.Location] {
+	if j.locationMatcher == nil {
+		j.matcherMu.Lock()
+		defer j.matcherMu.Unlock()
 
-		d.locationMatcher = utils.NewMatcher[friend.Location]()
+		j.locationMatcher = matcher.NewMatcher[friend.Location]()
 
-		for _, l := range d.Locations {
-			d.locationMatcher.Add(l)
+		for _, l := range j.Locations {
+			j.locationMatcher.Add(&l)
 		}
 	}
 
-	return d.locationMatcher
+	return j.locationMatcher
 }
 
-func (d *Data) frenMatcher() *utils.Matcher[friend.Person] {
-	if d.friendMatcher == nil {
-		d.matcherMu.Lock()
-		defer d.matcherMu.Unlock()
+func (j *Journal) frenMatcher() *matcher.Matcher[friend.Person] {
+	if j.friendMatcher == nil {
+		j.matcherMu.Lock()
+		defer j.matcherMu.Unlock()
 
-		d.friendMatcher = utils.NewMatcher[friend.Person]()
+		j.friendMatcher = matcher.NewMatcher[friend.Person]()
 
-		for _, f := range d.Friends {
-			d.friendMatcher.Add(f)
+		for _, f := range j.Friends {
+			j.friendMatcher.Add(&f)
 		}
 	}
 
-	return d.friendMatcher
+	return j.friendMatcher
 }

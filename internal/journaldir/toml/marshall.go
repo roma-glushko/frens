@@ -25,7 +25,7 @@ import (
 )
 
 type Files interface {
-	FriendsFile | ActivitiesFile
+	FriendsFile | EventsFile
 }
 
 func saveFile[T Files](filePath string, content T) error {
@@ -73,7 +73,7 @@ func Init(journalDir string) error {
 		errs = append(errs, fmt.Errorf("failed to create friends file: %w", err))
 	}
 
-	var activities ActivitiesFile
+	var activities EventsFile
 
 	if err := saveFile(filepath.Join(journalDir, FileNameActivities), activities); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
@@ -82,7 +82,7 @@ func Init(journalDir string) error {
 	return errors.Join(errs...)
 }
 
-func Load(journalDir string) (*journal.Data, error) {
+func Load(journalDir string) (*journal.Journal, error) {
 	var errs []error
 
 	entities, err := loadFile[FriendsFile](filepath.Join(journalDir, FileNameFriends))
@@ -90,7 +90,7 @@ func Load(journalDir string) (*journal.Data, error) {
 		errs = append(errs, fmt.Errorf("failed to load friends file: %w", err))
 	}
 
-	activities, err := loadFile[ActivitiesFile](filepath.Join(journalDir, FileNameActivities))
+	events, err := loadFile[EventsFile](filepath.Join(journalDir, FileNameActivities))
 	if err != nil {
 		errs = append(errs, fmt.Errorf("failed to load activities file: %w", err))
 	}
@@ -99,16 +99,17 @@ func Load(journalDir string) (*journal.Data, error) {
 		return nil, errors.Join(errs...)
 	}
 
-	return &journal.Data{
+	return &journal.Journal{
 		DirPath:    journalDir,
 		Tags:       entities.Tags,
 		Friends:    entities.Friends,
 		Locations:  entities.Locations,
-		Activities: activities.Activities,
+		Activities: events.Activities,
+		Notes:      events.Notes,
 	}, nil
 }
 
-func Save(l *journal.Data) error {
+func Save(l *journal.Journal) error {
 	var errs []error
 
 	entities := FriendsFile{
@@ -121,12 +122,13 @@ func Save(l *journal.Data) error {
 		errs = append(errs, fmt.Errorf("failed to create friends file: %w", err))
 	}
 
-	activities := ActivitiesFile{
+	events := EventsFile{
+		Notes:      l.Notes,
 		Activities: l.Activities,
 	}
 
-	if err := saveFile(filepath.Join(l.DirPath, FileNameActivities), activities); err != nil {
-		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
+	if err := saveFile(filepath.Join(l.DirPath, FileNameActivities), events); err != nil {
+		errs = append(errs, fmt.Errorf("failed to create events file: %w", err))
 	}
 
 	return errors.Join(errs...)

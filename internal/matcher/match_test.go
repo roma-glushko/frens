@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package utils
+package matcher
 
 import (
 	"testing"
@@ -34,9 +34,9 @@ func TestMatcher(t *testing.T) {
 
 	matcher := NewMatcher[testEntity]()
 
-	matcher.Add(testEntity{ID: 1, References: []string{"Philly", "Philadelphia"}})
-	matcher.Add(testEntity{ID: 2, References: []string{"Scranton", "Electric City"}})
-	matcher.Add(testEntity{ID: 3, References: []string{"New York", "NY", "NYC"}})
+	matcher.Add(&testEntity{ID: 1, References: []string{"Philly", "Philadelphia"}})
+	matcher.Add(&testEntity{ID: 2, References: []string{"Scranton", "Electric City"}})
+	matcher.Add(&testEntity{ID: 3, References: []string{"New York", "NY", "NYC"}})
 
 	tests := []struct {
 		input    string

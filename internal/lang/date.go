@@ -12,25 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package toml
+package lang
 
 import (
-	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/tag"
+	"time"
+
+	"github.com/markusmobius/go-dateparser"
 )
 
-const (
-	FileNameFriends    = "friends.toml"
-	FileNameActivities = "activities.toml"
-)
+var DateSeparator = "::"
 
-type FriendsFile struct {
-	Tags      []tag.Tag         `toml:"tags"`
-	Friends   []friend.Person   `toml:"friends"`
-	Locations []friend.Location `toml:"locations"`
-}
+func ExtractDate(s string) time.Time {
+	ts := time.Now().UTC()
 
-type EventsFile struct {
-	Activities []friend.Event `toml:"activities"`
-	Notes      []friend.Event `toml:"notes"`
+	if s != "" {
+		parsedDate, err := dateparser.Parse(nil, s)
+
+		if err != nil {
+			ts = time.Now().UTC()
+		} else {
+			ts = parsedDate.Time.UTC()
+		}
+	}
+
+	return ts
 }
