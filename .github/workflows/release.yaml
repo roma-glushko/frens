@@ -20,6 +20,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      # GoReleaser needs to know about tags
+      - name: Fetch all tags
+        run: git fetch --tags --force --prune --unshallow
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
