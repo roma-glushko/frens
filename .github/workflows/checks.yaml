@@ -49,9 +49,7 @@ jobs:
         run: go mod download
 
       - name: Install GolangCI Lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s v2.2.2
-        env:
-          GOPATH: ${{ runner.temp }}/tools/bin
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ${{ runner.temp }}/tools/bin v2.2.2
 
       - name: Run Golang Lint Command
         run: |
