@@ -16,54 +16,40 @@ package journal
 
 import (
 	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/sync"
 	"github.com/urfave/cli/v2"
 )
 
 var ConnectCommand = &cli.Command{
 	Name:      "connect",
 	Aliases:   []string{"con"},
-	Usage:     "Connect an existing journal to a remote git repository",
+	Usage:     "Connect an existing journal to a empty remote git repository",
 	ArgsUsage: "<REPOSITORY>",
 	Args:      true,
 	Action: func(ctx *cli.Context) error {
 		jCtx := jctx.FromCtx(ctx.Context)
 		jDir := jCtx.JournalDir
-		gitDir := filepath.Join(jDir, ".git")
+
+		git := sync.NewGit(jDir)
+
+		if err := git.Installed(); err != nil {
+			return fmt.Errorf("git is not installed or not found in PATH: %w", err)
+		}
 
 		repoURL := ctx.Args().First()
 
-		if f, err := os.Stat(gitDir); err != nil || !f.IsDir() {
+		if err := git.Inited(); err != nil {
 			// if the .git directory does not exist, we should init git first
-			cmd := exec.Command("git", "init")
-			cmd.Dir = jDir
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
 
-			if err := cmd.Run(); err != nil {
-				return fmt.Errorf("failed to initialize git repository: %w", err)
+			if err := git.Init(); err != nil {
+				return err
 			}
 		}
 
 		fmt.Println("Connecting to git repository", repoURL)
 
-		cmd := exec.Command("git", "remote", "add", "origin", repoURL)
-
-		cmd.Dir = jDir
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		// Run and wait
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("git remote add failed: %w", err)
-		}
-
-		return nil
+		return git.AddRemote("origin", repoURL)
 	},
 }

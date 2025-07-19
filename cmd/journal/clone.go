@@ -17,10 +17,9 @@ package journal
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/sync"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -34,11 +33,16 @@ var CloneCommand = &cli.Command{
 	Action: func(ctx *cli.Context) error {
 		jCtx := jctx.FromCtx(ctx.Context)
 		jDir := jCtx.JournalDir
-		gitDir := filepath.Join(jDir, ".git")
 
 		repoURL := ctx.Args().First()
 
-		if f, err := os.Stat(gitDir); err == nil && f.IsDir() {
+		git := sync.NewGit(jDir)
+
+		if err := git.Installed(); err != nil {
+			return fmt.Errorf("git is not installed or not found in PATH: %w", err)
+		}
+
+		if err := git.Inited(); err == nil {
 			// TODO: check if interactive mode is enabled
 			if tui.ConfirmAction("\n⚠️  Do you want to overwrite the existing journal under?") {
 				fmt.Println("Overwriting the existing journal...")
@@ -55,16 +59,8 @@ var CloneCommand = &cli.Command{
 			}
 		}
 
-		cmd := exec.Command("git", "clone", repoURL, jDir)
-
-		cmd.Dir = jDir
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		// Run and wait
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("git clone failed: %w", err)
+		if err := git.Clone(repoURL); err != nil {
+			return err
 		}
 
 		fmt.Println("✅ A new journal's initialized at", jDir)
