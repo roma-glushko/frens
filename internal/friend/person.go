@@ -83,6 +83,14 @@ func (p Person) Refs() []string {
 		names = append(names, parts[0], parts[len(parts)-1])
 	}
 
+	if p.ID != "" {
+		names = append(names, p.ID)
+	}
+
+	for i, c := 0, len(names); i < c; i++ {
+		names[i] = strings.ToLower(names[i])
+	}
+
 	return utils.Unique(names)
 }
 

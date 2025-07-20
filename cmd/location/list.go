@@ -17,6 +17,7 @@ package location
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/charmbracelet/lipgloss"
@@ -75,7 +76,7 @@ var ListCommand = &cli.Command{
 		}
 
 		locations := jr.ListLocations(journal.ListLocationQuery{
-			Search:    c.String("search"),
+			Search:    strings.TrimSpace(c.String("search")),
 			Countries: c.StringSlice("country"),
 			Tags:      c.StringSlice("tag"),
 			SortBy:    journal.SortOption(c.String("sort")),
