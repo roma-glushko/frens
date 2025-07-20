@@ -30,7 +30,13 @@ var (
 	locRe       *regexp.Regexp
 )
 
-var FormatLocationInfo = "NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] :: DESCRIPTION [#tag1, #tag2...] [$id:LOCATION_ID]"
+var (
+	FormatLocationMarkers = "@location1[, @location2...]"
+	FormatLocationInfo    = fmt.Sprintf(
+		"NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] :: DESCRIPTION [%s] [$id:LOCATION_ID]",
+		FormatTags,
+	)
+)
 
 func init() {
 	locMarkerRe = regexp.MustCompile(`@([\p{L}0-9_-]+)`)
