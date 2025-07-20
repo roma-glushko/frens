@@ -29,7 +29,7 @@ var ListCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:    "search",
 			Aliases: []string{"q"},
-			Usage:   "Search by name or nickname",
+			Usage:   "Search by name or description",
 		},
 		&cli.StringSliceFlag{
 			Name:    "location",

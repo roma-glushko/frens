@@ -14,13 +14,22 @@
 
 package location
 
-import "github.com/urfave/cli/v2"
+import (
+	"fmt"
+	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/urfave/cli/v2"
+)
 
 var ListCommand = &cli.Command{
 	Name:    "list",
 	Aliases: []string{"l", "ls"},
 	Usage:   "List all locations",
 	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:    "search",
+			Aliases: []string{"q"},
+			Usage:   "Search by name or description",
+		},
 		&cli.StringSliceFlag{
 			Name:    "country",
 			Aliases: []string{"c"},
@@ -34,10 +43,47 @@ var ListCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:    "sort",
 			Aliases: []string{"s"},
-			Usage:   "Sort friends by alphabetical order, number activities, recency (alpha, activities, recency)",
+			Value:   "alpha",
+			Usage:   "Sort by one of alpha, activities, recency",
+			Action: func(c *cli.Context, s string) error {
+				return journal.ValidateSortOption(s)
+			},
+		},
+		&cli.BoolFlag{
+			Name:    "reverse",
+			Aliases: []string{"r"},
+			Value:   false,
+			Usage:   "Reverse sort order",
 		},
 	},
-	Action: func(_ *cli.Context) error {
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		jr := journal.FromCtx(ctx)
+
+		orderBy := journal.OrderDirect
+
+		if c.Bool("reverse") {
+			orderBy = journal.OrderReverse
+		}
+
+		locations := jr.ListLocations(journal.ListLocationQuery{
+			Search:    c.String("search"),
+			Countries: c.StringSlice("country"),
+			Tags:      c.StringSlice("tag"),
+			SortBy:    journal.SortOption(c.String("sort")),
+			OrderBy:   orderBy,
+		})
+
+		if len(locations) == 0 {
+			fmt.Println("No friends found")
+			return nil
+		}
+
+		for _, f := range locations {
+			// TODO: improve output formatting
+			fmt.Println(f.Name)
+		}
+
 		return nil
 	},
 }

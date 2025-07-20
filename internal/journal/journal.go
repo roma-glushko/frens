@@ -85,6 +85,14 @@ type ListFriendQuery struct {
 	OrderBy   OrderOption
 }
 
+type ListLocationQuery struct {
+	Search    string
+	Countries []string
+	Tags      []string
+	SortBy    SortOption
+	OrderBy   OrderOption
+}
+
 type Journal struct {
 	DirPath    string
 	Tags       tag.Tags
@@ -262,6 +270,57 @@ func (j *Journal) UpdateLocation(o, n friend.Location) {
 
 	// If the friend was not found, add it as a new one
 	j.AddLocation(n)
+}
+
+func (j *Journal) ListLocations(q ListLocationQuery) []friend.Location {
+	locations := make([]friend.Location, 0, 10)
+
+	for _, l := range j.Locations {
+		if q.Search != "" && !strings.EqualFold(l.Name, q.Search) && !strings.EqualFold(l.Desc, q.Search) {
+			continue
+		}
+
+		if len(q.Countries) > 0 && !slices.Contains(q.Countries, l.Country) {
+			continue
+		}
+
+		if len(q.Tags) > 0 && !tag.HasTags(&l, q.Tags) {
+			continue
+		}
+
+		locations = append(locations, l)
+	}
+
+	if len(locations) == 0 {
+		return locations
+	}
+
+	sort.SliceStable(locations, func(i, j int) bool {
+		switch q.SortBy {
+		case SortAlpha:
+			if q.OrderBy == OrderReverse {
+				return strings.ToLower(locations[i].Name) > strings.ToLower(locations[j].Name)
+			}
+
+			return strings.ToLower(locations[i].Name) < strings.ToLower(locations[j].Name)
+		case SortActivities:
+			if q.OrderBy == OrderReverse {
+				return locations[i].Activities < locations[j].Activities
+			}
+
+			return locations[i].Activities > locations[j].Activities
+		case SortRecency:
+			if q.OrderBy == OrderReverse {
+				return locations[i].MostRecentActivity.After(locations[j].MostRecentActivity)
+			}
+
+			return locations[i].MostRecentActivity.Before(locations[j].MostRecentActivity)
+		default:
+			return false
+		}
+	})
+
+	return locations
 }
 
 func (j *Journal) RemoveLocations(toRemove []friend.Location) {

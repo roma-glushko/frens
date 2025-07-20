@@ -18,6 +18,7 @@ import (
 	"errors"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/roma-glushko/frens/internal/matcher"
 
@@ -36,8 +37,10 @@ type Location struct {
 	Aliases []string `toml:"aliases,omitempty"`
 	Tags    []string `toml:"tags,omitempty"`
 
-	Notes      int `toml:"notes,omitempty"`
-	Activities int `toml:"activities,omitempty"`
+	// Cached information
+	Notes              int       `toml:"notes,omitempty"`
+	Activities         int       `toml:"activities,omitempty"`
+	MostRecentActivity time.Time `toml:"most_recent_activity,omitzero"`
 }
 
 var (
