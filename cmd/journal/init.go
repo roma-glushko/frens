@@ -39,7 +39,7 @@ var InitCommand = &cli.Command{
 			if tui.ConfirmAction("\n⚠️  Do you want to overwrite the existing journal under?") {
 				fmt.Println("Overwriting the existing journal...")
 			} else {
-				fmt.Println("\n↩️  Journal initialization cancelled.")
+				fmt.Println("\n↩️  Journal initialization canceled.")
 				return nil
 			}
 		}

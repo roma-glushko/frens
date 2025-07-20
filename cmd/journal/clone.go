@@ -55,7 +55,7 @@ var CloneCommand = &cli.Command{
 					)
 				}
 			} else {
-				fmt.Println("\n↩️  Journal initialization cancelled.")
+				fmt.Println("\n↩️  Journal initialization canceled.")
 				return nil
 			}
 		}
