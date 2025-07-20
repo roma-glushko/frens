@@ -36,9 +36,9 @@ func NewGit(repoPath string) *Git {
 }
 
 func (g Git) Installed() error {
-	path, err := exec.LookPath("git")
+	_, err := exec.LookPath("git")
 	if err != nil {
-		return fmt.Errorf("git is not installed or not found in PATH: %w (output: %s)", err, path)
+		return fmt.Errorf("git is not installed or not found in PATH: %w", err)
 	}
 
 	return nil
@@ -66,7 +66,7 @@ func (g Git) Init(ctx context.Context) error {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to initialize git repository: %w", err)
+		return fmt.Errorf("failed to initialize git repository: %w", wrapCmdErr(cmd, err))
 	}
 
 	return nil
@@ -80,7 +80,7 @@ func (g Git) Clone(ctx context.Context, url string) error {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git clone failed: %w", err)
+		return fmt.Errorf("git clone failed: %w", wrapCmdErr(cmd, err))
 	}
 
 	return nil
@@ -94,7 +94,11 @@ func (g Git) GetBranchName(ctx context.Context) (string, error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("%s\n%s", output, err)
+		return "", fmt.Errorf(
+			"failed to get branch name: error: %w command output: %s",
+			wrapCmdErr(cmd, err),
+			output,
+		)
 	}
 
 	branchName := strings.TrimSpace(string(output))
@@ -112,7 +116,7 @@ func (g Git) Branch(ctx context.Context, branch string) error {
 
 	// Run and wait
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git branch failed: %w", err)
+		return fmt.Errorf("git branch failed: %w", wrapCmdErr(cmd, err))
 	}
 
 	return nil
@@ -124,7 +128,7 @@ func (g Git) GetStatus(ctx context.Context) (string, error) {
 
 	status, err := cmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("git status failed: %w", err)
+		return "", fmt.Errorf("git status failed: %w", wrapCmdErr(cmd, err))
 	}
 
 	return strings.TrimSpace(string(status)), nil
@@ -138,7 +142,7 @@ func (g Git) Commit(ctx context.Context, message string) error {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git add failed: %w", err)
+		return fmt.Errorf("git add failed: %w", wrapCmdErr(cmd, err))
 	}
 
 	cmd = exec.CommandContext(ctx, "git", "commit", "-m", message)
@@ -148,7 +152,7 @@ func (g Git) Commit(ctx context.Context, message string) error {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git commit failed: %w", err)
+		return fmt.Errorf("git commit failed: %w", wrapCmdErr(cmd, err))
 	}
 
 	return nil
@@ -164,7 +168,7 @@ func (g Git) AddRemote(ctx context.Context, origin, url string) error {
 
 	// Run and wait
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git remote add failed: %w", err)
+		return fmt.Errorf("git remote add failed: %w", wrapCmdErr(cmd, err))
 	}
 
 	return nil
@@ -178,7 +182,7 @@ func (g Git) Push(ctx context.Context, origin, branch string) error {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git push failed: %w", err)
+		return fmt.Errorf("git push failed: %w", wrapCmdErr(cmd, err))
 	}
 
 	return nil
@@ -203,8 +207,21 @@ func (g Git) Pull(ctx context.Context, origin, branch string) error {
 
 	// Run and wait
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git pull failed: %w", err)
+		return fmt.Errorf("git pull failed: %w", wrapCmdErr(cmd, err))
 	}
 
 	return nil
+}
+
+func wrapCmdErr(cmd *exec.Cmd, err error) error {
+	if exitError, ok := err.(*exec.ExitError); ok {
+		return fmt.Errorf(
+			"command %s failed with exit code %d: %w",
+			cmd.String(),
+			exitError.ExitCode(),
+			err,
+		)
+	}
+
+	return fmt.Errorf("command %s failed: %w", cmd.String(), err)
 }

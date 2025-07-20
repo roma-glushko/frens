@@ -25,7 +25,7 @@ import (
 var ConnectCommand = &cli.Command{
 	Name:      "connect",
 	Aliases:   []string{"con"},
-	Usage:     "Connect an existing journal to a empty remote git repository",
+	Usage:     "Connect an existing journal to an empty remote git repository",
 	ArgsUsage: "<REPOSITORY>",
 	Args:      true,
 	Action: func(c *cli.Context) error {
