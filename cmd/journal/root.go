@@ -24,7 +24,10 @@ var Commands = &cli.Command{
 	Usage:   "Manage your journals",
 	Subcommands: []*cli.Command{
 		InitCommand,
+		CloneCommand,
+		ConnectCommand,
 		EditCommand,
 		CleanCommand,
+		SyncCommand,
 	},
 }

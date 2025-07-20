@@ -20,7 +20,7 @@ import (
 
 var CleanCommand = &cli.Command{
 	Name:    "clean",
-	Aliases: []string{"c"},
+	Aliases: []string{"c", "cln"},
 	Usage:   "Clean up journal data in case it has been corrupted or stale",
 	Action: func(_ *cli.Context) error {
 		// TODO: implement
