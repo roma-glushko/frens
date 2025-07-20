@@ -48,7 +48,7 @@ func (g Git) Inited() error {
 
 	if f, err := os.Stat(gitDir); err != nil || !f.IsDir() {
 		return fmt.Errorf(
-			"no git repository found in under %s. Please initialize or connect to a remote repository first",
+			"no git repository found under %s. Please initialize or connect to a remote repository first",
 			g.RepoPath,
 		)
 	}
@@ -58,6 +58,7 @@ func (g Git) Inited() error {
 
 func (g Git) Init() error {
 	cmd := exec.Command("git", "init")
+
 	cmd.Dir = g.RepoPath
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -73,7 +74,6 @@ func (g Git) Init() error {
 func (g Git) Clone(url string) error {
 	cmd := exec.Command("git", "clone", url, g.RepoPath)
 
-	cmd.Dir = g.RepoPath
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -199,7 +199,7 @@ func (g Git) Pull(origin, branch string) error {
 
 	// Run and wait
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git clone failed: %w", err)
+		return fmt.Errorf("git pull failed: %w", err)
 	}
 
 	return nil
