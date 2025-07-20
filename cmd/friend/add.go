@@ -74,7 +74,7 @@ var AddCommand = &cli.Command{
 		},
 		&cli.StringSliceFlag{
 			Name:    "nickname",
-			Aliases: []string{"a", "aka", "alias", "nick"},
+			Aliases: []string{"a", "aka", "nick"},
 			Usage:   "Add friend's nicknames (used in search and matching the friend in activities)",
 		},
 	},

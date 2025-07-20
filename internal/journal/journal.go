@@ -33,11 +33,29 @@ import (
 	"github.com/roma-glushko/frens/internal/tag"
 )
 
+type SortOption string
+
+const (
+	SortAlpha      SortOption = "alpha"
+	SortActivities SortOption = "activities"
+	SortRecency    SortOption = "recency"
+)
+
+type OrderOption string
+
+const (
+	OrderDirect  OrderOption = "direct"
+	OrderReverse OrderOption = "reverse"
+)
+
 var ErrEventNotFound = errors.New("event not found")
 
 type ListFriendQuery struct {
-	Location string
-	Tag      string
+	Search    string
+	Locations []string
+	Tags      []string
+	SortBy    SortOption
+	OrderBy   OrderOption
 }
 
 type Journal struct {

@@ -14,7 +14,10 @@
 
 package friend
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/urfave/cli/v2"
+)
 
 var ListCommand = &cli.Command{
 	Name:    "list",
@@ -22,19 +25,53 @@ var ListCommand = &cli.Command{
 	Usage:   "List all friends",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
+			Name:    "search",
+			Aliases: []string{"q"},
+			Usage:   "Search by name or nickname",
+		},
+		&cli.StringSliceFlag{
 			Name:    "location",
 			Aliases: []string{"l", "loc", "in"},
+			Usage:   "List friends by location(s)",
 		},
-		&cli.StringFlag{
+		&cli.StringSliceFlag{
 			Name:    "tag",
 			Aliases: []string{"t"},
-			Usage:   "Filter by tag",
+			Usage:   "Filter by tag(s)",
 		},
 		&cli.StringFlag{
-			Name: "sort",
+			Name:    "sort",
+			Aliases: []string{"s"},
+			Value:   "alpha",
+			Usage:   "Sort by one of alpha, activities, recency",
+		},
+		&cli.BoolFlag{
+			Name:    "reverse",
+			Aliases: []string{"r"},
+			Value:   false,
+			Usage:   "Reverse sort order",
 		},
 	},
-	Action: func(_ *cli.Context) error {
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		jr := journal.FromCtx(ctx)
+
+		sortBy := c.String("sort")
+
+		orderBy := journal.OrderDirect
+
+		if c.Bool("reverse") {
+			orderBy = journal.OrderReverse
+		}
+
+		jr.ListFriends(journal.ListFriendQuery{
+			Search:    c.String("search"),
+			Locations: c.StringSlice("location"),
+			Tags:      c.StringSlice("tag"),
+			SortBy:    c.String("sort"),
+			OrderBy:   orderBy,
+		})
+
 		return nil
 	},
 }
