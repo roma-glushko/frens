@@ -276,8 +276,9 @@ func (j *Journal) ListLocations(q ListLocationQuery) []friend.Location { //nolin
 	locations := make([]friend.Location, 0, 10)
 
 	for _, l := range j.Locations {
-		if q.Search != "" && !strings.EqualFold(l.Name, q.Search) &&
-			!strings.EqualFold(l.Desc, q.Search) {
+		if q.Search != "" &&
+			!strings.Contains(strings.ToLower(l.Name), strings.ToLower(q.Search)) &&
+			!strings.Contains(strings.ToLower(l.Desc), strings.ToLower(q.Search)) {
 			continue
 		}
 
@@ -546,8 +547,9 @@ func (j *Journal) ListFriends(q ListFriendQuery) []friend.Person { //nolint:cycl
 	fl := make([]friend.Person, 0, 10)
 
 	for _, f := range j.Friends {
-		if q.Search != "" && !strings.EqualFold(f.Name, q.Search) &&
-			!strings.EqualFold(f.Desc, q.Search) {
+		if q.Search != "" &&
+			!strings.Contains(strings.ToLower(f.Name), strings.ToLower(q.Search)) &&
+			!strings.Contains(strings.ToLower(f.Desc), strings.ToLower(q.Search)) {
 			continue
 		}
 
