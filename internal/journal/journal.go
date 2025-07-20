@@ -444,6 +444,7 @@ func (j *Journal) AddEvent(e friend.Event) (friend.Event, error) {
 		e.Friends = append(e.Friends, p.ID)
 
 		if e.Type == friend.EventTypeActivity {
+			p.MostRecentActivity = e.Date
 			p.Activities++
 		} else {
 			p.Notes++
