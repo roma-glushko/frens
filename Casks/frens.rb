@@ -2,7 +2,7 @@
 cask "frens" do
   desc "A friendship management & journaling application for introverts and not only."
   homepage "https://github.com/roma-glushko/frens"
-  version "0.0.3"
+  version "0.0.4"
 
   livecheck do
     skip "Auto-generated on release."
@@ -12,35 +12,35 @@ cask "frens" do
 
   on_macos do
     on_intel do
-      url "https://github.com/roma-glushko/frens/releases/download/v0.0.3/frens_v0.0.3_darwin_amd64.tar.gz",
+      url "https://github.com/roma-glushko/frens/releases/download/v0.0.4/frens_v0.0.4_darwin_amd64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "3dd8c9bcbd839817cbd013d5a27e779ef88cc1cdd73276811296fc9ded7334fe"
+      sha256 "77a45850acd36842bf9011a1d7ae1423ab55fe5c6d80fc33b0df2c6a75ceaa39"
     end
     on_arm do
-      url "https://github.com/roma-glushko/frens/releases/download/v0.0.3/frens_v0.0.3_darwin_arm64.tar.gz",
+      url "https://github.com/roma-glushko/frens/releases/download/v0.0.4/frens_v0.0.4_darwin_arm64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "bc6659ce9eea89f99f8ca4791c10e1d8ca270512ad9890561473683bc9ac63d6"
+      sha256 "42ed14311dbe8edbcd055537ee17dea3ee9db3a611cc76b1b67ba76a514096ca"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/roma-glushko/frens/releases/download/v0.0.3/frens_v0.0.3_linux_amd64.tar.gz",
+      url "https://github.com/roma-glushko/frens/releases/download/v0.0.4/frens_v0.0.4_linux_amd64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "295a1c5929e24a72e761c7a5057ee41574c74ed6077dd72c70fe0b9ccf794267"
+      sha256 "09ba194615e209364084bc9f8d04788c81192302ea73dcc6c00fbf62d37d244a"
     end
     on_arm do
-      url "https://github.com/roma-glushko/frens/releases/download/v0.0.3/frens_v0.0.3_linux_arm64.tar.gz",
+      url "https://github.com/roma-glushko/frens/releases/download/v0.0.4/frens_v0.0.4_linux_arm64.tar.gz",
         verified: "github.com/roma-glushko/frens/",
         using: :homebrew_curl,
         user_agent: "Homebrew/1.0 (macOS)"
-      sha256 "51a541e8617142b62cc7c0711e0096ea6a1a50a4fbf0009dcf0f07ef39165b55"
+      sha256 "f276b5aa9a119638904c7532ab991e0e55ab6a7b1187c92508cc6a38846f2b2c"
     end
   end
 
