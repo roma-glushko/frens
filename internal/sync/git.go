@@ -15,6 +15,7 @@
 package sync
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -35,9 +36,9 @@ func NewGit(repoPath string) *Git {
 }
 
 func (g Git) Installed() error {
-	o, err := exec.LookPath("git")
+	path, err := exec.LookPath("git")
 	if err != nil {
-		return fmt.Errorf("%s\n%s", o, err)
+		return fmt.Errorf("git is not installed or not found in PATH: %w (output: %s)", err, path)
 	}
 
 	return nil
@@ -56,8 +57,8 @@ func (g Git) Inited() error {
 	return nil
 }
 
-func (g Git) Init() error {
-	cmd := exec.Command("git", "init")
+func (g Git) Init(ctx context.Context) error {
+	cmd := exec.CommandContext(ctx, "git", "init")
 
 	cmd.Dir = g.RepoPath
 	cmd.Stdin = os.Stdin
@@ -71,8 +72,8 @@ func (g Git) Init() error {
 	return nil
 }
 
-func (g Git) Clone(url string) error {
-	cmd := exec.Command("git", "clone", url, g.RepoPath)
+func (g Git) Clone(ctx context.Context, url string) error {
+	cmd := exec.CommandContext(ctx, "git", "clone", url, g.RepoPath)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -85,22 +86,24 @@ func (g Git) Clone(url string) error {
 	return nil
 }
 
-func (g Git) GetBranchName() (string, error) {
-	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
+func (g Git) GetBranchName(ctx context.Context) (string, error) {
+	cmd := exec.CommandContext(ctx, "git", "rev-parse", "--abbrev-ref", "HEAD")
 
 	cmd.Dir = g.RepoPath
 	cmd.Stdin = os.Stdin
 
-	o, err := cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("%s\n%s", o, err)
+		return "", fmt.Errorf("%s\n%s", output, err)
 	}
 
-	return strings.TrimSpace(string(o)), nil
+	branchName := strings.TrimSpace(string(output))
+
+	return branchName, nil
 }
 
-func (g Git) Branch(branch string) error {
-	cmd := exec.Command("git", "branch", "-M", branch)
+func (g Git) Branch(ctx context.Context, branch string) error {
+	cmd := exec.CommandContext(ctx, "git", "branch", "-M", branch)
 
 	cmd.Dir = g.RepoPath
 	cmd.Stdin = os.Stdin
@@ -115,8 +118,8 @@ func (g Git) Branch(branch string) error {
 	return nil
 }
 
-func (g Git) GetStatus() (string, error) {
-	cmd := exec.Command("git", "status", "--porcelain")
+func (g Git) GetStatus(ctx context.Context) (string, error) {
+	cmd := exec.CommandContext(ctx, "git", "status", "--porcelain")
 	cmd.Dir = g.RepoPath
 
 	status, err := cmd.Output()
@@ -127,8 +130,8 @@ func (g Git) GetStatus() (string, error) {
 	return strings.TrimSpace(string(status)), nil
 }
 
-func (g Git) Commit(message string) error {
-	cmd := exec.Command("git", "add", ".")
+func (g Git) Commit(ctx context.Context, message string) error {
+	cmd := exec.CommandContext(ctx, "git", "add", ".")
 	cmd.Dir = g.RepoPath
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -138,7 +141,7 @@ func (g Git) Commit(message string) error {
 		return fmt.Errorf("git add failed: %w", err)
 	}
 
-	cmd = exec.Command("git", "commit", "-m", message)
+	cmd = exec.CommandContext(ctx, "git", "commit", "-m", message)
 	cmd.Dir = g.RepoPath
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -151,8 +154,8 @@ func (g Git) Commit(message string) error {
 	return nil
 }
 
-func (g Git) AddRemote(origin, url string) error {
-	cmd := exec.Command("git", "remote", "add", origin, url)
+func (g Git) AddRemote(ctx context.Context, origin, url string) error {
+	cmd := exec.CommandContext(ctx, "git", "remote", "add", origin, url)
 
 	cmd.Dir = g.RepoPath
 	cmd.Stdin = os.Stdin
@@ -167,8 +170,8 @@ func (g Git) AddRemote(origin, url string) error {
 	return nil
 }
 
-func (g Git) Push(origin, branch string) error {
-	cmd := exec.Command("git", "push", origin, branch)
+func (g Git) Push(ctx context.Context, origin, branch string) error {
+	cmd := exec.CommandContext(ctx, "git", "push", origin, branch)
 	cmd.Dir = g.RepoPath
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -181,8 +184,9 @@ func (g Git) Push(origin, branch string) error {
 	return nil
 }
 
-func (g Git) Pull(origin, branch string) error {
-	cmd := exec.Command(
+func (g Git) Pull(ctx context.Context, origin, branch string) error {
+	cmd := exec.CommandContext(
+		ctx,
 		"git",
 		"pull",
 		origin,

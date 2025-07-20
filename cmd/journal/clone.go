@@ -30,16 +30,17 @@ var CloneCommand = &cli.Command{
 	Usage:     "Clone a journal from a remote git repository",
 	ArgsUsage: "<REPOSITORY>",
 	Args:      true,
-	Action: func(ctx *cli.Context) error {
-		jCtx := jctx.FromCtx(ctx.Context)
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		jCtx := jctx.FromCtx(ctx)
 		jDir := jCtx.JournalDir
 
-		repoURL := ctx.Args().First()
+		repoURL := c.Args().First()
 
 		git := sync.NewGit(jDir)
 
 		if err := git.Installed(); err != nil {
-			return fmt.Errorf("git is not installed or not found in PATH: %w", err)
+			return err
 		}
 
 		if err := git.Inited(); err == nil {
@@ -59,7 +60,7 @@ var CloneCommand = &cli.Command{
 			}
 		}
 
-		if err := git.Clone(repoURL); err != nil {
+		if err := git.Clone(ctx, repoURL); err != nil {
 			return err
 		}
 

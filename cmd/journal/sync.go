@@ -27,8 +27,9 @@ var SyncCommand = &cli.Command{
 	Name:    "sync",
 	Aliases: []string{"s"},
 	Usage:   "Synchronize your journal with a remote git repository",
-	Action: func(ctx *cli.Context) error {
-		jCtx := jctx.FromCtx(ctx.Context)
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		jCtx := jctx.FromCtx(ctx)
 		jDir := jCtx.JournalDir
 
 		git := sync.NewGit(jDir)
@@ -42,12 +43,12 @@ var SyncCommand = &cli.Command{
 		}
 
 		origin := "origin"
-		branch, err := git.GetBranchName()
+		branch, err := git.GetBranchName(ctx)
 
 		if err == nil {
 			fmt.Println("Pulling latest changes from the remote repository...")
 
-			err := git.Pull(origin, branch)
+			err := git.Pull(ctx, origin, branch)
 			if err != nil {
 				return fmt.Errorf("git pull failed: %w", err)
 			}
@@ -57,7 +58,7 @@ var SyncCommand = &cli.Command{
 			branch = "main"
 		}
 
-		status, err := git.GetStatus()
+		status, err := git.GetStatus(ctx)
 		if err != nil {
 			return err
 		}
@@ -71,19 +72,19 @@ var SyncCommand = &cli.Command{
 			hostname, _ := os.Hostname()
 			commit := "🔄 sync: synchronize journal @ " + hostname
 
-			err := git.Commit(commit)
+			err := git.Commit(ctx, commit)
 			if err != nil {
 				return err
 			}
 
-			if err = git.Branch(branch); err != nil {
+			if err = git.Branch(ctx, branch); err != nil {
 				return fmt.Errorf("git branch failed: %w", err)
 			}
 		}
 
 		fmt.Println("Pushing changes to the remote repository...")
 
-		if err = git.Push(origin, branch); err != nil {
+		if err = git.Push(ctx, origin, branch); err != nil {
 			return fmt.Errorf("git push failed: %w", err)
 		}
 
