@@ -48,10 +48,11 @@ var SyncCommand = &cli.Command{
 		if err == nil {
 			fmt.Println("Pulling latest changes from the remote repository...")
 
-			err := git.Pull(ctx, origin, branch)
-			if err != nil {
+			if err := git.Pull(ctx, origin, branch); err != nil {
 				return fmt.Errorf("git pull failed: %w", err)
 			}
+		} else {
+			fmt.Println("failed to get current branch name, assuming no branch is set yet")
 		}
 
 		if branch == "" {
