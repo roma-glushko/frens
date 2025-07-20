@@ -26,15 +26,30 @@ func TestExtractTags(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
-		input string
-		want  []tag.Tag
+		useCase string
+		input   string
+		want    []tag.Tag
 	}{
-		{"#tag1 #tag2", []tag.Tag{{Name: "tag1"}, {Name: "tag2"}}},
 		{
-			"#school:biology #school:math",
-			[]tag.Tag{{Name: "school:biology"}, {Name: "school:math"}},
+			useCase: "space-separated tags",
+			input:   "#tag1 #tag2",
+			want:    []tag.Tag{{Name: "tag1"}, {Name: "tag2"}},
 		},
-		{"#tag3#tag4", []tag.Tag{{Name: "tag3"}, {Name: "tag4"}}},
+		{
+			useCase: "joined tags",
+			input:   "#tag3#tag4",
+			want:    []tag.Tag{{Name: "tag3"}, {Name: "tag4"}},
+		},
+		{
+			useCase: "semi-colon subgrouped tags",
+			input:   "#school:biology #school:math",
+			want:    []tag.Tag{{Name: "school:biology"}, {Name: "school:math"}},
+		},
+		{
+			useCase: "cyrillic tags",
+			input:   "#укрліт:поезія #школа #cімя-батьки",
+			want:    []tag.Tag{{Name: "укрліт:поезія"}, {Name: "школа"}, {Name: "cімя-батьки"}},
+		},
 	}
 
 	for _, tc := range testcases {

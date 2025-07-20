@@ -25,7 +25,8 @@ func TestPersonParser(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
-		input     string
+		UseCase   string
+		Input     string
 		Name      string
 		Nicknames []string
 		Locations []string
@@ -34,19 +35,30 @@ func TestPersonParser(t *testing.T) {
 		ID        string
 	}{
 		{
-			"Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss #office @Scranton",
-			"Michael Harry Scott",
-			[]string{"The World's Best Boss", "Mike"},
-			[]string{"Scranton"},
-			"my Dunder Mifflin boss",
-			[]string{"office"},
-			"mscott",
+			UseCase:   "full person info",
+			Input:     "Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss #office @Scranton $id:mscott",
+			ID:        "mscott",
+			Name:      "Michael Harry Scott",
+			Nicknames: []string{"The World's Best Boss", "Mike"},
+			Locations: []string{"Scranton"},
+			Desc:      "my Dunder Mifflin boss",
+			Tags:      []string{"office"},
+		},
+		{
+			UseCase:   "cyrillic person info",
+			Input:     "Тарас Шевченко (a.k.a. Тарас Григорович) :: український поет #укрліт @kyiv $id:shevchenko",
+			ID:        "shevchenko",
+			Name:      "Тарас Шевченко",
+			Nicknames: []string{"Тарас Григорович"},
+			Locations: []string{"kyiv"},
+			Desc:      "український поет",
+			Tags:      []string{"укрліт"},
 		},
 	}
 
 	for _, tc := range testcases {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ExtractPerson(tc.input)
+		t.Run(tc.UseCase, func(t *testing.T) {
+			got, err := ExtractPerson(tc.Input)
 			require.NoError(t, err)
 
 			require.NotEmpty(t, got)
