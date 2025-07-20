@@ -68,15 +68,22 @@ func (p *Person) Validate() error {
 }
 
 func (p Person) Refs() []string {
-	names := make([]string, 0, 1+len(p.Nicknames))
+	names := make([]string, 0, 3+len(p.Nicknames))
 
 	names = append(names, p.Name)
+
+	parts := strings.Split(p.Name, " ")
 
 	if len(p.Nicknames) > 0 {
 		names = append(names, p.Nicknames...)
 	}
 
-	return names
+	if len(parts) >= 2 {
+		// Add first name and last name as separate references
+		names = append(names, parts[0], parts[len(parts)-1])
+	}
+
+	return utils.Unique(names)
 }
 
 func (p *Person) AddNickname(n string) {
