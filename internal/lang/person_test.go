@@ -25,48 +25,48 @@ func TestPersonParser(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
-		UseCase   string
-		Input     string
-		Name      string
-		Nicknames []string
-		Locations []string
-		Desc      string
-		Tags      []string
-		ID        string
+		useCase   string
+		input     string
+		id        string
+		name      string
+		nicknames []string
+		locations []string
+		desc      string
+		tags      []string
 	}{
 		{
-			UseCase:   "full person info",
-			Input:     "Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss #office @Scranton $id:mscott",
-			ID:        "mscott",
-			Name:      "Michael Harry Scott",
-			Nicknames: []string{"The World's Best Boss", "Mike"},
-			Locations: []string{"Scranton"},
-			Desc:      "my Dunder Mifflin boss",
-			Tags:      []string{"office"},
+			useCase:   "full person info",
+			input:     "Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss #office @Scranton $id:mscott",
+			id:        "mscott",
+			name:      "Michael Harry Scott",
+			nicknames: []string{"The World's Best Boss", "Mike"},
+			locations: []string{"Scranton"},
+			desc:      "my Dunder Mifflin boss",
+			tags:      []string{"office"},
 		},
 		{
-			UseCase:   "cyrillic person info",
-			Input:     "Тарас Шевченко (a.k.a. Тарас Григорович) :: український поет #укрліт @kyiv $id:shevchenko",
-			ID:        "shevchenko",
-			Name:      "Тарас Шевченко",
-			Nicknames: []string{"Тарас Григорович"},
-			Locations: []string{"kyiv"},
-			Desc:      "український поет",
-			Tags:      []string{"укрліт"},
+			useCase:   "cyrillic person info",
+			input:     "Тарас Шевченко (a.k.a. Тарас Григорович) :: український поет #укрліт @kyiv $id:shevchenko",
+			id:        "shevchenko",
+			name:      "Тарас Шевченко",
+			nicknames: []string{"Тарас Григорович"},
+			locations: []string{"kyiv"},
+			desc:      "український поет",
+			tags:      []string{"укрліт"},
 		},
 	}
 
 	for _, tc := range testcases {
-		t.Run(tc.UseCase, func(t *testing.T) {
-			got, err := ExtractPerson(tc.Input)
+		t.Run(tc.useCase, func(t *testing.T) {
+			got, err := ExtractPerson(tc.input)
 			require.NoError(t, err)
 
 			require.NotEmpty(t, got)
-			require.Equal(t, tc.Name, got.Name)
-			require.Equal(t, tc.Nicknames, got.Nicknames)
-			require.Equal(t, tc.Tags, got.Tags)
-			require.Equal(t, tc.Locations, got.Locations)
-			require.Equal(t, tc.Desc, got.Desc)
+			require.Equal(t, tc.name, got.Name)
+			require.Equal(t, tc.nicknames, got.Nicknames)
+			require.Equal(t, tc.tags, got.Tags)
+			require.Equal(t, tc.locations, got.Locations)
+			require.Equal(t, tc.desc, got.Desc)
 		})
 	}
 }
