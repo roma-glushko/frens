@@ -16,10 +16,16 @@ package friend
 
 import (
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/roma-glushko/frens/internal/lang"
+	"os"
+	"text/tabwriter"
 
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
 )
+
+var boldNameStyle = lipgloss.NewStyle().Bold(true)
 
 var ListCommand = &cli.Command{
 	Name:    "list",
@@ -80,10 +86,17 @@ var ListCommand = &cli.Command{
 			return nil
 		}
 
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "", "", "", "")
+		_, _ = fmt.Fprintln(w, "\t👤  Name\t🏷️  Tags\t📍  Location")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "", "", "", "")
+
 		for _, f := range friends {
 			// TODO: improve output formatting
-			fmt.Println(f.Name)
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", f.ID, boldNameStyle.Render(f.String()), lang.RenderTags(f.Tags), lang.RenderLocMarkers(f.Locations))
 		}
+
+		_ = w.Flush()
 
 		return nil
 	},

@@ -16,10 +16,16 @@ package location
 
 import (
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/roma-glushko/frens/internal/lang"
+	"os"
+	"text/tabwriter"
 
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
 )
+
+var boldNameStyle = lipgloss.NewStyle().Bold(true)
 
 var ListCommand = &cli.Command{
 	Name:    "list",
@@ -80,10 +86,16 @@ var ListCommand = &cli.Command{
 			return nil
 		}
 
-		for _, f := range locations {
-			// TODO: improve output formatting
-			fmt.Println(f.Name)
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "📍  Location", "🏷️  Tags")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
+
+		for _, l := range locations {
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", l.ID, boldNameStyle.Render(l.String()), lang.RenderTags(l.Tags))
 		}
+
+		_ = w.Flush()
 
 		return nil
 	},
