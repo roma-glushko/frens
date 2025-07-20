@@ -35,7 +35,7 @@ func TestPerson_Location(t *testing.T) {
 
 	p.AddLocation(loc)
 
-	require.True(t, p.HasLocation(loc))
+	require.True(t, p.HasLocations([]string{loc}))
 
 	p.AddLocation(loc)
 

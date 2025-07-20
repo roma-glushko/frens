@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/roma-glushko/frens/internal/matcher"
 
@@ -38,15 +39,17 @@ func (p Persons) Less(i, j int) bool { return p[i].Name < p[j].Name }
 func (p Persons) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 type Person struct {
-	ID         string   `toml:"id"`
-	Name       string   `toml:"name"`
-	Desc       string   `toml:"desc,omitempty"`
-	Nicknames  []string `toml:"nicknames,omitempty"`
-	Tags       []string `toml:"tags,omitempty"`
-	Locations  []string `toml:"locations,omitempty"`
-	Reminders  []string `toml:"reminders,omitempty"`
-	Activities int      `toml:"activities,omitempty"`
-	Notes      int      `toml:"notes,omitempty"`
+	ID        string   `toml:"id"`
+	Name      string   `toml:"name"`
+	Desc      string   `toml:"desc,omitempty"`
+	Nicknames []string `toml:"nicknames,omitempty"`
+	Tags      []string `toml:"tags,omitempty"`
+	Locations []string `toml:"locations,omitempty"`
+	Reminders []string `toml:"reminders,omitempty"`
+	// Cached information
+	Activities         int       `toml:"activities,omitempty"`
+	Notes              int       `toml:"notes,omitempty"`
+	MostRecentActivity time.Time `toml:"most_recent_activity,omitzero"`
 	// internal use only
 	Score int `toml:"-"`
 }
@@ -65,15 +68,22 @@ func (p *Person) Validate() error {
 }
 
 func (p Person) Refs() []string {
-	names := make([]string, 0, 1+len(p.Nicknames))
+	names := make([]string, 0, 3+len(p.Nicknames))
 
 	names = append(names, p.Name)
+
+	parts := strings.Split(p.Name, " ")
 
 	if len(p.Nicknames) > 0 {
 		names = append(names, p.Nicknames...)
 	}
 
-	return names
+	if len(parts) >= 2 {
+		// Add first name and last name as separate references
+		names = append(names, parts[0], parts[len(parts)-1])
+	}
+
+	return utils.Unique(names)
 }
 
 func (p *Person) AddNickname(n string) {
@@ -100,10 +110,12 @@ func (p *Person) GetTags() []string {
 	return p.Tags
 }
 
-func (p *Person) HasLocation(l string) bool {
+func (p *Person) HasLocations(ls []string) bool {
 	for _, loc := range p.Locations {
-		if strings.EqualFold(loc, l) {
-			return true
+		for _, l := range ls {
+			if strings.EqualFold(loc, l) {
+				return true
+			}
 		}
 	}
 

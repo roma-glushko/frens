@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package location
 
 import (
 	"fmt"
@@ -31,7 +31,7 @@ var boldNameStyle = lipgloss.NewStyle().Bold(true)
 var ListCommand = &cli.Command{
 	Name:    "list",
 	Aliases: []string{"l", "ls"},
-	Usage:   "List all friends",
+	Usage:   "List all locations",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "search",
@@ -39,9 +39,9 @@ var ListCommand = &cli.Command{
 			Usage:   "Search by name or description",
 		},
 		&cli.StringSliceFlag{
-			Name:    "location",
-			Aliases: []string{"l", "loc", "in"},
-			Usage:   "List friends by location(s)",
+			Name:    "country",
+			Aliases: []string{"c"},
+			Usage:   "Filter locations by country",
 		},
 		&cli.StringSliceFlag{
 			Name:    "tag",
@@ -74,33 +74,31 @@ var ListCommand = &cli.Command{
 			orderBy = journal.OrderReverse
 		}
 
-		friends := jr.ListFriends(journal.ListFriendQuery{
+		locations := jr.ListLocations(journal.ListLocationQuery{
 			Search:    c.String("search"),
-			Locations: c.StringSlice("location"),
+			Countries: c.StringSlice("country"),
 			Tags:      c.StringSlice("tag"),
 			SortBy:    journal.SortOption(c.String("sort")),
 			OrderBy:   orderBy,
 		})
 
-		if len(friends) == 0 {
-			fmt.Println("No friends found")
+		if len(locations) == 0 {
+			fmt.Println("No locations found")
 			return nil
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "", "", "", "")
-		_, _ = fmt.Fprintln(w, "\t👤  Name\t🏷️  Tags\t📍  Location")
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "", "", "", "")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "📍  Location", "🏷️  Tags")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
 
-		for _, f := range friends {
-			// TODO: improve output formatting
+		for _, l := range locations {
 			_, _ = fmt.Fprintf(
 				w,
-				"%s\t%s\t%s\t%s\n",
-				f.ID,
-				boldNameStyle.Render(f.String()),
-				lang.RenderTags(f.Tags),
-				lang.RenderLocMarkers(f.Locations),
+				"%s\t%s\t%s\n",
+				l.ID,
+				boldNameStyle.Render(l.String()),
+				lang.RenderTags(l.Tags),
 			)
 		}
 
