@@ -82,6 +82,17 @@ func TestExtractLocation(t *testing.T) {
 				Desc: "A city in New Hampshire known for its beautiful parks and vibrant community",
 			},
 		},
+		{
+			name:  "cyrillic location",
+			input: "Київ, Україна (aka Kyiv):: Столиця України $id:kyiv",
+			want: friend.Location{
+				ID:      "kyiv",
+				Name:    "Київ",
+				Country: "Україна",
+				Aliases: []string{"Kyiv"},
+				Desc:    "Столиця України",
+			},
+		},
 	}
 
 	for _, tc := range testcases {

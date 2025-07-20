@@ -21,7 +21,7 @@ import (
 	"github.com/roma-glushko/frens/internal/tag"
 )
 
-var FormatEventInfo = "[DATE or RELATIVE DATE] :: DESCRIPTION [#tag1, #tag2...] [@location1, @location2...]"
+var FormatEventInfo = "[DATE or RELATIVE DATE ::] DESCRIPTION [#tag1, #tag2...] [@location1, @location2...]"
 
 func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 	if s == "" {

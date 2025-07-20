@@ -26,7 +26,7 @@ import (
 var tagRe *regexp.Regexp
 
 func init() {
-	tagRe = regexp.MustCompile(`#([a-zA-Z0-9]+(?::[a-zA-Z0-9]+)?(?:-[a-zA-Z0-9]+)?)`)
+	tagRe = regexp.MustCompile(`#([\p{L}\p{N}]+(?::[\p{L}\p{N}]+)?(?:-[\p{L}\p{N}]+)?)`)
 }
 
 // ExtractTags extracts tags from a string e.g. "#tag1 #tag2" and returns a slice of unique Tag objects.
