@@ -272,11 +272,12 @@ func (j *Journal) UpdateLocation(o, n friend.Location) {
 	j.AddLocation(n)
 }
 
-func (j *Journal) ListLocations(q ListLocationQuery) []friend.Location {
+func (j *Journal) ListLocations(q ListLocationQuery) []friend.Location { //nolint:cyclop
 	locations := make([]friend.Location, 0, 10)
 
 	for _, l := range j.Locations {
-		if q.Search != "" && !strings.EqualFold(l.Name, q.Search) && !strings.EqualFold(l.Desc, q.Search) {
+		if q.Search != "" && !strings.EqualFold(l.Name, q.Search) &&
+			!strings.EqualFold(l.Desc, q.Search) {
 			continue
 		}
 
