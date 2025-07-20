@@ -119,9 +119,18 @@ func Remove(e Tagged, t string) {
 	e.SetTags(tags)
 }
 
-func HasTag(e Tagged, t string) bool {
+func HasTags(e Tagged, ts []string) bool {
 	for _, tag := range e.GetTags() {
-		if strings.EqualFold(tag, t) {
+		hasAllTags := true
+
+		for _, t := range ts {
+			if !strings.EqualFold(tag, t) {
+				hasAllTags = false
+				break
+			}
+		}
+
+		if hasAllTags {
 			return true
 		}
 	}

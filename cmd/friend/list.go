@@ -15,6 +15,8 @@
 package friend
 
 import (
+	"fmt"
+
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
 )
@@ -44,6 +46,9 @@ var ListCommand = &cli.Command{
 			Aliases: []string{"s"},
 			Value:   "alpha",
 			Usage:   "Sort by one of alpha, activities, recency",
+			Action: func(c *cli.Context, s string) error {
+				return journal.ValidateSortOption(s)
+			},
 		},
 		&cli.BoolFlag{
 			Name:    "reverse",
@@ -56,21 +61,29 @@ var ListCommand = &cli.Command{
 		ctx := c.Context
 		jr := journal.FromCtx(ctx)
 
-		sortBy := c.String("sort")
-
 		orderBy := journal.OrderDirect
 
 		if c.Bool("reverse") {
 			orderBy = journal.OrderReverse
 		}
 
-		jr.ListFriends(journal.ListFriendQuery{
+		friends := jr.ListFriends(journal.ListFriendQuery{
 			Search:    c.String("search"),
 			Locations: c.StringSlice("location"),
 			Tags:      c.StringSlice("tag"),
-			SortBy:    c.String("sort"),
+			SortBy:    journal.SortOption(c.String("sort")),
 			OrderBy:   orderBy,
 		})
+
+		if len(friends) == 0 {
+			fmt.Println("No friends found")
+			return nil
+		}
+
+		for _, f := range friends {
+			// TODO: improve output formatting
+			fmt.Println(f.Name)
+		}
 
 		return nil
 	},

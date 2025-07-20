@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"sort"
 	"strings"
 	"sync"
 
@@ -40,6 +41,32 @@ const (
 	SortActivities SortOption = "activities"
 	SortRecency    SortOption = "recency"
 )
+
+var SortOptions = []SortOption{
+	SortAlpha,
+	SortActivities,
+	SortRecency,
+}
+
+func ValidateSortOption(s string) error {
+	validOpts := make([]string, 0, len(SortOptions))
+
+	for _, sortOpt := range SortOptions {
+		opt := string(sortOpt)
+
+		validOpts = append(validOpts, opt)
+
+		if s == opt {
+			return nil
+		}
+	}
+
+	return fmt.Errorf(
+		"invalid sort value '%s' (valid: %s)",
+		s,
+		strings.Join(validOpts, ", "),
+	)
+}
 
 type OrderOption string
 
@@ -454,22 +481,57 @@ func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
 	}
 }
 
-func (j *Journal) ListFriends(q ListFriendQuery) []friend.Person {
-	v := make([]friend.Person, 0, 5)
+func (j *Journal) ListFriends(q ListFriendQuery) []friend.Person { //nolint:cyclop
+	fl := make([]friend.Person, 0, 10)
 
 	for _, f := range j.Friends {
-		if q.Location != "" && !f.HasLocation(q.Location) {
+		if q.Search != "" && !strings.EqualFold(f.Name, q.Search) &&
+			!strings.EqualFold(f.Desc, q.Search) {
 			continue
 		}
 
-		if q.Tag != "" && !tag.HasTag(&f, q.Tag) {
+		if len(q.Locations) > 0 && !f.HasLocations(q.Locations) {
 			continue
 		}
 
-		v = append(v, f)
+		if len(q.Tags) > 0 && !tag.HasTags(&f, q.Tags) {
+			continue
+		}
+
+		fl = append(fl, f)
 	}
 
-	return v
+	if len(fl) == 0 {
+		return fl
+	}
+
+	// sort by and order by friends
+	sort.SliceStable(fl, func(i, j int) bool {
+		switch q.SortBy {
+		case SortAlpha:
+			if q.OrderBy == OrderReverse {
+				return strings.ToLower(fl[i].Name) > strings.ToLower(fl[j].Name)
+			}
+
+			return strings.ToLower(fl[i].Name) < strings.ToLower(fl[j].Name)
+		case SortActivities:
+			if q.OrderBy == OrderReverse {
+				return fl[i].Activities < fl[j].Activities
+			}
+
+			return fl[i].Activities > fl[j].Activities
+		case SortRecency:
+			if q.OrderBy == OrderReverse {
+				return fl[i].MostRecentActivity.After(fl[j].MostRecentActivity)
+			}
+
+			return fl[i].MostRecentActivity.Before(fl[j].MostRecentActivity)
+		default:
+			return false
+		}
+	})
+
+	return fl
 }
 
 func (j *Journal) locMatcher() *matcher.Matcher[friend.Location] {

@@ -37,7 +37,7 @@ func (e *testEntity) GetTags() []string {
 func TestTags(t *testing.T) {
 	var e testEntity
 
-	require.False(t, HasTag(&e, "corporate"))
+	require.False(t, HasTags(&e, []string{"corporate"}))
 
 	AddStr(&e, []string{"sales"})
 	AddStr(&e, []string{"sales"})
@@ -45,8 +45,8 @@ func TestTags(t *testing.T) {
 
 	require.Len(t, e.Tags, 2)
 
-	require.True(t, HasTag(&e, "Sales"))
-	require.False(t, HasTag(&e, "warehouse"))
+	require.True(t, HasTags(&e, []string{"Sales"}))
+	require.False(t, HasTags(&e, []string{"warehouse"}))
 
 	Remove(&e, "SALES")
 
