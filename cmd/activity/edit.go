@@ -58,7 +58,7 @@ var EditCommand = &cli.Command{
 		}
 
 		inputForm := tui.NewEditorForm(tui.EditorOptions{
-			Title:      "Edit activity log (" + actOld.ID + "):",
+			Title:      fmt.Sprintf("Edit activity log (%s):", actOld.ID),
 			SyntaxHint: lang.FormatEventInfo,
 		})
 		inputForm.Textarea.SetValue(lang.RenderEvent(actOld))

@@ -112,14 +112,16 @@ var AddCommand = &cli.Command{
 		}
 
 		// apply CLI flags
-		// id := ctx.String("id")
+		id := ctx.String("id")
 		name := ctx.String("name")
 		desc := ctx.String("desc")
 		nicknames := ctx.StringSlice("nickname")
 		tags := ctx.StringSlice("tag")
 		locs := ctx.StringSlice("location")
 
-		// TODO: add support for ID
+		if id != "" {
+			f.ID = id
+		}
 
 		if name != "" {
 			f.Name = name
