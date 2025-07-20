@@ -16,6 +16,7 @@ package location
 
 import (
 	"fmt"
+
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
 )
