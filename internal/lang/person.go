@@ -25,9 +25,13 @@ import (
 )
 
 var (
-	FormatPersonInfo = "NAME [(aka NICK1[, NICK2...])] :: DESCRIPTION [#tag1, #tag2...] [@location1, @location2...] [$id:FRIEND_ID]"
-	ErrNoInfo        = errors.New("no information provided")
-	personRe         *regexp.Regexp
+	FormatPersonInfo = fmt.Sprintf(
+		"NAME [(aka NICK1[, NICK2...])] :: DESCRIPTION [%s] [%s] [$id:FRIEND_ID]",
+		FormatTags,
+		FormatLocationMarkers,
+	)
+	ErrNoInfo = errors.New("no information provided")
+	personRe  *regexp.Regexp
 )
 
 func init() {

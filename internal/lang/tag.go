@@ -23,6 +23,8 @@ import (
 	"github.com/roma-glushko/frens/internal/utils"
 )
 
+var FormatTags = "#tag1[, #tag2...]"
+
 var tagRe *regexp.Regexp
 
 func init() {
