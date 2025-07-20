@@ -16,10 +16,11 @@ package location
 
 import (
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/roma-glushko/frens/internal/lang"
 	"os"
 	"text/tabwriter"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/roma-glushko/frens/internal/lang"
 
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
@@ -82,7 +83,7 @@ var ListCommand = &cli.Command{
 		})
 
 		if len(locations) == 0 {
-			fmt.Println("No friends found")
+			fmt.Println("No locations found")
 			return nil
 		}
 
@@ -92,7 +93,13 @@ var ListCommand = &cli.Command{
 		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
 
 		for _, l := range locations {
-			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", l.ID, boldNameStyle.Render(l.String()), lang.RenderTags(l.Tags))
+			_, _ = fmt.Fprintf(
+				w,
+				"%s\t%s\t%s\n",
+				l.ID,
+				boldNameStyle.Render(l.String()),
+				lang.RenderTags(l.Tags),
+			)
 		}
 
 		_ = w.Flush()

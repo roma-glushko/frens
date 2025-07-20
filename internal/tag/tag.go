@@ -120,20 +120,19 @@ func Remove(e Tagged, t string) {
 }
 
 func HasTags(e Tagged, ts []string) bool {
-	for _, tag := range e.GetTags() {
-		hasAllTags := true
-
-		for _, t := range ts {
-			if !strings.EqualFold(tag, t) {
-				hasAllTags = false
-				break
-			}
+	for _, t := range ts {
+		if t == "" {
+			continue
 		}
 
-		if hasAllTags {
-			return true
+		hasTag := slices.ContainsFunc(e.GetTags(), func(tag string) bool {
+			return strings.EqualFold(tag, t)
+		})
+
+		if !hasTag {
+			return false
 		}
 	}
 
-	return false
+	return true
 }

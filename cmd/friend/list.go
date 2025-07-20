@@ -16,10 +16,11 @@ package friend
 
 import (
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/roma-glushko/frens/internal/lang"
 	"os"
 	"text/tabwriter"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/roma-glushko/frens/internal/lang"
 
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
@@ -93,7 +94,14 @@ var ListCommand = &cli.Command{
 
 		for _, f := range friends {
 			// TODO: improve output formatting
-			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", f.ID, boldNameStyle.Render(f.String()), lang.RenderTags(f.Tags), lang.RenderLocMarkers(f.Locations))
+			_, _ = fmt.Fprintf(
+				w,
+				"%s\t%s\t%s\t%s\n",
+				f.ID,
+				boldNameStyle.Render(f.String()),
+				lang.RenderTags(f.Tags),
+				lang.RenderLocMarkers(f.Locations),
+			)
 		}
 
 		_ = w.Flush()

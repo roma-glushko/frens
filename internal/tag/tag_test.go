@@ -52,3 +52,18 @@ func TestTags(t *testing.T) {
 
 	require.Len(t, e.Tags, 1)
 }
+
+func TestTags_MatchMultiple(t *testing.T) {
+	var e testEntity
+
+	require.False(t, HasTags(&e, []string{"work", "corporate"}))
+
+	AddStr(&e, []string{"sales"})
+	AddStr(&e, []string{"work"})
+	AddStr(&e, []string{"corporate"})
+
+	require.Len(t, e.Tags, 3)
+
+	require.True(t, HasTags(&e, []string{"sales", "work"}))
+	require.False(t, HasTags(&e, []string{"family", "work"}))
+}
