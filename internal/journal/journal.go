@@ -93,6 +93,13 @@ type ListLocationQuery struct {
 	OrderBy   OrderOption
 }
 
+type Stats struct {
+	Friends    int `json:"friends"`
+	Locations  int `json:"locations"`
+	Activities int `json:"activities"`
+	Notes      int `json:"notes"`
+}
+
 type Journal struct {
 	DirPath    string
 	Tags       tag.Tags
@@ -616,6 +623,15 @@ func (j *Journal) ListFriends(q ListFriendQuery) []friend.Person { //nolint:cycl
 	})
 
 	return fl
+}
+
+func (j *Journal) Stats() Stats {
+	return Stats{
+		Friends:    len(j.Friends),
+		Locations:  len(j.Locations),
+		Activities: len(j.Activities),
+		Notes:      len(j.Notes),
+	}
 }
 
 func (j *Journal) locMatcher() *matcher.Matcher[friend.Location] {
