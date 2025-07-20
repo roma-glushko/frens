@@ -47,8 +47,8 @@ func TestExtractTags(t *testing.T) {
 		},
 		{
 			useCase: "cyrillic tags",
-			input:   "#укрліт:поезія #школа #cімя-батьки",
-			want:    []tag.Tag{{Name: "укрліт:поезія"}, {Name: "школа"}, {Name: "cімя-батьки"}},
+			input:   "#укрліт:поезія #школа #сімя-батьки",
+			want:    []tag.Tag{{Name: "укрліт:поезія"}, {Name: "школа"}, {Name: "сімя-батьки"}},
 		},
 	}
 
