@@ -235,7 +235,7 @@ func (j *Journal) AddLocation(l friend.Location) {
 	// TODO: check for duplicated aliases
 
 	j.Locations = append(j.Locations, l)
-	j.dirty = true
+	j.SetDirty(true)
 }
 
 func (j *Journal) GetLocation(q string) (*friend.Location, error) {
@@ -369,7 +369,7 @@ func (j *Journal) RemoveLocations(toRemove []friend.Location) {
 func (j *Journal) AddTags(t []tag.Tag) {
 	j.Tags = append(j.Tags, t...).Unique()
 
-	j.dirty = true
+	j.SetDirty(true)
 }
 
 func (j *Journal) GuessFriends(q string) []*friend.Person { //nolint:cyclop

@@ -88,7 +88,7 @@ func Update(jr *journal.Journal, updater UpdateJournalFunc) error {
 
 	err = Save(jr)
 	if err != nil {
-		return fmt.Errorf("failed to save life space: %w", err)
+		return fmt.Errorf("failed to save journal: %w", err)
 	}
 
 	jr.SetDirty(false)
