@@ -109,7 +109,7 @@ func (m *Matcher[T]) Match(input string) []Match[T] { //nolint:cyclop
 
 			overlaps := false
 			for _, r := range matchedRanges {
-				if !(end <= r[0] || start >= r[1]) { // Overlaps if not completely outside
+				if start < r[1] && end > r[0] { // Overlaps if ranges intersect
 					overlaps = true
 					break
 				}
