@@ -19,6 +19,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/roma-glushko/frens/cmd/telegram"
+
 	"github.com/roma-glushko/frens/internal/journaldir"
 
 	"github.com/charmbracelet/log"
@@ -112,6 +114,7 @@ func NewApp() cli.App {
 			location.Commands,
 			note.Commands,
 			activity.Commands,
+			telegram.Commands,
 			ZenCommand,
 		},
 	}
