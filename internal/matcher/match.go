@@ -69,6 +69,7 @@ func (m *Matcher[T]) Match(input string) []Match[T] { //nolint:cyclop
 	})
 
 	var found []Match[T]
+
 	var matchedRanges [][2]int
 
 	lowerInput := strings.ToLower(input)
@@ -108,6 +109,7 @@ func (m *Matcher[T]) Match(input string) []Match[T] { //nolint:cyclop
 			}
 
 			overlaps := false
+
 			for _, r := range matchedRanges {
 				if start < r[1] && end > r[0] { // Overlaps if ranges intersect
 					overlaps = true

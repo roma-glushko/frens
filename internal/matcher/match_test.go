@@ -80,7 +80,6 @@ func TestMatcher_LongestPatternShouldWin(t *testing.T) {
 	matcher := NewMatcher[testEntity]()
 	matcher.Add(&testEntity{ID: 1, References: []string{"Jim", ref, "Jim H"}})
 
-	//input := "Jim Halper is a great guy, but Jim H is not as cool as Jim."
 	input := "I'm gonna meet Jim Halper"
 
 	matches := matcher.Match(input)

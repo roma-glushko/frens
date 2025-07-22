@@ -15,9 +15,10 @@
 package acceptance
 
 import (
+	"testing"
+
 	"github.com/roma-glushko/frens/cmd"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestJournal_AddActivityWithFriend(t *testing.T) {

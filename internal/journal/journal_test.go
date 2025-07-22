@@ -27,13 +27,13 @@ func TestJournal_AddEvent(t *testing.T) {
 	locID := "wonderland"
 
 	jr := Journal{
-		Friends: []friend.Person{
+		Friends: []*friend.Person{
 			{
 				ID:   frID,
 				Name: "Alice",
 			},
 		},
-		Locations: []friend.Location{
+		Locations: []*friend.Location{
 			{
 				ID:   locID,
 				Name: "Wonderland",
