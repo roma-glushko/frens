@@ -67,7 +67,7 @@ func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 	}, nil
 }
 
-func RenderEvent(e friend.Event) string {
+func RenderEvent(e *friend.Event) string {
 	var sb strings.Builder
 
 	if !e.Date.IsZero() {

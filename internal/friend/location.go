@@ -112,7 +112,7 @@ func (l *Location) String() string {
 	return sb.String()
 }
 
-type Locations []Location
+type Locations []*Location
 
 var _ sort.Interface = (*Locations)(nil)
 

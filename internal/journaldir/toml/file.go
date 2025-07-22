@@ -25,12 +25,12 @@ const (
 )
 
 type FriendsFile struct {
-	Tags      []tag.Tag         `toml:"tags"`
-	Friends   []friend.Person   `toml:"friends"`
-	Locations []friend.Location `toml:"locations"`
+	Tags      []tag.Tag          `toml:"tags"`
+	Friends   []*friend.Person   `toml:"friends"`
+	Locations []*friend.Location `toml:"locations"`
 }
 
 type EventsFile struct {
-	Activities []friend.Event `toml:"activities"`
-	Notes      []friend.Event `toml:"notes"`
+	Activities []*friend.Event `toml:"activities"`
+	Notes      []*friend.Event `toml:"notes"`
 }

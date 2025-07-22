@@ -51,7 +51,7 @@ var DeleteCommand = &cli.Command{
 			return cli.Exit("Please provide a activity ID to delete.", 1)
 		}
 
-		activities := make([]friend.Event, 0, len(ctx.Args().Slice()))
+		activities := make([]*friend.Event, 0, len(ctx.Args().Slice()))
 
 		jr := journal.FromCtx(ctx.Context)
 
