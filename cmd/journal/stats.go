@@ -15,20 +15,27 @@
 package journal
 
 import (
+	"fmt"
+
+	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
 )
 
-var Commands = &cli.Command{
-	Name:    "journal",
-	Aliases: []string{"j", "jr"},
-	Usage:   "Manage your journals",
-	Subcommands: []*cli.Command{
-		InitCommand,
-		CloneCommand,
-		ConnectCommand,
-		EditCommand,
-		StatsCommand,
-		CleanCommand,
-		SyncCommand,
+var StatsCommand = &cli.Command{
+	Name:  "stats",
+	Usage: "Show journal statistics",
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		jr := journal.FromCtx(ctx)
+
+		stats := jr.Stats()
+
+		fmt.Println("Journal Statistics:")
+		fmt.Printf("  • Friends: %d\n", stats.Friends)
+		fmt.Printf("  • Locations: %d\n", stats.Locations)
+		fmt.Printf("  • Activities: %d\n", stats.Activities)
+		fmt.Printf("  • Notes: %d\n", stats.Notes)
+
+		return nil
 	},
 }

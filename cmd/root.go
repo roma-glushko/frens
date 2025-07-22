@@ -112,6 +112,7 @@ func NewApp() cli.App {
 			location.Commands,
 			note.Commands,
 			activity.Commands,
+			ZenCommand,
 		},
 	}
 }

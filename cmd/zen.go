@@ -12,23 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package journal
+package cmd
 
 import (
+	"fmt"
+
 	"github.com/urfave/cli/v2"
 )
 
-var Commands = &cli.Command{
-	Name:    "journal",
-	Aliases: []string{"j", "jr"},
-	Usage:   "Manage your journals",
-	Subcommands: []*cli.Command{
-		InitCommand,
-		CloneCommand,
-		ConnectCommand,
-		EditCommand,
-		StatsCommand,
-		CleanCommand,
-		SyncCommand,
+var ZenCommand = &cli.Command{
+	Name:  "zen",
+	Usage: "Print the zen of friendship",
+	Action: func(_ *cli.Context) error {
+		fmt.Println("🌿 The Zen of Friendship:")
+		fmt.Println("   • Treat others as you would like them to treat you.")
+		fmt.Println("   • You should \"buy\" yourself a friend.")
+		return nil
 	},
 }

@@ -93,13 +93,20 @@ type ListLocationQuery struct {
 	OrderBy   OrderOption
 }
 
+type Stats struct {
+	Friends    int `json:"friends"`
+	Locations  int `json:"locations"`
+	Activities int `json:"activities"`
+	Notes      int `json:"notes"`
+}
+
 type Journal struct {
 	DirPath    string
 	Tags       tag.Tags
-	Friends    []friend.Person
+	Friends    []*friend.Person
 	Locations  friend.Locations
-	Activities []friend.Event
-	Notes      []friend.Event
+	Activities []*friend.Event
+	Notes      []*friend.Event
 
 	dirty           bool
 	matcherMu       sync.Mutex
@@ -108,11 +115,32 @@ type Journal struct {
 }
 
 func (j *Journal) Init() {
-	// TODO: implement
+	j.matcherMu.Lock()
+	defer j.matcherMu.Unlock()
+
+	if j.friendMatcher == nil {
+		j.friendMatcher = matcher.NewMatcher[friend.Person]()
+
+		for _, f := range j.Friends {
+			j.friendMatcher.Add(f)
+		}
+	}
+
+	if j.locationMatcher == nil {
+		j.locationMatcher = matcher.NewMatcher[friend.Location]()
+
+		for _, l := range j.Locations {
+			j.locationMatcher.Add(l)
+		}
+	}
 }
 
-func (j *Journal) Dirty() bool {
+func (j *Journal) IsDirty() bool {
 	return j.dirty
+}
+
+func (j *Journal) SetDirty(d bool) {
+	j.dirty = d
 }
 
 func (j *Journal) Path() string {
@@ -127,8 +155,8 @@ func (j *Journal) AddFriend(f friend.Person) {
 	// TODO: check for duplicated IDs
 	// TODO: check for duplicated aliases
 
-	j.Friends = append(j.Friends, f)
-	j.dirty = true
+	j.Friends = append(j.Friends, &f)
+	j.SetDirty(true)
 }
 
 func (j *Journal) GetFriend(q string) (*friend.Person, error) {
@@ -172,8 +200,8 @@ func (j *Journal) GetFriend(q string) (*friend.Person, error) {
 func (j *Journal) UpdateFriend(o, n friend.Person) {
 	for i, f := range j.Friends {
 		if f.Name == o.Name {
-			j.Friends[i] = n
-			j.dirty = true
+			j.Friends[i] = &n
+			j.SetDirty(true)
 
 			return
 		}
@@ -190,7 +218,7 @@ func (j *Journal) RemoveFriends(toRemove []friend.Person) {
 		for i, f := range j.Friends {
 			if f.Name == fr.Name {
 				j.Friends = append(j.Friends[:i], j.Friends[i+1:]...)
-				j.dirty = true
+				j.SetDirty(true)
 
 				break
 			}
@@ -206,8 +234,8 @@ func (j *Journal) AddLocation(l friend.Location) {
 	// TODO: check for duplicated IDs
 	// TODO: check for duplicated aliases
 
-	j.Locations = append(j.Locations, l)
-	j.dirty = true
+	j.Locations = append(j.Locations, &l)
+	j.SetDirty(true)
 }
 
 func (j *Journal) GetLocation(q string) (*friend.Location, error) {
@@ -259,8 +287,8 @@ func (j *Journal) GetLocation(q string) (*friend.Location, error) {
 func (j *Journal) UpdateLocation(o, n friend.Location) {
 	for i, l := range j.Locations {
 		if l.Name == o.Name {
-			j.Locations[i] = n
-			j.dirty = true
+			j.Locations[i] = &n
+			j.SetDirty(true)
 
 			return
 		}
@@ -272,8 +300,8 @@ func (j *Journal) UpdateLocation(o, n friend.Location) {
 	j.AddLocation(n)
 }
 
-func (j *Journal) ListLocations(q ListLocationQuery) []friend.Location { //nolint:cyclop
-	locations := make([]friend.Location, 0, 10)
+func (j *Journal) ListLocations(q ListLocationQuery) []*friend.Location { //nolint:cyclop
+	locations := make([]*friend.Location, 0, 10)
 
 	for _, l := range j.Locations {
 		if q.Search != "" &&
@@ -286,7 +314,7 @@ func (j *Journal) ListLocations(q ListLocationQuery) []friend.Location { //nolin
 			continue
 		}
 
-		if len(q.Tags) > 0 && !tag.HasTags(&l, q.Tags) {
+		if len(q.Tags) > 0 && !tag.HasTags(l, q.Tags) {
 			continue
 		}
 
@@ -341,7 +369,7 @@ func (j *Journal) RemoveLocations(toRemove []friend.Location) {
 func (j *Journal) AddTags(t []tag.Tag) {
 	j.Tags = append(j.Tags, t...).Unique()
 
-	j.dirty = true
+	j.SetDirty(true)
 }
 
 func (j *Journal) GuessFriends(q string) []*friend.Person { //nolint:cyclop
@@ -378,8 +406,8 @@ func (j *Journal) GuessFriends(q string) []*friend.Person { //nolint:cyclop
 	}
 
 	type friendPair struct {
-		KnownPerson       friend.Person
-		AmbiguitiesPerson friend.Person
+		KnownPerson       *friend.Person
+		AmbiguitiesPerson *friend.Person
 	}
 
 	guessedPersons := make([]*friend.Person, 0, len(ambiguitiesMatches))
@@ -391,8 +419,8 @@ func (j *Journal) GuessFriends(q string) []*friend.Person { //nolint:cyclop
 			for _, am := range ambiguitiesMatches {
 				for _, ap := range am.Entities {
 					rankPairs = append(rankPairs, friendPair{
-						KnownPerson:       *cp,
-						AmbiguitiesPerson: *ap,
+						KnownPerson:       cp,
+						AmbiguitiesPerson: ap,
 					})
 				}
 			}
@@ -454,19 +482,19 @@ func (j *Journal) AddEvent(e friend.Event) (friend.Event, error) {
 
 	switch e.Type {
 	case friend.EventTypeActivity:
-		j.Activities = append(j.Activities, e)
+		j.Activities = append(j.Activities, &e)
 	case friend.EventTypeNote:
-		j.Notes = append(j.Notes, e)
+		j.Notes = append(j.Notes, &e)
 	default:
 		return friend.Event{}, fmt.Errorf("unknown event type: %s", e.Type)
 	}
 
-	j.dirty = true
+	j.SetDirty(true)
 
 	return e, nil
 }
 
-func (j *Journal) GetEvent(t friend.EventType, q string) (friend.Event, error) {
+func (j *Journal) GetEvent(t friend.EventType, q string) (*friend.Event, error) {
 	if t == friend.EventTypeActivity {
 		for _, act := range j.Activities {
 			if act.ID == q {
@@ -483,7 +511,7 @@ func (j *Journal) GetEvent(t friend.EventType, q string) (friend.Event, error) {
 		}
 	}
 
-	return friend.Event{}, ErrEventNotFound
+	return nil, ErrEventNotFound
 }
 
 func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
@@ -492,8 +520,8 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	if o.Type == friend.EventTypeActivity {
 		for i, act := range j.Activities {
 			if act.ID == o.ID {
-				j.Activities[i] = n
-				j.dirty = true
+				j.Activities[i] = &n
+				j.SetDirty(true)
 
 				return n, nil
 			}
@@ -503,8 +531,8 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	if o.Type == friend.EventTypeNote {
 		for i, note := range j.Notes {
 			if note.ID == o.ID {
-				j.Notes[i] = n
-				j.dirty = true
+				j.Notes[i] = &n
+				j.SetDirty(true)
 
 				return n, nil
 			}
@@ -517,13 +545,13 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	return j.AddEvent(n)
 }
 
-func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
+func (j *Journal) RemoveEvents(t friend.EventType, toRemove []*friend.Event) {
 	for _, act := range toRemove {
 		if t == friend.EventTypeActivity {
 			for i, a := range j.Activities {
 				if a.ID == act.ID {
 					j.Activities = append(j.Activities[:i], j.Activities[i+1:]...)
-					j.dirty = true
+					j.SetDirty(true)
 
 					break
 				}
@@ -534,7 +562,7 @@ func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
 			for i, n := range j.Notes {
 				if n.ID == act.ID {
 					j.Notes = append(j.Notes[:i], j.Notes[i+1:]...)
-					j.dirty = true
+					j.SetDirty(true)
 
 					break
 				}
@@ -543,8 +571,8 @@ func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
 	}
 }
 
-func (j *Journal) ListFriends(q ListFriendQuery) []friend.Person { //nolint:cyclop
-	fl := make([]friend.Person, 0, 10)
+func (j *Journal) ListFriends(q ListFriendQuery) []*friend.Person { //nolint:cyclop
+	fl := make([]*friend.Person, 0, 10)
 
 	for _, f := range j.Friends {
 		if q.Search != "" &&
@@ -557,7 +585,7 @@ func (j *Journal) ListFriends(q ListFriendQuery) []friend.Person { //nolint:cycl
 			continue
 		}
 
-		if len(q.Tags) > 0 && !tag.HasTags(&f, q.Tags) {
+		if len(q.Tags) > 0 && !tag.HasTags(f, q.Tags) {
 			continue
 		}
 
@@ -597,32 +625,19 @@ func (j *Journal) ListFriends(q ListFriendQuery) []friend.Person { //nolint:cycl
 	return fl
 }
 
-func (j *Journal) locMatcher() *matcher.Matcher[friend.Location] {
-	if j.locationMatcher == nil {
-		j.matcherMu.Lock()
-		defer j.matcherMu.Unlock()
-
-		j.locationMatcher = matcher.NewMatcher[friend.Location]()
-
-		for _, l := range j.Locations {
-			j.locationMatcher.Add(&l)
-		}
+func (j *Journal) Stats() Stats {
+	return Stats{
+		Friends:    len(j.Friends),
+		Locations:  len(j.Locations),
+		Activities: len(j.Activities),
+		Notes:      len(j.Notes),
 	}
+}
 
+func (j *Journal) locMatcher() *matcher.Matcher[friend.Location] {
 	return j.locationMatcher
 }
 
 func (j *Journal) frenMatcher() *matcher.Matcher[friend.Person] {
-	if j.friendMatcher == nil {
-		j.matcherMu.Lock()
-		defer j.matcherMu.Unlock()
-
-		j.friendMatcher = matcher.NewMatcher[friend.Person]()
-
-		for _, f := range j.Friends {
-			j.friendMatcher.Add(&f)
-		}
-	}
-
 	return j.friendMatcher
 }

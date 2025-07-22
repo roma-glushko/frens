@@ -74,24 +74,24 @@ func Save(data *journal.Journal) error {
 	return toml.Save(data)
 }
 
-type LifeUpdateFunc = func(data *journal.Journal) error
+type UpdateJournalFunc = func(data *journal.Journal) error
 
-func Update(l *journal.Journal, updater LifeUpdateFunc) error {
-	err := updater(l)
+func Update(jr *journal.Journal, updater UpdateJournalFunc) error {
+	err := updater(jr)
 	if err != nil {
 		return err
 	}
 
-	if !l.Dirty() {
+	if !jr.IsDirty() {
 		return nil
 	}
 
-	err = Save(l)
+	err = Save(jr)
 	if err != nil {
-		return fmt.Errorf("failed to save life space: %w", err)
+		return fmt.Errorf("failed to save journal: %w", err)
 	}
 
-	// l.dirty = false
+	jr.SetDirty(false)
 
 	return nil
 }

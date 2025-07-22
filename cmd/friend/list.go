@@ -17,6 +17,7 @@ package friend
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/charmbracelet/lipgloss"
@@ -75,7 +76,7 @@ var ListCommand = &cli.Command{
 		}
 
 		friends := jr.ListFriends(journal.ListFriendQuery{
-			Search:    c.String("search"),
+			Search:    strings.TrimSpace(c.String("search")),
 			Locations: c.StringSlice("location"),
 			Tags:      c.StringSlice("tag"),
 			SortBy:    journal.SortOption(c.String("sort")),

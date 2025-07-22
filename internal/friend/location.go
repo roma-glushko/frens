@@ -65,7 +65,15 @@ func (l Location) Refs() []string {
 		names = append(names, l.Aliases...)
 	}
 
-	return names
+	if l.ID != "" {
+		names = append(names, l.ID)
+	}
+
+	for i, c := 0, len(names); i < c; i++ {
+		names[i] = strings.ToLower(names[i])
+	}
+
+	return utils.Unique(names)
 }
 
 func (l *Location) AddAlias(a string) {
@@ -104,7 +112,7 @@ func (l *Location) String() string {
 	return sb.String()
 }
 
-type Locations []Location
+type Locations []*Location
 
 var _ sort.Interface = (*Locations)(nil)
 
