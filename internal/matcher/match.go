@@ -69,6 +69,7 @@ func (m *Matcher[T]) Match(input string) []Match[T] { //nolint:cyclop
 	})
 
 	var found []Match[T]
+	var matchedRanges [][2]int
 
 	lowerInput := strings.ToLower(input)
 
@@ -105,6 +106,21 @@ func (m *Matcher[T]) Match(input string) []Match[T] { //nolint:cyclop
 					continue
 				}
 			}
+
+			overlaps := false
+			for _, r := range matchedRanges {
+				if !(end <= r[0] || start >= r[1]) { // Overlaps if not completely outside
+					overlaps = true
+					break
+				}
+			}
+
+			if overlaps {
+				idx = start + 1
+				continue
+			}
+
+			matchedRanges = append(matchedRanges, [2]int{start, end})
 
 			found = append(found, Match[T]{
 				Entities:   pattern.Entities,
