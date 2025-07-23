@@ -84,11 +84,46 @@ var BotCommand = &cli.Command{
 			return c.Send("Frens Version: " + version.FullVersion)
 		})
 
-		//bot.Handle("/listfrens", func(c tele.Context) error {
-		//	payload := c.Message().Payload
-		//
-		//	return c.Send(payload)
-		//})
+		bot.Handle("/listfrens", func(c tele.Context) error {
+			payload := c.Message().Payload
+
+			q, err := lang.ExtractPersonQuery(payload)
+			if err != nil {
+				return c.Send(fmt.Sprintf("Failed to parse query: %v", err))
+			}
+
+			friends := jr.ListFriends(q)
+
+			if len(friends) == 0 {
+				return c.Send("No friends found matching your query.")
+			}
+
+			var sb strings.Builder
+
+			sb.WriteString("Here are your friends:\n")
+
+			for _, f := range friends {
+				sb.WriteString(fmt.Sprintf("👤 %s\n", f.String()))
+
+				if len(f.Tags) > 0 {
+					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(f.Tags, ", ")))
+				}
+
+				if len(f.Locations) > 0 {
+					sb.WriteString(
+						fmt.Sprintf("  Locations: %s\n", strings.Join(f.Locations, ", ")),
+					)
+				}
+
+				if f.Desc != "" {
+					sb.WriteString(fmt.Sprintf("  Description: %s\n", f.Desc))
+				}
+
+				sb.WriteString("\n")
+			}
+
+			return c.Send(sb.String())
+		})
 
 		//bot.Handle("/listlocs", func(c tele.Context) error {
 		//	payload := c.Message().Payload

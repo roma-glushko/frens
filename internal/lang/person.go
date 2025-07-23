@@ -30,6 +30,11 @@ var (
 		FormatTags,
 		FormatLocationMarkers,
 	)
+	FormatPersonQuery = fmt.Sprintf(
+		"[SEARCH TERM] [%s] [%s] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
+		FormatTags,
+		FormatLocationMarkers,
+	)
 	ErrNoInfo = errors.New("no information provided")
 	personRe  *regexp.Regexp
 )
@@ -43,6 +48,11 @@ func init() {
 type personProps struct {
 	ID string `frentxt:"id"`
 }
+
+//type personOrderProps struct {
+//	SortBy string `frentxt:"sort"`
+//	Order  string `frentxt:"order"`
+//}
 
 func extractNicknames(raw string) []string {
 	raw = strings.ReplaceAll(raw, `"`, "")
@@ -94,6 +104,23 @@ func ExtractPerson(s string) (friend.Person, error) {
 		Desc:      desc,
 		Tags:      tags,
 		Locations: locations,
+	}, nil
+}
+
+func ExtractPersonQuery(q string) (friend.ListFriendQuery, error) {
+	tags := tag.Tags(ExtractTags(q)).ToNames()
+	locations := ExtractLocMarkers(q)
+
+	q = RemoveTags(q)
+	q = RemoveLocMarkers(q)
+
+	search := strings.TrimSpace(q)
+
+	return friend.ListFriendQuery{
+		Search:    search,
+		Locations: locations,
+		Tags:      tags,
+		// TODO: parse sorting options
 	}, nil
 }
 

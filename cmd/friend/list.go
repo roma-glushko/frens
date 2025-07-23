@@ -20,6 +20,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/roma-glushko/frens/internal/friend"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/roma-glushko/frens/internal/lang"
 
@@ -55,7 +57,7 @@ var ListCommand = &cli.Command{
 			Value:   "alpha",
 			Usage:   "Sort by one of alpha, activities, recency",
 			Action: func(c *cli.Context, s string) error {
-				return journal.ValidateSortOption(s)
+				return friend.ValidateSortOption(s)
 			},
 		},
 		&cli.BoolFlag{
@@ -69,17 +71,17 @@ var ListCommand = &cli.Command{
 		ctx := c.Context
 		jr := journal.FromCtx(ctx)
 
-		orderBy := journal.OrderDirect
+		orderBy := friend.OrderDirect
 
 		if c.Bool("reverse") {
-			orderBy = journal.OrderReverse
+			orderBy = friend.OrderReverse
 		}
 
-		friends := jr.ListFriends(journal.ListFriendQuery{
+		friends := jr.ListFriends(friend.ListFriendQuery{
 			Search:    strings.TrimSpace(c.String("search")),
 			Locations: c.StringSlice("location"),
 			Tags:      c.StringSlice("tag"),
-			SortBy:    journal.SortOption(c.String("sort")),
+			SortBy:    friend.SortOption(c.String("sort")),
 			OrderBy:   orderBy,
 		})
 
