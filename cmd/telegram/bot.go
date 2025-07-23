@@ -16,13 +16,19 @@ package telegram
 
 import (
 	"fmt"
-	"gopkg.in/telebot.v4/middleware"
 	"os"
+	"strings"
 	"time"
+
+	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/journaldir"
+	"github.com/roma-glushko/frens/internal/lang"
+	"github.com/roma-glushko/frens/internal/version"
+	"gopkg.in/telebot.v4/middleware"
 
 	"github.com/pkg/errors"
 
-	"github.com/roma-glushko/frens/internal/version"
 	"github.com/urfave/cli/v2"
 	tele "gopkg.in/telebot.v4"
 )
@@ -44,7 +50,7 @@ const helpMessage = `Welcome to the Frens Bot! Here is what you can do:
 var BotCommand = &cli.Command{
 	Name:  "bot",
 	Usage: "Start a Telegram bot",
-	Action: func(c *cli.Context) error {
+	Action: func(ctx *cli.Context) error {
 		userList := []int64{283564721}
 		token := os.Getenv("TOKEN")
 
@@ -62,7 +68,8 @@ var BotCommand = &cli.Command{
 			return fmt.Errorf("failed to start telegram bot: %w", err)
 		}
 
-		bot.Use(middleware.Logger())
+		jr := journal.FromCtx(ctx.Context)
+
 		bot.Use(middleware.Whitelist(userList...))
 
 		bot.Handle("/help", func(c tele.Context) error {
@@ -77,12 +84,182 @@ var BotCommand = &cli.Command{
 			return c.Send("Frens Version: " + version.FullVersion)
 		})
 
+		//bot.Handle("/listfrens", func(c tele.Context) error {
+		//	payload := c.Message().Payload
+		//
+		//	return c.Send(payload)
+		//})
+
+		//bot.Handle("/listlocs", func(c tele.Context) error {
+		//	payload := c.Message().Payload
+		//
+		//	return c.Send(payload)
+		//})
+
+		bot.Handle("/addfriend", func(c tele.Context) error {
+			payload := c.Message().Payload
+
+			if payload == "" {
+				return c.Send(
+					"Please provide a friend information in the format: /addfriend " + lang.FormatPersonInfo,
+				)
+			}
+
+			f, err := lang.ExtractPerson(payload)
+
+			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+				return c.Send(fmt.Sprintf("failed to parse friend info: %v", err))
+			}
+
+			err = journaldir.Update(jr, func(l *journal.Journal) error {
+				l.AddFriend(f)
+				return nil
+			})
+			if err != nil {
+				return c.Send(fmt.Sprintf("failed to add friend: %v", err))
+			}
+
+			fmt.Println("Added new friend: " + f.String())
+
+			var sb strings.Builder
+
+			sb.WriteString("✅ Added new friend: " + f.String())
+
+			if len(f.Locations) > 0 {
+				sb.WriteString("\n📍 Locations: " + strings.Join(f.Locations, ", "))
+			}
+
+			if len(f.Tags) > 0 {
+				sb.WriteString("\n🏷️ Tags: " + strings.Join(f.Tags, ", "))
+			}
+
+			return c.Send(sb.String())
+		})
+
+		bot.Handle("/addlocation", func(c tele.Context) error {
+			payload := c.Message().Payload
+
+			if payload == "" {
+				return c.Send(
+					"Please provide a location information in the format: /addlocation " + lang.FormatLocationInfo,
+				)
+			}
+
+			fmt.Println("Received payload:", payload)
+
+			l, err := lang.ExtractLocation(payload)
+
+			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+				return c.Send(fmt.Sprintf("failed to parse friend info: %v", err))
+			}
+
+			err = journaldir.Update(jr, func(j *journal.Journal) error {
+				j.AddLocation(l)
+				return nil
+			})
+			if err != nil {
+				return c.Send(fmt.Sprintf("failed to add friend: %v", err))
+			}
+
+			var sb strings.Builder
+
+			sb.WriteString("✅ Added new location: " + l.String())
+
+			if len(l.Aliases) > 0 {
+				sb.WriteString("\n📍 Aliases: " + strings.Join(l.Aliases, ", "))
+			}
+
+			if len(l.Tags) > 0 {
+				sb.WriteString("\n🏷️ Tags: " + strings.Join(l.Tags, ", "))
+			}
+
+			if l.Desc != "" {
+				sb.WriteString("\n🧭 Description: \n" + l.Desc)
+			}
+
+			return c.Send(sb.String())
+		})
+
+		bot.Handle("/addnote", func(c tele.Context) error {
+			payload := c.Message().Payload
+
+			if payload == "" {
+				return c.Send(
+					"Please provide a note information in the format: /addnote " + lang.FormatEventInfo,
+				)
+			}
+
+			e, err := lang.ExtractEvent(friend.EventTypeNote, payload)
+
+			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+				return c.Send(fmt.Sprintf("failed to parse note info: %v", err))
+			}
+
+			err = journaldir.Update(jr, func(j *journal.Journal) error {
+				e, err = j.AddEvent(e)
+				return err
+			})
+			if err != nil {
+				return c.Send(fmt.Sprintf("failed to add note: %v", err))
+			}
+
+			fmt.Println("✅ Added new note: " + e.ID)
+
+			var sb strings.Builder
+
+			sb.WriteString("✅ Added new note: " + e.ID)
+			sb.WriteString("\n🧭 Description: \n" + e.Desc)
+
+			if len(e.Tags) > 0 {
+				sb.WriteString("\n🏷️ Tags: " + strings.Join(e.Tags, ", "))
+			}
+
+			return c.Send(sb.String())
+		})
+
+		bot.Handle("/addactivity", func(c tele.Context) error {
+			payload := c.Message().Payload
+
+			if payload == "" {
+				return c.Send(
+					"Please provide a activity information in the format: /addactivity " + lang.FormatEventInfo,
+				)
+			}
+
+			e, err := lang.ExtractEvent(friend.EventTypeActivity, payload)
+
+			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+				return c.Send(fmt.Sprintf("failed to parse activity info: %v", err))
+			}
+
+			err = journaldir.Update(jr, func(j *journal.Journal) error {
+				e, err = j.AddEvent(e)
+				return err
+			})
+			if err != nil {
+				return c.Send(fmt.Sprintf("failed to add activity: %v", err))
+			}
+
+			fmt.Println("✅ Added new activity: " + e.ID)
+
+			var sb strings.Builder
+
+			sb.WriteString("✅ Added new activity: " + e.ID)
+			sb.WriteString("\n🧭 Description: \n" + e.Desc)
+
+			if len(e.Tags) > 0 {
+				sb.WriteString("\n🏷️ Tags: " + strings.Join(e.Tags, ", "))
+			}
+
+			return c.Send(sb.String())
+		})
+
 		go func() {
 			fmt.Println("Starting Telegram bot...")
 			bot.Start()
 		}()
 
-		<-c.Done()
+		<-ctx.Done()
 
 		fmt.Println("\nStopping Telegram bot...")
 		bot.Stop()
