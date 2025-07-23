@@ -101,7 +101,7 @@ var BotCommand = &cli.Command{
 
 			if payload == "" {
 				return c.Send(
-					"Please provide a friend information in the format: /addfriend " + lang.FormatPersonInfo,
+					"Please provide a friend information in the format:\n/addfriend " + lang.FormatPersonInfo,
 				)
 			}
 
@@ -141,7 +141,7 @@ var BotCommand = &cli.Command{
 
 			if payload == "" {
 				return c.Send(
-					"Please provide a location information in the format: /addlocation " + lang.FormatLocationInfo,
+					"Please provide a location information in the format:\n/addlocation " + lang.FormatLocationInfo,
 				)
 			}
 
@@ -185,7 +185,7 @@ var BotCommand = &cli.Command{
 
 			if payload == "" {
 				return c.Send(
-					"Please provide a note information in the format: /addnote " + lang.FormatEventInfo,
+					"Please provide a note information in the format:\n/addnote " + lang.FormatEventInfo,
 				)
 			}
 
@@ -222,7 +222,7 @@ var BotCommand = &cli.Command{
 
 			if payload == "" {
 				return c.Send(
-					"Please provide a activity information in the format: /addactivity " + lang.FormatEventInfo,
+					"Please provide a activity information in the format:\n/addactivity " + lang.FormatEventInfo,
 				)
 			}
 
