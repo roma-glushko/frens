@@ -488,11 +488,12 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	return j.AddEvent(n)
 }
 
-func (j *Journal) ListNotes(q friend.ListEventQuery) []*friend.Event {
+func (j *Journal) ListNotes(q friend.ListEventQuery) []*friend.Event { //nolint:cyclop
 	notes := make([]*friend.Event, 0, 10)
 
 	for _, note := range j.Notes {
-		if q.Keyword != "" && !strings.Contains(strings.ToLower(note.Desc), strings.ToLower(q.Keyword)) {
+		if q.Keyword != "" &&
+			!strings.Contains(strings.ToLower(note.Desc), strings.ToLower(q.Keyword)) {
 			continue
 		}
 
@@ -516,7 +517,7 @@ func (j *Journal) ListNotes(q friend.ListEventQuery) []*friend.Event {
 	}
 
 	sort.SliceStable(notes, func(i, j int) bool {
-		switch q.SortBy {
+		switch q.SortBy { //nolint:exhaustive
 		case friend.SortAlpha:
 			if q.OrderBy == friend.OrderReverse {
 				return strings.ToLower(notes[i].Desc) > strings.ToLower(notes[j].Desc)
@@ -535,7 +536,6 @@ func (j *Journal) ListNotes(q friend.ListEventQuery) []*friend.Event {
 	})
 
 	return notes
-
 }
 
 func (j *Journal) RemoveEvents(t friend.EventType, toRemove []*friend.Event) {
