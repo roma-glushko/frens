@@ -160,7 +160,7 @@ var BotCommand = &cli.Command{
 		//
 		//})
 
-		//bot.Handle("/listactivities", func(c tele.Context) error {})
+		// bot.Handle("/listactivities", func(c tele.Context) error {})
 
 		bot.Handle("/addfriend", func(c tele.Context) error {
 			payload := c.Message().Payload

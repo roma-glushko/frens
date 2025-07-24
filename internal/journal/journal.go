@@ -488,10 +488,14 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	return j.AddEvent(n)
 }
 
-func (j *Journal) ListNotes(q friend.ListEventQuery) []*friend.Event { //nolint:cyclop
+func (j *Journal) ListEvents(q friend.ListEventQuery) []*friend.Event { //nolint:cyclop
 	notes := make([]*friend.Event, 0, 10)
 
 	for _, note := range j.Notes {
+		if q.Type != note.Type {
+			continue
+		}
+
 		if q.Keyword != "" &&
 			!strings.Contains(strings.ToLower(note.Desc), strings.ToLower(q.Keyword)) {
 			continue

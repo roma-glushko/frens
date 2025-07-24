@@ -78,6 +78,7 @@ type ListLocationQuery struct {
 }
 
 type ListEventQuery struct {
+	Type         EventType
 	Keyword      string
 	Locations    []string
 	Tags         []string

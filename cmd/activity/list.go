@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package note
+package activity
 
 import (
 	"fmt"
@@ -82,8 +82,8 @@ var ListCommand = &cli.Command{
 			orderBy = friend.OrderReverse
 		}
 
-		notes := jr.ListEvents(friend.ListEventQuery{
-			Type:    friend.EventTypeNote,
+		activity := jr.ListEvents(friend.ListEventQuery{
+			Type:    friend.EventTypeActivity,
 			Keyword: strings.TrimSpace(c.String("search")),
 			Tags:    c.StringSlice("tag"),
 			Since:   lang.ExtractDate(c.String("from")),
@@ -92,23 +92,23 @@ var ListCommand = &cli.Command{
 			OrderBy: orderBy,
 		})
 
-		if len(notes) == 0 {
-			fmt.Println("No notes found")
+		if len(activity) == 0 {
+			fmt.Println("No activities found")
 			return nil
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "Notes", "🏷️  Tags")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "Activity", "🏷️  Tags")
 		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
 
-		for _, nt := range notes {
+		for _, act := range activity {
 			_, _ = fmt.Fprintf(
 				w,
 				"%s\t%s\t%s\n",
-				nt.ID,
-				boldNameStyle.Render(nt.Desc),
-				lang.RenderTags(nt.Tags),
+				act.ID,
+				boldNameStyle.Render(act.Desc),
+				lang.RenderTags(act.Tags),
 			)
 		}
 
