@@ -94,8 +94,8 @@ func ExtractLocationQuery(q string) (friend.ListLocationQuery, error) {
 	search := strings.TrimSpace(q)
 
 	return friend.ListLocationQuery{
-		Search: search,
-		Tags:   tags,
+		Keyword: search,
+		Tags:    tags,
 		// TODO: parse sorting options
 	}, nil
 }

@@ -78,7 +78,7 @@ var ListCommand = &cli.Command{
 		}
 
 		locations := jr.ListLocations(friend.ListLocationQuery{
-			Search:    strings.TrimSpace(c.String("search")),
+			Keyword:   strings.TrimSpace(c.String("search")),
 			Countries: c.StringSlice("country"),
 			Tags:      c.StringSlice("tag"),
 			SortBy:    friend.SortOption(c.String("sort")),

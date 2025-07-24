@@ -117,7 +117,7 @@ func ExtractPersonQuery(q string) (friend.ListFriendQuery, error) {
 	search := strings.TrimSpace(q)
 
 	return friend.ListFriendQuery{
-		Search:    search,
+		Keyword:   search,
 		Locations: locations,
 		Tags:      tags,
 		// TODO: parse sorting options

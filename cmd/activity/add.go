@@ -17,6 +17,7 @@ package activity
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/roma-glushko/frens/internal/friend"
 
@@ -83,7 +84,7 @@ var AddCommand = &cli.Command{
 		date := ctx.String("date")
 
 		if date != "" {
-			e.Date = lang.ExtractDate(date)
+			e.Date = lang.ExtractDate(date, time.Now().UTC())
 		}
 
 		if err := e.Validate(); err != nil {

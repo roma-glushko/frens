@@ -247,9 +247,9 @@ func (j *Journal) ListLocations(q friend.ListLocationQuery) []*friend.Location {
 	locations := make([]*friend.Location, 0, 10)
 
 	for _, l := range j.Locations {
-		if q.Search != "" &&
-			!strings.Contains(strings.ToLower(l.Name), strings.ToLower(q.Search)) &&
-			!strings.Contains(strings.ToLower(l.Desc), strings.ToLower(q.Search)) {
+		if q.Keyword != "" &&
+			!strings.Contains(strings.ToLower(l.Name), strings.ToLower(q.Keyword)) &&
+			!strings.Contains(strings.ToLower(l.Desc), strings.ToLower(q.Keyword)) {
 			continue
 		}
 
@@ -488,6 +488,56 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	return j.AddEvent(n)
 }
 
+func (j *Journal) ListNotes(q friend.ListEventQuery) []*friend.Event {
+	notes := make([]*friend.Event, 0, 10)
+
+	for _, note := range j.Notes {
+		if q.Keyword != "" && !strings.Contains(strings.ToLower(note.Desc), strings.ToLower(q.Keyword)) {
+			continue
+		}
+
+		if len(q.Tags) > 0 && !tag.HasTags(note, q.Tags) {
+			continue
+		}
+
+		if !q.Since.IsZero() && note.Date.Before(q.Since) {
+			continue
+		}
+
+		if !q.Until.IsZero() && note.Date.After(q.Until) {
+			continue
+		}
+
+		notes = append(notes, note)
+	}
+
+	if len(notes) == 0 {
+		return notes
+	}
+
+	sort.SliceStable(notes, func(i, j int) bool {
+		switch q.SortBy {
+		case friend.SortAlpha:
+			if q.OrderBy == friend.OrderReverse {
+				return strings.ToLower(notes[i].Desc) > strings.ToLower(notes[j].Desc)
+			}
+
+			return strings.ToLower(notes[i].Desc) < strings.ToLower(notes[j].Desc)
+		case friend.SortRecency:
+			if q.OrderBy == friend.OrderReverse {
+				return notes[i].Date.After(notes[j].Date)
+			}
+
+			return notes[i].Date.Before(notes[j].Date)
+		default:
+			return false
+		}
+	})
+
+	return notes
+
+}
+
 func (j *Journal) RemoveEvents(t friend.EventType, toRemove []*friend.Event) {
 	for _, act := range toRemove {
 		if t == friend.EventTypeActivity {
@@ -518,9 +568,9 @@ func (j *Journal) ListFriends(q friend.ListFriendQuery) []*friend.Person { //nol
 	fl := make([]*friend.Person, 0, 10)
 
 	for _, f := range j.Friends {
-		if q.Search != "" &&
-			!strings.Contains(strings.ToLower(f.Name), strings.ToLower(q.Search)) &&
-			!strings.Contains(strings.ToLower(f.Desc), strings.ToLower(q.Search)) {
+		if q.Keyword != "" &&
+			!strings.Contains(strings.ToLower(f.Name), strings.ToLower(q.Keyword)) &&
+			!strings.Contains(strings.ToLower(f.Desc), strings.ToLower(q.Keyword)) {
 			continue
 		}
 

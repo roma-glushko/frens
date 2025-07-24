@@ -17,6 +17,7 @@ package friend
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type SortOption string
@@ -61,7 +62,7 @@ const (
 )
 
 type ListFriendQuery struct {
-	Search    string
+	Keyword   string
 	Locations []string
 	Tags      []string
 	SortBy    SortOption
@@ -69,9 +70,18 @@ type ListFriendQuery struct {
 }
 
 type ListLocationQuery struct {
-	Search    string
+	Keyword   string
 	Countries []string
 	Tags      []string
 	SortBy    SortOption
 	OrderBy   OrderOption
+}
+
+type ListEventQuery struct {
+	Keyword      string
+	Locations    []string
+	Tags         []string
+	Since, Until time.Time
+	SortBy       SortOption
+	OrderBy      OrderOption
 }

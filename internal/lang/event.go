@@ -17,6 +17,7 @@ package lang
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/tag"
@@ -46,7 +47,7 @@ func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 	dateStr = strings.TrimSpace(dateStr)
 	desc = strings.TrimSpace(desc)
 
-	ts := ExtractDate(dateStr)
+	ts := ExtractDate(dateStr, time.Now().UTC())
 
 	if desc == "" {
 		return friend.Event{}, ErrNoInfo

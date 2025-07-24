@@ -156,6 +156,12 @@ var BotCommand = &cli.Command{
 			return c.Send(sb.String())
 		})
 
+		//bot.Handle("/listnotes", func(c tele.Context) error {
+		//
+		//})
+
+		//bot.Handle("/listactivities", func(c tele.Context) error {})
+
 		bot.Handle("/addfriend", func(c tele.Context) error {
 			payload := c.Message().Payload
 

@@ -22,8 +22,12 @@ import (
 
 var DateSeparator = "::"
 
-func ExtractDate(s string) time.Time {
-	ts := time.Now().UTC()
+func ExtractDate(s string, def ...time.Time) time.Time {
+	ts := time.Time{}
+
+	if len(def) > 0 {
+		ts = def[0].UTC()
+	}
 
 	if s != "" {
 		parsedDate, err := dateparser.Parse(nil, s)
