@@ -156,11 +156,71 @@ var BotCommand = &cli.Command{
 			return c.Send(sb.String())
 		})
 
-		//bot.Handle("/listnotes", func(c tele.Context) error {
-		//
-		//})
+		bot.Handle("/listnotes", func(c tele.Context) error {
+			payload := c.Message().Payload
 
-		// bot.Handle("/listactivities", func(c tele.Context) error {})
+			q, err := lang.ExtractEventQuery(payload)
+			if err != nil {
+				return c.Send(fmt.Sprintf("Failed to parse query: %v", err))
+			}
+
+			q.Type = friend.EventTypeNote
+
+			notes := jr.ListEvents(q)
+
+			if len(notes) == 0 {
+				return c.Send("No nots found matching your query.")
+			}
+
+			var sb strings.Builder
+
+			sb.WriteString("Here are your notes:\n")
+
+			for _, nt := range notes {
+				sb.WriteString(fmt.Sprintf("%s\n", nt.Desc))
+
+				if len(nt.Tags) > 0 {
+					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
+				}
+
+				sb.WriteString("\n")
+			}
+
+			return c.Send(sb.String())
+		})
+
+		bot.Handle("/listactivities", func(c tele.Context) error {
+			payload := c.Message().Payload
+
+			q, err := lang.ExtractEventQuery(payload)
+			if err != nil {
+				return c.Send(fmt.Sprintf("Failed to parse query: %v", err))
+			}
+
+			q.Type = friend.EventTypeActivity
+
+			activities := jr.ListEvents(q)
+
+			if len(activities) == 0 {
+				return c.Send("No activities found matching your query.")
+			}
+
+			var sb strings.Builder
+
+			sb.WriteString("Here are your activities:\n")
+
+			for _, nt := range activities {
+				sb.WriteString(fmt.Sprintf("%s\n", nt.Desc))
+
+				if len(nt.Tags) > 0 {
+					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
+				}
+
+				sb.WriteString("\n")
+			}
+
+			return c.Send(sb.String())
+		})
 
 		bot.Handle("/addfriend", func(c tele.Context) error {
 			payload := c.Message().Payload

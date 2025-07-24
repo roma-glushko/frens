@@ -29,6 +29,12 @@ var FormatEventInfo = fmt.Sprintf(
 	FormatLocationMarkers,
 )
 
+type eventProps struct {
+	orderProps
+	Since string `frentxt:"since"`
+	Until string `frentxt:"until"`
+}
+
 func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 	if s == "" {
 		return friend.Event{}, ErrNoInfo
@@ -91,4 +97,31 @@ func RenderEvent(e *friend.Event) string {
 	}
 
 	return sb.String()
+}
+
+func ExtractEventQuery(q string) (friend.ListEventQuery, error) {
+	props, err := ExtractProps[eventProps](q)
+	if err != nil {
+		return friend.ListEventQuery{}, fmt.Errorf(
+			"failed to parse event list query properties: %w",
+			err,
+		)
+	}
+
+	tags := tag.Tags(ExtractTags(q)).ToNames()
+
+	q = RemoveTags(q)
+	q = RemoveLocMarkers(q)
+	q = RemoveProps(q)
+
+	search := strings.TrimSpace(q)
+
+	return friend.ListEventQuery{
+		Keyword: search,
+		Tags:    tags,
+		Since:   ExtractDate(props.Since),
+		Until:   ExtractDate(props.Until),
+		SortBy:  friend.SortOption(props.SortBy),
+		OrderBy: friend.OrderOption(props.Order),
+	}, nil
 }
