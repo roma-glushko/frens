@@ -24,7 +24,7 @@ var propRe *regexp.Regexp
 
 func init() {
 	propRe = regexp.MustCompile(
-		`\$(?P<name>[^\s:]+):(?P<value>[^\s$]+)`,
+		`(?P<name>[^\s:]+):(?P<value>[^\s$]+)`,
 	)
 }
 
@@ -88,7 +88,6 @@ func RenderProps[T any](props T) string {
 			continue
 		}
 
-		sb.WriteString("$")
 		sb.WriteString(key)
 		sb.WriteString(":")
 		sb.WriteString(value.String())

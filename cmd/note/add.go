@@ -17,6 +17,7 @@ package note
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
@@ -73,7 +74,7 @@ var AddCommand = &cli.Command{
 		date := ctx.String("date")
 
 		if date != "" {
-			e.Date = lang.ExtractDate(date)
+			e.Date = lang.ExtractDate(date, time.Now().UTC())
 		}
 
 		if err := e.Validate(); err != nil {

@@ -12,31 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lang
-
-import (
-	"time"
-
-	"github.com/markusmobius/go-dateparser"
-)
-
-var DescSeparator = "::"
-
-func ExtractDate(s string, def ...time.Time) time.Time {
-	ts := time.Time{}
-
-	if len(def) > 0 {
-		ts = def[0].UTC()
-	}
-
-	if s != "" {
-		parsedDate, err := dateparser.Parse(nil, s)
-		if err != nil {
-			ts = time.Now().UTC()
-		} else {
-			ts = parsedDate.Time.UTC()
-		}
-	}
-
-	return ts
-}
+package telegram

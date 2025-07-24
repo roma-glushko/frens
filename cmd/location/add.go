@@ -146,7 +146,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("✅ Added location: " + l.String())
+		log.Info("✅ Added new location: " + l.String())
 
 		if len(l.Aliases) > 0 {
 			log.Info("📍 Aliases: " + strings.Join(l.Aliases, ", "))
