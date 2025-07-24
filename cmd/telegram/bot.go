@@ -125,11 +125,36 @@ var BotCommand = &cli.Command{
 			return c.Send(sb.String())
 		})
 
-		//bot.Handle("/listlocs", func(c tele.Context) error {
-		//	payload := c.Message().Payload
-		//
-		//	return c.Send(payload)
-		//})
+		bot.Handle("/listlocs", func(c tele.Context) error {
+			payload := c.Message().Payload
+
+			q, err := lang.ExtractLocationQuery(payload)
+			if err != nil {
+				return c.Send(fmt.Sprintf("Failed to parse query: %v", err))
+			}
+
+			locs := jr.ListLocations(q)
+
+			if len(locs) == 0 {
+				return c.Send("No locations found matching your query.")
+			}
+
+			var sb strings.Builder
+
+			sb.WriteString("Here are your locations:\n")
+
+			for _, l := range locs {
+				sb.WriteString(fmt.Sprintf("📍 %s\n", l.String()))
+
+				if len(l.Tags) > 0 {
+					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(l.Tags, ", ")))
+				}
+
+				sb.WriteString("\n")
+			}
+
+			return c.Send(sb.String())
+		})
 
 		bot.Handle("/addfriend", func(c tele.Context) error {
 			payload := c.Message().Payload

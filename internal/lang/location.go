@@ -86,6 +86,20 @@ func ExtractLocation(s string) (friend.Location, error) {
 	}, nil
 }
 
+func ExtractLocationQuery(q string) (friend.ListLocationQuery, error) {
+	tags := tag.Tags(ExtractTags(q)).ToNames()
+
+	q = RemoveTags(q)
+
+	search := strings.TrimSpace(q)
+
+	return friend.ListLocationQuery{
+		Search: search,
+		Tags:   tags,
+		// TODO: parse sorting options
+	}, nil
+}
+
 func RenderLocation(l friend.Location) string {
 	var sb strings.Builder
 
