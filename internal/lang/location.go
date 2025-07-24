@@ -31,6 +31,7 @@ var (
 )
 
 var (
+	LocationMarker        = "@"
 	FormatLocationMarkers = "@location1[, @location2...]"
 	FormatLocationInfo    = fmt.Sprintf(
 		"NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] :: DESCRIPTION [%s] [id:LOCATION_ID]",
@@ -150,7 +151,7 @@ func ExtractLocMarkers(s string) []string {
 	locationIDs := make([]string, 0, len(matches))
 
 	for _, match := range matches {
-		locationIDs = append(locationIDs, strings.TrimLeft(match, "@"))
+		locationIDs = append(locationIDs, strings.TrimLeft(match, LocationMarker))
 	}
 
 	return utils.Unique(locationIDs)
@@ -174,7 +175,7 @@ func RenderLocMarkers(locations []string) string {
 			continue
 		}
 
-		markers = append(markers, "@"+loc)
+		markers = append(markers, LocationMarker+loc)
 	}
 
 	return strings.Join(markers, " ")
