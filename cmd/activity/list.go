@@ -34,7 +34,7 @@ var boldNameStyle = lipgloss.NewStyle().Bold(true)
 var ListCommand = &cli.Command{
 	Name:    "list",
 	Aliases: []string{"l", "ls"},
-	Usage:   "List all notes",
+	Usage:   "List all activities",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "search",
