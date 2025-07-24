@@ -26,12 +26,12 @@ import (
 
 var (
 	FormatPersonInfo = fmt.Sprintf(
-		"NAME [(aka NICK1[, NICK2...])] :: DESCRIPTION [%s] [%s] [$id:FRIEND_ID]",
+		"NAME [(aka NICK1[, NICK2...])] :: DESCRIPTION [%s] [%s] [id:FRIEND_ID]",
 		FormatTags,
 		FormatLocationMarkers,
 	)
 	FormatPersonQuery = fmt.Sprintf(
-		"[SEARCH TERM] [%s] [%s] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
+		"[SEARCH TERM] [%s] [%s] [sort:SORT_OPTION] [order:ORDER_OPTION]",
 		FormatTags,
 		FormatLocationMarkers,
 	)
@@ -49,10 +49,10 @@ type personProps struct {
 	ID string `frentxt:"id"`
 }
 
-//type personOrderProps struct {
-//	SortBy string `frentxt:"sort"`
-//	Order  string `frentxt:"order"`
-//}
+type orderProps struct {
+	SortBy string `frentxt:"sort"`
+	Order  string `frentxt:"order"`
+}
 
 func extractNicknames(raw string) []string {
 	raw = strings.ReplaceAll(raw, `"`, "")
@@ -111,8 +111,17 @@ func ExtractPersonQuery(q string) (friend.ListFriendQuery, error) {
 	tags := tag.Tags(ExtractTags(q)).ToNames()
 	locations := ExtractLocMarkers(q)
 
+	props, err := ExtractProps[orderProps](q)
+	if err != nil {
+		return friend.ListFriendQuery{}, fmt.Errorf(
+			"failed to parse friend list query properties: %w",
+			err,
+		)
+	}
+
 	q = RemoveTags(q)
 	q = RemoveLocMarkers(q)
+	q = RemoveProps(q)
 
 	search := strings.TrimSpace(q)
 
@@ -120,7 +129,8 @@ func ExtractPersonQuery(q string) (friend.ListFriendQuery, error) {
 		Keyword:   search,
 		Locations: locations,
 		Tags:      tags,
-		// TODO: parse sorting options
+		SortBy:    friend.SortOption(props.SortBy),
+		OrderBy:   friend.OrderOption(props.Order),
 	}, nil
 }
 
