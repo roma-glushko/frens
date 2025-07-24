@@ -20,7 +20,7 @@ import (
 	"github.com/markusmobius/go-dateparser"
 )
 
-var DateSeparator = "::"
+var DescSeparator = "::"
 
 func ExtractDate(s string, def ...time.Time) time.Time {
 	ts := time.Time{}

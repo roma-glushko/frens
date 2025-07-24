@@ -127,7 +127,7 @@ func RenderLocation(l friend.Location) string {
 
 	if l.Desc != "" {
 		sb.WriteString(" ")
-		sb.WriteString(DateSeparator)
+		sb.WriteString(DescSeparator)
 		sb.WriteString(" ")
 		sb.WriteString(l.Desc)
 	}
