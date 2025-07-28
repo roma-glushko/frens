@@ -26,12 +26,12 @@ import (
 
 var (
 	FormatPersonInfo = fmt.Sprintf(
-		"NAME [(aka NICK1[, NICK2...])] :: DESCRIPTION [%s] [%s] [id:FRIEND_ID]",
+		"NAME [(aka NICK1[, NICK2...])] :: DESCRIPTION [%s] [%s] [$id:FRIEND_ID]",
 		FormatTags,
 		FormatLocationMarkers,
 	)
 	FormatPersonQuery = fmt.Sprintf(
-		"[SEARCH TERM] [%s] [%s] [sort:SORT_OPTION] [order:ORDER_OPTION]",
+		"[SEARCH TERM] [%s] [%s] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
 		FormatTags,
 		FormatLocationMarkers,
 	)
@@ -130,7 +130,7 @@ func ExtractPersonQuery(q string) (friend.ListFriendQuery, error) {
 		Locations: locations,
 		Tags:      tags,
 		SortBy:    friend.SortOption(props.SortBy),
-		OrderBy:   friend.OrderOption(props.Order),
+		SortOrder: friend.SortOrderOption(props.Order),
 	}, nil
 }
 

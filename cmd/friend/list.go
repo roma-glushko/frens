@@ -73,10 +73,10 @@ var ListCommand = &cli.Command{
 		jctx := jctx.FromCtx(ctx)
 		jr := jctx.Journal
 
-		orderBy := friend.OrderDirect
+		sortOrder := friend.SortOrderDirect
 
 		if c.Bool("reverse") {
-			orderBy = friend.OrderReverse
+			sortOrder = friend.SortOrderReverse
 		}
 
 		friends := jr.ListFriends(friend.ListFriendQuery{
@@ -84,7 +84,7 @@ var ListCommand = &cli.Command{
 			Locations: c.StringSlice("location"),
 			Tags:      c.StringSlice("tag"),
 			SortBy:    friend.SortOption(c.String("sort")),
-			OrderBy:   orderBy,
+			SortOrder: sortOrder,
 		})
 
 		if len(friends) == 0 {

@@ -271,19 +271,19 @@ func (j *Journal) ListLocations(q friend.ListLocationQuery) []*friend.Location {
 	sort.SliceStable(locations, func(i, j int) bool {
 		switch q.SortBy {
 		case friend.SortAlpha:
-			if q.OrderBy == friend.OrderReverse {
+			if q.SortOrder == friend.SortOrderReverse {
 				return strings.ToLower(locations[i].Name) > strings.ToLower(locations[j].Name)
 			}
 
 			return strings.ToLower(locations[i].Name) < strings.ToLower(locations[j].Name)
 		case friend.SortActivities:
-			if q.OrderBy == friend.OrderReverse {
+			if q.SortOrder == friend.SortOrderReverse {
 				return locations[i].Activities < locations[j].Activities
 			}
 
 			return locations[i].Activities > locations[j].Activities
 		case friend.SortRecency:
-			if q.OrderBy == friend.OrderReverse {
+			if q.SortOrder == friend.SortOrderReverse {
 				return locations[i].MostRecentActivity.After(locations[j].MostRecentActivity)
 			}
 
@@ -523,13 +523,13 @@ func (j *Journal) ListEvents(q friend.ListEventQuery) []*friend.Event { //nolint
 	sort.SliceStable(notes, func(i, j int) bool {
 		switch q.SortBy { //nolint:exhaustive
 		case friend.SortAlpha:
-			if q.OrderBy == friend.OrderReverse {
+			if q.SortOrder == friend.SortOrderReverse {
 				return strings.ToLower(notes[i].Desc) > strings.ToLower(notes[j].Desc)
 			}
 
 			return strings.ToLower(notes[i].Desc) < strings.ToLower(notes[j].Desc)
 		case friend.SortRecency:
-			if q.OrderBy == friend.OrderReverse {
+			if q.SortOrder == friend.SortOrderReverse {
 				return notes[i].Date.After(notes[j].Date)
 			}
 
@@ -597,19 +597,19 @@ func (j *Journal) ListFriends(q friend.ListFriendQuery) []*friend.Person { //nol
 	sort.SliceStable(fl, func(i, j int) bool {
 		switch q.SortBy {
 		case friend.SortAlpha:
-			if q.OrderBy == friend.OrderReverse {
+			if q.SortOrder == friend.SortOrderDirect {
 				return strings.ToLower(fl[i].Name) > strings.ToLower(fl[j].Name)
 			}
 
 			return strings.ToLower(fl[i].Name) < strings.ToLower(fl[j].Name)
 		case friend.SortActivities:
-			if q.OrderBy == friend.OrderReverse {
+			if q.SortOrder == friend.SortOrderDirect {
 				return fl[i].Activities < fl[j].Activities
 			}
 
 			return fl[i].Activities > fl[j].Activities
 		case friend.SortRecency:
-			if q.OrderBy == friend.OrderReverse {
+			if q.SortOrder == friend.SortOrderDirect {
 				return fl[i].MostRecentActivity.After(fl[j].MostRecentActivity)
 			}
 

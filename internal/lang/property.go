@@ -24,7 +24,7 @@ var propRe *regexp.Regexp
 
 func init() {
 	propRe = regexp.MustCompile(
-		`(?P<name>[^\s:]+):(?P<value>[^\s$]+)`,
+		`\$(?P<name>[^\s:]+):(?P<value>[^\s$]+)`,
 	)
 }
 

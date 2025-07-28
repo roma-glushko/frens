@@ -54,11 +54,11 @@ func ValidateSortOption(s string) error {
 	)
 }
 
-type OrderOption string
+type SortOrderOption string
 
 const (
-	OrderDirect  OrderOption = "direct"
-	OrderReverse OrderOption = "reverse"
+	SortOrderDirect  SortOrderOption = "direct"
+	SortOrderReverse SortOrderOption = "reverse"
 )
 
 type ListFriendQuery struct {
@@ -66,7 +66,7 @@ type ListFriendQuery struct {
 	Locations []string
 	Tags      []string
 	SortBy    SortOption
-	OrderBy   OrderOption
+	SortOrder SortOrderOption
 }
 
 type ListLocationQuery struct {
@@ -74,7 +74,7 @@ type ListLocationQuery struct {
 	Countries []string
 	Tags      []string
 	SortBy    SortOption
-	OrderBy   OrderOption
+	SortOrder SortOrderOption
 }
 
 type ListEventQuery struct {
@@ -84,5 +84,5 @@ type ListEventQuery struct {
 	Tags         []string
 	Since, Until time.Time
 	SortBy       SortOption
-	OrderBy      OrderOption
+	SortOrder    SortOrderOption
 }

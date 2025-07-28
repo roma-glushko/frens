@@ -78,20 +78,20 @@ var ListCommand = &cli.Command{
 		jctx := jctx.FromCtx(ctx)
 		jr := jctx.Journal
 
-		orderBy := friend.OrderDirect
+		sortOrder := friend.SortOrderDirect
 
 		if c.Bool("reverse") {
-			orderBy = friend.OrderReverse
+			sortOrder = friend.SortOrderReverse
 		}
 
 		notes := jr.ListEvents(friend.ListEventQuery{
-			Type:    friend.EventTypeNote,
-			Keyword: strings.TrimSpace(c.String("search")),
-			Tags:    c.StringSlice("tag"),
-			Since:   lang.ExtractDate(c.String("from")),
-			Until:   lang.ExtractDate(c.String("to")),
-			SortBy:  friend.SortOption(c.String("sort")),
-			OrderBy: orderBy,
+			Type:      friend.EventTypeNote,
+			Keyword:   strings.TrimSpace(c.String("search")),
+			Tags:      c.StringSlice("tag"),
+			Since:     lang.ExtractDate(c.String("from")),
+			Until:     lang.ExtractDate(c.String("to")),
+			SortBy:    friend.SortOption(c.String("sort")),
+			SortOrder: sortOrder,
 		})
 
 		if len(notes) == 0 {

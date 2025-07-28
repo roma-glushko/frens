@@ -34,7 +34,7 @@ var (
 	LocationMarker        = "@"
 	FormatLocationMarkers = "@location1[, @location2...]"
 	FormatLocationInfo    = fmt.Sprintf(
-		"NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] :: DESCRIPTION [%s] [id:LOCATION_ID]",
+		"NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] :: DESCRIPTION [%s] [$id:LOCATION_ID]",
 		FormatTags,
 	)
 )
@@ -103,10 +103,10 @@ func ExtractLocationQuery(q string) (friend.ListLocationQuery, error) {
 	search := strings.TrimSpace(q)
 
 	return friend.ListLocationQuery{
-		Keyword: search,
-		Tags:    tags,
-		SortBy:  friend.SortOption(props.SortBy),
-		OrderBy: friend.OrderOption(props.Order),
+		Keyword:   search,
+		Tags:      tags,
+		SortBy:    friend.SortOption(props.SortBy),
+		SortOrder: friend.SortOrderOption(props.Order),
 	}, nil
 }
 

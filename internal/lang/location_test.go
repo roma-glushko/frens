@@ -84,7 +84,7 @@ func TestExtractLocation(t *testing.T) {
 		},
 		{
 			name:  "cyrillic location",
-			input: "Київ, Україна (aka Kyiv):: Столиця України $id:kyiv",
+			input: "Київ, Україна (aka Kyiv)::Столиця України $id:kyiv",
 			want: friend.Location{
 				ID:      "kyiv",
 				Name:    "Київ",

@@ -117,11 +117,11 @@ func ExtractEventQuery(q string) (friend.ListEventQuery, error) {
 	search := strings.TrimSpace(q)
 
 	return friend.ListEventQuery{
-		Keyword: search,
-		Tags:    tags,
-		Since:   ExtractDate(props.Since),
-		Until:   ExtractDate(props.Until),
-		SortBy:  friend.SortOption(props.SortBy),
-		OrderBy: friend.OrderOption(props.Order),
+		Keyword:   search,
+		Tags:      tags,
+		Since:     ExtractDate(props.Since),
+		Until:     ExtractDate(props.Until),
+		SortBy:    friend.SortOption(props.SortBy),
+		SortOrder: friend.SortOrderOption(props.Order),
 	}, nil
 }
