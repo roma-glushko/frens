@@ -14,10 +14,9 @@ func TextOutputHandler(w io.Writer, data any) {
 
 func JSONOutputHandler(w io.Writer, data any) {
 	jsonData, err := json.MarshalIndent(data, "", "  ")
-
 	if err != nil {
 		_, _ = fmt.Fprintf(w, "Error formatting JSON output: %v\n", err)
 	}
 
-	_, _ = fmt.Fprintln(w, jsonData)
+	_, _ = fmt.Fprintln(w, string(jsonData))
 }

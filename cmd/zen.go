@@ -15,9 +15,10 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/urfave/cli/v2"
-	"strings"
 )
 
 var ZenCommand = &cli.Command{

@@ -169,7 +169,7 @@ func (j *Journal) RemoveFriends(toRemove []friend.Person) {
 	}
 }
 
-func (j *Journal) AddLocation(l friend.Location) {
+func (j *Journal) AddLocation(l *friend.Location) {
 	if l.ID == "" {
 		l.ID = slug.Make(l.Name)
 	}
@@ -177,7 +177,7 @@ func (j *Journal) AddLocation(l friend.Location) {
 	// TODO: check for duplicated IDs
 	// TODO: check for duplicated aliases
 
-	j.Locations = append(j.Locations, &l)
+	j.Locations = append(j.Locations, l)
 	j.SetDirty(true)
 }
 
@@ -227,10 +227,10 @@ func (j *Journal) GetLocation(q string) (*friend.Location, error) {
 	return m.Entities[0], nil
 }
 
-func (j *Journal) UpdateLocation(o, n friend.Location) {
+func (j *Journal) UpdateLocation(o, n *friend.Location) {
 	for i, l := range j.Locations {
 		if l.Name == o.Name {
-			j.Locations[i] = &n
+			j.Locations[i] = n
 			j.SetDirty(true)
 
 			return
@@ -598,10 +598,10 @@ func (j *Journal) ListFriends(q friend.ListFriendQuery) []*friend.Person { //nol
 		switch q.SortBy {
 		case friend.SortAlpha:
 			if q.SortOrder == friend.SortOrderDirect {
-				return strings.ToLower(fl[i].Name) > strings.ToLower(fl[j].Name)
+				return strings.ToLower(fl[i].Name) < strings.ToLower(fl[j].Name)
 			}
 
-			return strings.ToLower(fl[i].Name) < strings.ToLower(fl[j].Name)
+			return strings.ToLower(fl[i].Name) > strings.ToLower(fl[j].Name)
 		case friend.SortActivities:
 			if q.SortOrder == friend.SortOrderDirect {
 				return fl[i].Activities < fl[j].Activities

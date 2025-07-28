@@ -119,7 +119,7 @@ var EditCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			j.UpdateLocation(*lOld, lNew)
+			j.UpdateLocation(lOld, &lNew)
 			return nil
 		})
 		if err != nil {

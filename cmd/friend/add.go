@@ -17,9 +17,10 @@ package friend
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	log "github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/log/formatter"
-	"strings"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 
@@ -93,7 +94,7 @@ var AddCommand = &cli.Command{
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 			if _, err := teaUI.Run(); err != nil {
-				log.Errorf("uh oh: %w", err)
+				log.Errorf("uh oh: %v", err)
 				return err
 			}
 
@@ -109,7 +110,7 @@ var AddCommand = &cli.Command{
 			f, err = lang.ExtractPerson(info)
 
 			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Errorf("failed to parse friend info: %w", err)
+				log.Errorf("failed to parse friend info: %v", err)
 				return err
 			}
 		}
@@ -157,14 +158,13 @@ var AddCommand = &cli.Command{
 			l.AddFriend(&f)
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}
 
 		log.Info(" ✔ Friend added\n")
 		log.Info("==> Friend Information\n")
-		//log.PrintEntity(f)
+		// log.PrintEntity(f)
 
 		fmtr := formatter.PersonTextFormatter{}
 

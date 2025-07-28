@@ -37,11 +37,9 @@ func New() *DefaultLogger {
 }
 
 func (l *DefaultLogger) PrintEntity(e any) {
-
 }
 
 func (l *DefaultLogger) PrintList(el []any) {
-
 }
 
 func (l *DefaultLogger) SetLevel(level LogLevel) {

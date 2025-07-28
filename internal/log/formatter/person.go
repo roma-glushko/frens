@@ -1,21 +1,14 @@
 package formatter
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
+	"strings"
+	"text/tabwriter"
+
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
-	"strings"
-)
-
-var (
-	symbolStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("2")) // green
-	labelStyle    = lipgloss.NewStyle().Bold(true)
-	valueStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("7")) // gray
-	descStyle     = lipgloss.NewStyle().PaddingLeft(4)
-	tagStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("6")) // cyan
-	locationStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("5")) // magenta
 )
 
 func init() {
@@ -24,8 +17,11 @@ func init() {
 
 func wrapText(text string, width int) []string {
 	words := strings.Fields(text)
+
 	var lines []string
+
 	var current string
+
 	for _, word := range words {
 		if len(current)+len(word)+1 > width {
 			lines = append(lines, current)
@@ -41,13 +37,6 @@ func wrapText(text string, width int) []string {
 		lines = append(lines, current)
 	}
 	return lines
-}
-
-func writeField(sb *strings.Builder, key, value string) {
-	if strings.TrimSpace(value) == "" {
-		return
-	}
-	sb.WriteString(fmt.Sprintf("%-12s: %s\n", key, value))
 }
 
 type PersonTextFormatter struct{}
@@ -87,7 +76,31 @@ func (p PersonTextFormatter) FormatSingle(e any) (string, error) {
 	return sb.String(), nil
 }
 
-func (p PersonTextFormatter) FormatList(entities []any) (string, error) {
-	//TODO implement me
-	panic("implement me")
+func (p PersonTextFormatter) FormatList(el any) (string, error) {
+	persons, ok := el.([]*friend.Person)
+
+	if !ok {
+		return "", fmt.Errorf("expected 'friend.Person'")
+	}
+
+	var buf bytes.Buffer
+
+	w := tabwriter.NewWriter(&buf, 0, 0, 3, ' ', 0)
+
+	for _, person := range persons {
+		_, _ = fmt.Fprintf(
+			w,
+			" %s\t%s\t%s\t%s\t%s\t%s\n",
+			person.ID,
+			labelStyle.Render(person.String()),
+			tagStyle.Render(lang.RenderTags(person.Tags)),
+			locationStyle.Render(lang.RenderLocMarkers(person.Locations)),
+			countLabel.Render(fmt.Sprintf("✎ %d", person.Notes)),
+			countLabel.Render(fmt.Sprintf("⚙ %d", person.Activities)),
+		)
+	}
+
+	_ = w.Flush()
+
+	return buf.String(), nil
 }

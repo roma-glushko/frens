@@ -16,16 +16,19 @@ package location
 
 import (
 	"errors"
+	"fmt"
 	"strings"
+
+	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -85,7 +88,7 @@ var AddCommand = &cli.Command{
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 			if _, err := teaUI.Run(); err != nil {
-				log.Error("uh oh", "err", err)
+				log.Errorf("uh oh: %v", err)
 				return err
 			}
 
@@ -101,7 +104,7 @@ var AddCommand = &cli.Command{
 			l, err = lang.ExtractLocation(info)
 
 			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Error("failed to parse location info", "err", err)
+				log.Errorf("failed to parse location info: %v", err)
 				return err
 			}
 		}
@@ -140,7 +143,7 @@ var AddCommand = &cli.Command{
 		jctx := jctx.FromCtx(ctx.Context)
 
 		err = journaldir.Update(jctx.Journal, func(j *journal.Journal) error {
-			j.AddLocation(l)
+			j.AddLocation(&l)
 
 			return nil
 		})
@@ -148,19 +151,13 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("✅ Added new location: " + l.String())
+		log.Info(" ✔ Location added")
+		log.Info("==> Location Information\n")
 
-		if len(l.Aliases) > 0 {
-			log.Info("📍 Aliases: " + strings.Join(l.Aliases, ", "))
-		}
+		fmtr := formatter.LocationTextFormatter{}
 
-		if len(l.Tags) > 0 {
-			log.Info("🏷️ Tags: " + strings.Join(l.Tags, ", "))
-		}
-
-		if l.Desc != "" {
-			log.Info("🧭 Description: \n" + l.Desc)
-		}
+		o, _ := fmtr.FormatSingle(l)
+		fmt.Println(o)
 
 		return nil
 	},

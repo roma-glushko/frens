@@ -4,9 +4,7 @@ import (
 	"sync/atomic"
 )
 
-var (
-	logger atomic.Pointer[DefaultLogger]
-)
+var logger atomic.Pointer[DefaultLogger]
 
 func init() {
 	logger.Store(New())

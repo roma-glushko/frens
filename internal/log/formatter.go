@@ -14,6 +14,19 @@ const (
 	FormatMarkdown
 )
 
+func (f Format) String() string {
+	switch f {
+	case FormatText:
+		return "text"
+	case FormatJSON:
+		return "json"
+	case FormatMarkdown:
+		return "markdown"
+	default:
+		return "unknown"
+	}
+}
+
 type formatterKey struct {
 	Format Format
 	Type   reflect.Type
@@ -21,7 +34,7 @@ type formatterKey struct {
 
 type Formatter interface {
 	FormatSingle(entity any) (string, error)
-	FormatList(entities []any) (string, error)
+	FormatList(entities any) (string, error)
 }
 
 var (
