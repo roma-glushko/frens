@@ -15,6 +15,7 @@
 package lang
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/markusmobius/go-dateparser"
@@ -22,6 +23,13 @@ import (
 
 var DescSeparator = "::"
 
+var (
+	FormatDateInfo = fmt.Sprintf(
+		"[LABEL ::] DATE [$cal:gregorian|hebrew]",
+	)
+)
+
+// ExtractDate parses a free-form & relative date string and returns a time.Time object.
 func ExtractDate(s string, def ...time.Time) time.Time {
 	ts := time.Time{}
 
@@ -40,3 +48,7 @@ func ExtractDate(s string, def ...time.Time) time.Time {
 
 	return ts
 }
+
+//func ExtractDateInfo(s string) (string, time.Time) {
+//
+//}

@@ -12,24 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package dates
 
 import (
-	"github.com/roma-glushko/frens/cmd/friend/dates"
 	"github.com/urfave/cli/v2"
 )
 
 var Commands = &cli.Command{
-	Name:        "friend",
-	Aliases:     []string{"f", "fr"},
-	Usage:       "Manage your friends",
-	UsageText:   "frens friend [command] [options]",
-	Description: `Friends are people you know, interact with, and share experiences. They can be added to activities, locations, and notes.`,
+	Name:        "dates",
+	Aliases:     []string{"dt", "date"},
+	Usage:       "Manage your friend's important dates",
+	UsageText:   "frens friend dates [command] [options]",
+	Description: `Important dates lets you keep track of your friend's birthdays, anniversaries, and other significant events.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
-		EditCommand,
-		ListCommand,
-		DeleteCommand,
-		dates.Commands,
 	},
 }

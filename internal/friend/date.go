@@ -45,8 +45,7 @@ type Reminder struct {
 }
 
 type Date struct {
-	Label    string    `toml:"label"`
-	Calendar Calendar  `toml:"calendar"`
-	Date     string    `toml:"date"` // ISO 8601 format
-	Reminder *Reminder `toml:"reminder,omitempty"`
+	Label    string   `toml:"label"`
+	Date     string   `toml:"date"`
+	Calendar Calendar `toml:"calendar"`
 }
