@@ -35,6 +35,8 @@ import (
 )
 
 const helpMessage = `Welcome to the Frens Bot! Here is what you can do:
+/stats - Journal statistics.
+
 /listfrens - List my friends.
 /listlocs - List my locations.
 /listnotes - List my notes.
@@ -70,6 +72,7 @@ var BotCommand = &cli.Command{
 			return fmt.Errorf("failed to start telegram bot: %w", err)
 		}
 
+		startedAt := time.Now()
 		jctx := jctx.FromCtx(ctx)
 		jr := jctx.Journal
 
@@ -84,7 +87,28 @@ var BotCommand = &cli.Command{
 		})
 
 		bot.Handle("/version", func(c tele.Context) error {
-			return c.Send("Frens Version: " + version.FullVersion)
+			var sb strings.Builder
+
+			sb.WriteString("Frens Version: " + version.Version + "\n")
+			sb.WriteString("Built At: " + version.BuildDate + "\n")
+			sb.WriteString("Commit: " + version.GitCommit + "\n")
+			sb.WriteString("Uptime: " + time.Since(startedAt).String() + "\n")
+
+			return c.Send(sb.String())
+		})
+
+		bot.Handle("/stats", func(c tele.Context) error {
+			stats := jr.Stats()
+
+			var sb strings.Builder
+
+			sb.WriteString("Frens Stats:\n")
+			sb.WriteString(fmt.Sprintf("Friends: %d\n", stats.Friends))
+			sb.WriteString(fmt.Sprintf("Locations: %d\n", stats.Locations))
+			sb.WriteString(fmt.Sprintf("Notes: %d\n", stats.Notes))
+			sb.WriteString(fmt.Sprintf("Activities: %d\n", stats.Activities))
+
+			return c.Send(sb.String())
 		})
 
 		bot.Handle("/listfrens", func(c tele.Context) error {
