@@ -16,9 +16,10 @@ package activity
 
 import (
 	"fmt"
-	jctx "github.com/roma-glushko/frens/internal/context"
 	"strings"
 	"time"
+
+	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
 

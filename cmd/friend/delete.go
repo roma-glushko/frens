@@ -16,6 +16,7 @@ package friend
 
 import (
 	"fmt"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/utils"
@@ -86,7 +87,6 @@ var DeleteCommand = &cli.Command{
 			j.RemoveFriends(friends)
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}

@@ -16,6 +16,7 @@ package journal
 
 import (
 	"fmt"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/urfave/cli/v2"

@@ -16,8 +16,9 @@ package location
 
 import (
 	"errors"
-	jctx "github.com/roma-glushko/frens/internal/context"
 	"strings"
+
+	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"

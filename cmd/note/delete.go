@@ -17,6 +17,7 @@ package note
 import (
 	"errors"
 	"fmt"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/charmbracelet/log"

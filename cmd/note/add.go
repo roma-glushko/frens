@@ -16,9 +16,10 @@ package note
 
 import (
 	"fmt"
-	jctx "github.com/roma-glushko/frens/internal/context"
 	"strings"
 	"time"
+
+	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"

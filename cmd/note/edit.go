@@ -16,8 +16,9 @@ package note
 
 import (
 	"fmt"
-	jctx "github.com/roma-glushko/frens/internal/context"
 	"strings"
+
+	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
 

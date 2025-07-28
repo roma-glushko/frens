@@ -16,10 +16,11 @@ package journal
 
 import (
 	"fmt"
-	jctx "github.com/roma-glushko/frens/internal/context"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/urfave/cli/v2"
 )

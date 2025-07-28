@@ -16,10 +16,11 @@ package telegram
 
 import (
 	"fmt"
-	jctx "github.com/roma-glushko/frens/internal/context"
 	"os"
 	"strings"
 	"time"
+
+	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
@@ -37,15 +38,15 @@ import (
 const helpMessage = `Welcome to the Frens Bot! Here is what you can do:
 /stats - Journal statistics.
 
-/listfrens - List my friends.
-/listlocs - List my locations.
-/listnotes - List my notes.
-/listactivities - List my activities.
-
 /addfriend - Add a new friend.
 /addlocation - Add a new location.
 /addnote - Add a new note.
 /addactivity - Add a new activity.
+
+/listfrens - List my friends.
+/listlocs - List my locations.
+/listnotes - List my notes.
+/listactivities - List my activities.
 
 /version - Show the current version of frens.
 `
@@ -53,9 +54,16 @@ const helpMessage = `Welcome to the Frens Bot! Here is what you can do:
 var BotCommand = &cli.Command{
 	Name:  "bot",
 	Usage: "Start a Telegram bot",
+	Flags: []cli.Flag{
+		&cli.Int64SliceFlag{
+			Name:    "user_id",
+			Aliases: []string{"u"},
+			Usage:   "List of user IDs that bot will respond to (all others will be ignored).",
+		},
+	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		userList := []int64{283564721}
+		userList := c.Int64Slice("user_id")
 		token := os.Getenv("TOKEN")
 
 		if token == "" {
@@ -76,7 +84,11 @@ var BotCommand = &cli.Command{
 		jctx := jctx.FromCtx(ctx)
 		jr := jctx.Journal
 
-		bot.Use(middleware.Whitelist(userList...))
+		if len(userList) > 0 {
+			bot.Use(middleware.Whitelist(userList...))
+		} else {
+			fmt.Println("Warning: No user IDs specified, bot will respond to all users.")
+		}
 
 		bot.Handle("/help", func(c tele.Context) error {
 			return c.Send(helpMessage)
@@ -204,7 +216,7 @@ var BotCommand = &cli.Command{
 			sb.WriteString("Here are your notes:\n")
 
 			for _, nt := range notes {
-				sb.WriteString(fmt.Sprintf("%s\n", nt.Desc))
+				sb.WriteString(nt.Desc + "\n")
 
 				if len(nt.Tags) > 0 {
 					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
@@ -237,7 +249,7 @@ var BotCommand = &cli.Command{
 			sb.WriteString("Here are your activities:\n")
 
 			for _, nt := range activities {
-				sb.WriteString(fmt.Sprintf("%s\n", nt.Desc))
+				sb.WriteString(nt.Desc + "\n")
 
 				if len(nt.Tags) > 0 {
 					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
