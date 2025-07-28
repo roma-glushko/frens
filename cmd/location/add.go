@@ -16,6 +16,7 @@ package location
 
 import (
 	"errors"
+	jctx "github.com/roma-glushko/frens/internal/context"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -135,9 +136,9 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
+		err = journaldir.Update(jctx.Journal, func(j *journal.Journal) error {
 			j.AddLocation(l)
 
 			return nil

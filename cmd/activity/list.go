@@ -16,6 +16,7 @@ package activity
 
 import (
 	"fmt"
+	jctx "github.com/roma-glushko/frens/internal/context"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -25,7 +26,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/roma-glushko/frens/internal/lang"
 
-	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -74,7 +74,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jr := journal.FromCtx(ctx)
+		jctx := jctx.FromCtx(ctx)
+		jr := jctx.Journal
 
 		orderBy := friend.OrderDirect
 

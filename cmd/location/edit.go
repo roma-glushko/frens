@@ -17,6 +17,7 @@ package location
 import (
 	"errors"
 	"fmt"
+	jctx "github.com/roma-glushko/frens/internal/context"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -58,7 +59,8 @@ var EditCommand = &cli.Command{
 
 		lID := strings.Join(ctx.Args().Slice(), " ")
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
+		jr := jctx.Journal
 
 		lOld, err := jr.GetLocation(lID)
 		if err != nil {

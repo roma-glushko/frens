@@ -16,8 +16,8 @@ package journal
 
 import (
 	"fmt"
+	jctx "github.com/roma-glushko/frens/internal/context"
 
-	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -26,9 +26,9 @@ var StatsCommand = &cli.Command{
 	Usage: "Show journal statistics",
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jr := journal.FromCtx(ctx)
+		jctx := jctx.FromCtx(ctx)
 
-		stats := jr.Stats()
+		stats := jctx.Journal.Stats()
 
 		fmt.Println("Journal Statistics:")
 		fmt.Printf("  • Friends: %d\n", stats.Friends)

@@ -16,6 +16,7 @@ package telegram
 
 import (
 	"fmt"
+	jctx "github.com/roma-glushko/frens/internal/context"
 	"os"
 	"strings"
 	"time"
@@ -50,7 +51,8 @@ const helpMessage = `Welcome to the Frens Bot! Here is what you can do:
 var BotCommand = &cli.Command{
 	Name:  "bot",
 	Usage: "Start a Telegram bot",
-	Action: func(ctx *cli.Context) error {
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
 		userList := []int64{283564721}
 		token := os.Getenv("TOKEN")
 
@@ -68,7 +70,8 @@ var BotCommand = &cli.Command{
 			return fmt.Errorf("failed to start telegram bot: %w", err)
 		}
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx)
+		jr := jctx.Journal
 
 		bot.Use(middleware.Whitelist(userList...))
 

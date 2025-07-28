@@ -16,6 +16,7 @@ package location
 
 import (
 	"fmt"
+	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/utils"
 
@@ -52,7 +53,8 @@ var DeleteCommand = &cli.Command{
 
 		locations := make([]friend.Location, 0, len(ctx.Args().Slice()))
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
+		jr := jctx.Journal
 
 		for _, lID := range ctx.Args().Slice() {
 			l, err := jr.GetLocation(lID)

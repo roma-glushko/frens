@@ -17,6 +17,7 @@ package friend
 import (
 	"errors"
 	"fmt"
+	jctx "github.com/roma-glushko/frens/internal/context"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -58,7 +59,8 @@ var EditCommand = &cli.Command{
 
 		pID := strings.Join(ctx.Args().Slice(), " ")
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
+		jr := jctx.Journal
 
 		pOld, err := jr.GetFriend(pID)
 		if err != nil {

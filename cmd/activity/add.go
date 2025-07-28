@@ -16,6 +16,7 @@ package activity
 
 import (
 	"fmt"
+	jctx "github.com/roma-glushko/frens/internal/context"
 	"strings"
 	"time"
 
@@ -91,7 +92,8 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
+		jr := jctx.Journal
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
 			e, err = j.AddEvent(e)

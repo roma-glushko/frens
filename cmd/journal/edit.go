@@ -16,11 +16,10 @@ package journal
 
 import (
 	"fmt"
+	jctx "github.com/roma-glushko/frens/internal/context"
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	"github.com/roma-glushko/frens/internal/journal"
 
 	"github.com/urfave/cli/v2"
 )
@@ -31,13 +30,13 @@ var EditCommand = &cli.Command{
 	Usage:   "Edit journal raw files",
 	Flags:   []cli.Flag{},
 	Action: func(ctx *cli.Context) error {
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
 
 		editor := GetEditor()
 
 		cmd := exec.Command(
 			editor,
-			filepath.Join(jr.DirPath, "friends.toml"),
+			filepath.Join(jctx.JournalDir, "friends.toml"),
 		) // TODO: make it configurable
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
