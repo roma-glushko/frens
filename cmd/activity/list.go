@@ -16,11 +16,10 @@ package activity
 
 import (
 	"fmt"
-	"os"
 	"strings"
-	"text/tabwriter"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/roma-glushko/frens/internal/friend"
 
@@ -99,22 +98,10 @@ var ListCommand = &cli.Command{
 			return nil
 		}
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "Activity", "🏷️  Tags")
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
+		fmtr := formatter.EventTextFormatter{}
 
-		for _, act := range activity {
-			_, _ = fmt.Fprintf(
-				w,
-				"%s\t%s\t%s\n",
-				act.ID,
-				boldNameStyle.Render(act.Desc),
-				lang.RenderTags(act.Tags),
-			)
-		}
-
-		_ = w.Flush()
+		o, _ := fmtr.FormatList(activity)
+		fmt.Println(o)
 
 		return nil
 	},
