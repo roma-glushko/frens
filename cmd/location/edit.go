@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"strings"
 
+	jctx "github.com/roma-glushko/frens/internal/context"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/journal"
@@ -58,7 +60,8 @@ var EditCommand = &cli.Command{
 
 		lID := strings.Join(ctx.Args().Slice(), " ")
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
+		jr := jctx.Journal
 
 		lOld, err := jr.GetLocation(lID)
 		if err != nil {

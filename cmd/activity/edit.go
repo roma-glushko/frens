@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strings"
 
+	jctx "github.com/roma-glushko/frens/internal/context"
+
 	"github.com/roma-glushko/frens/internal/friend"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -42,15 +44,17 @@ var EditCommand = &cli.Command{
 			Usage:   "Set the date of the activity (format: YYYY/MM/DD or relative like 'yesterday')",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
-		if ctx.NArg() < 1 {
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		if c.NArg() < 1 {
 			return cli.Exit("You must provide an activity ID to edit.", 1)
 		}
 
-		actID := ctx.Args().First()
-		desc := strings.TrimSpace(strings.Join(ctx.Args().Slice()[1:], " "))
+		actID := c.Args().First()
+		desc := strings.TrimSpace(strings.Join(c.Args().Slice()[1:], " "))
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx)
+		jr := jctx.Journal
 
 		actOld, err := jr.GetEvent(friend.EventTypeActivity, actID)
 		if err != nil {

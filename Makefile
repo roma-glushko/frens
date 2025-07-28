@@ -63,9 +63,9 @@ run: ## Run Frens
 .PHONY: build
 build: ## Build Frens
 	@echo "🔨 Building binary.."
-	@echo "Version: $(VERSION)"
-	@echo "Commit: $(COMMIT)"
-	@echo "Build Date: $(BUILD_DATE)"
+	@echo " • Version: $(VERSION)"
+	@echo " • Commit: $(COMMIT)"
+	@echo " • Build Date: $(BUILD_DATE)"
 	@go build -ldflags $(LDFLAGS_COMMON) -o ./dist/frens;
 
 .PHONY: gen

@@ -17,23 +17,38 @@ package lang
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/tag"
 )
 
-var FormatEventInfo = fmt.Sprintf(
-	"[DATE or RELATIVE DATE ::] DESCRIPTION [%s] [%s]",
-	FormatTags,
-	FormatLocationMarkers,
+var (
+	FormatEventInfo = fmt.Sprintf(
+		"[DATE or RELATIVE DATE ::] DESCRIPTION [%s] [%s]",
+		FormatTags,
+		FormatLocationMarkers,
+	)
+	FormatEventQuery = fmt.Sprintf(
+		"[SEARCH TERM] [%s] [%s] [$since:DATE] [$until:DATE] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
+		FormatTags,
+		FormatLocationMarkers,
+	)
 )
+
+type eventProps struct {
+	SortBy    string `frentxt:"sort"`
+	SortOrder string `frentxt:"order"`
+	Since     string `frentxt:"since"`
+	Until     string `frentxt:"until"`
+}
 
 func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 	if s == "" {
 		return friend.Event{}, ErrNoInfo
 	}
 
-	parts := strings.SplitN(s, DateSeparator, 2)
+	parts := strings.SplitN(s, DescSeparator, 2)
 
 	dateStr := ""
 	desc := parts[0]
@@ -46,7 +61,7 @@ func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 	dateStr = strings.TrimSpace(dateStr)
 	desc = strings.TrimSpace(desc)
 
-	ts := ExtractDate(dateStr)
+	ts := ExtractDate(dateStr, time.Now().UTC())
 
 	if desc == "" {
 		return friend.Event{}, ErrNoInfo
@@ -73,7 +88,7 @@ func RenderEvent(e *friend.Event) string {
 	if !e.Date.IsZero() {
 		sb.WriteString(e.Date.Format("2006-01-02 15:04:05"))
 		sb.WriteString(" ")
-		sb.WriteString(DateSeparator)
+		sb.WriteString(DescSeparator)
 		sb.WriteString(" ")
 	}
 
@@ -90,4 +105,33 @@ func RenderEvent(e *friend.Event) string {
 	}
 
 	return sb.String()
+}
+
+func ExtractEventQuery(q string) (friend.ListEventQuery, error) {
+	props, err := ExtractProps[eventProps](q)
+	if err != nil {
+		return friend.ListEventQuery{}, fmt.Errorf(
+			"failed to parse event list query properties: %w",
+			err,
+		)
+	}
+
+	tags := tag.Tags(ExtractTags(q)).ToNames()
+	locations := ExtractLocMarkers(q)
+
+	q = RemoveTags(q)
+	q = RemoveLocMarkers(q)
+	q = RemoveProps(q)
+
+	search := strings.TrimSpace(q)
+
+	return friend.ListEventQuery{
+		Keyword:   search,
+		Tags:      tags,
+		Locations: locations,
+		Since:     ExtractDate(props.Since),
+		Until:     ExtractDate(props.Until),
+		SortBy:    friend.SortOption(props.SortBy),
+		SortOrder: friend.SortOrderOption(props.SortOrder),
+	}, nil
 }

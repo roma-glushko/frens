@@ -18,6 +18,8 @@ import (
 	"errors"
 	"strings"
 
+	jctx "github.com/roma-glushko/frens/internal/context"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
@@ -135,9 +137,9 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
+		err = journaldir.Update(jctx.Journal, func(j *journal.Journal) error {
 			j.AddLocation(l)
 
 			return nil
@@ -146,7 +148,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info("✅ Added location: " + l.String())
+		log.Info("✅ Added new location: " + l.String())
 
 		if len(l.Aliases) > 0 {
 			log.Info("📍 Aliases: " + strings.Join(l.Aliases, ", "))

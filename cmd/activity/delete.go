@@ -17,6 +17,8 @@ package activity
 import (
 	"fmt"
 
+	jctx "github.com/roma-glushko/frens/internal/context"
+
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -46,16 +48,17 @@ var DeleteCommand = &cli.Command{
 			Usage:   "Force delete without confirmation",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
-		if len(ctx.Args().Slice()) == 0 {
+	Action: func(c *cli.Context) error {
+		if len(c.Args().Slice()) == 0 {
 			return cli.Exit("Please provide a activity ID to delete.", 1)
 		}
 
-		activities := make([]*friend.Event, 0, len(ctx.Args().Slice()))
+		activities := make([]*friend.Event, 0, len(c.Args().Slice()))
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(c.Context)
+		jr := jctx.Journal
 
-		for _, actID := range ctx.Args().Slice() {
+		for _, actID := range c.Args().Slice() {
 			act, err := jr.GetEvent(friend.EventTypeActivity, actID)
 			if err != nil {
 				return err
@@ -73,7 +76,7 @@ var DeleteCommand = &cli.Command{
 
 		// TODO: check if interactive mode
 		fmt.Println("\n⚠️  You're about to permanently delete the " + actWord + ".")
-		if !ctx.Bool("force") && !tui.ConfirmAction("Are you sure?") {
+		if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
 			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
 		}

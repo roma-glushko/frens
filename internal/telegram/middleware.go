@@ -12,22 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package journal
-
-import "context"
-
-type journalCtxKey struct{}
-
-func WithCtx(ctx context.Context, j *Journal) context.Context {
-	return context.WithValue(ctx, journalCtxKey{}, j)
-}
-
-func FromCtx(ctx context.Context) *Journal {
-	if val := ctx.Value(journalCtxKey{}); val != nil {
-		if j, ok := val.(*Journal); ok && j != nil {
-			return j
-		}
-	}
-
-	return nil
-}
+package telegram

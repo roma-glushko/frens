@@ -20,10 +20,13 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	jctx "github.com/roma-glushko/frens/internal/context"
+
+	"github.com/roma-glushko/frens/internal/friend"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/roma-glushko/frens/internal/lang"
 
-	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -55,7 +58,7 @@ var ListCommand = &cli.Command{
 			Value:   "alpha",
 			Usage:   "Sort by one of alpha, activities, recency",
 			Action: func(c *cli.Context, s string) error {
-				return journal.ValidateSortOption(s)
+				return friend.ValidateSortOption(s)
 			},
 		},
 		&cli.BoolFlag{
@@ -67,20 +70,21 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jr := journal.FromCtx(ctx)
+		jctx := jctx.FromCtx(ctx)
+		jr := jctx.Journal
 
-		orderBy := journal.OrderDirect
+		sortOrder := friend.SortOrderDirect
 
 		if c.Bool("reverse") {
-			orderBy = journal.OrderReverse
+			sortOrder = friend.SortOrderReverse
 		}
 
-		locations := jr.ListLocations(journal.ListLocationQuery{
-			Search:    strings.TrimSpace(c.String("search")),
+		locations := jr.ListLocations(friend.ListLocationQuery{
+			Keyword:   strings.TrimSpace(c.String("search")),
 			Countries: c.StringSlice("country"),
 			Tags:      c.StringSlice("tag"),
-			SortBy:    journal.SortOption(c.String("sort")),
-			OrderBy:   orderBy,
+			SortBy:    friend.SortOption(c.String("sort")),
+			SortOrder: sortOrder,
 		})
 
 		if len(locations) == 0 {

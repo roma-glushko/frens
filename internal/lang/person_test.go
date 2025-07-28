@@ -56,17 +56,17 @@ func TestPersonParser(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
-		t.Run(tc.useCase, func(t *testing.T) {
-			got, err := ExtractPerson(tc.input)
+	for _, tt := range testcases {
+		t.Run(tt.useCase, func(t *testing.T) {
+			got, err := ExtractPerson(tt.input)
 			require.NoError(t, err)
 
 			require.NotEmpty(t, got)
-			require.Equal(t, tc.name, got.Name)
-			require.Equal(t, tc.nicknames, got.Nicknames)
-			require.Equal(t, tc.tags, got.Tags)
-			require.Equal(t, tc.locations, got.Locations)
-			require.Equal(t, tc.desc, got.Desc)
+			require.Equal(t, tt.name, got.Name)
+			require.Equal(t, tt.nicknames, got.Nicknames)
+			require.Equal(t, tt.tags, got.Tags)
+			require.Equal(t, tt.locations, got.Locations)
+			require.Equal(t, tt.desc, got.Desc)
 		})
 	}
 }
@@ -92,11 +92,83 @@ func TestPersonFormatter(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
-		t.Run(tc.title, func(t *testing.T) {
-			personInfo := RenderPerson(tc.person)
+	for _, tt := range testcases {
+		t.Run(tt.title, func(t *testing.T) {
+			personInfo := RenderPerson(tt.person)
 
-			require.Equal(t, tc.want, personInfo)
+			require.Equal(t, tt.want, personInfo)
+		})
+	}
+}
+
+func TestExtractPersonQuery(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		title string
+		input string
+		query friend.ListFriendQuery
+	}{
+		{
+			title: "keyword search",
+			input: "michael",
+			query: friend.ListFriendQuery{
+				Keyword: "michael",
+			},
+		},
+		{
+			title: "keyword search & locations",
+			input: "michael @scranton @nyc",
+			query: friend.ListFriendQuery{
+				Keyword:   "michael",
+				Locations: []string{"scranton", "nyc"},
+			},
+		},
+		{
+			title: "tags only",
+			input: "#office #dunderm",
+			query: friend.ListFriendQuery{
+				Tags: []string{"office", "dunderm"},
+			},
+		},
+		{
+			title: "locations only",
+			input: "@scranton @utica",
+			query: friend.ListFriendQuery{
+				Locations: []string{"scranton", "utica"},
+			},
+		},
+		{
+			title: "sort",
+			input: "$sort:alpha $order:reverse",
+			query: friend.ListFriendQuery{
+				SortBy:    friend.SortAlpha,
+				SortOrder: friend.SortOrderReverse,
+			},
+		},
+		{
+			title: "all query information",
+			input: "pam #art @nyc $sort:recency $order:direct",
+			query: friend.ListFriendQuery{
+				Keyword:   "pam",
+				Locations: []string{"nyc"},
+				Tags:      []string{"art"},
+				SortBy:    friend.SortRecency,
+				SortOrder: friend.SortOrderDirect,
+			},
+		},
+	}
+
+	for _, tt := range testcases {
+		t.Run(tt.title, func(t *testing.T) {
+			q, err := ExtractPersonQuery(tt.input)
+			require.NoError(t, err)
+
+			require.Equal(t, tt.query.Keyword, q.Keyword)
+			require.ElementsMatch(t, tt.query.Locations, q.Locations)
+			require.ElementsMatch(t, tt.query.Tags, q.Tags)
+			require.Equal(t, tt.query.SortBy, q.SortBy)
+			require.Equal(t, tt.query.SortOrder, q.SortOrder)
 		})
 	}
 }

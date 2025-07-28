@@ -17,6 +17,8 @@ package friend
 import (
 	"fmt"
 
+	jctx "github.com/roma-glushko/frens/internal/context"
+
 	"github.com/roma-glushko/frens/internal/utils"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -46,16 +48,19 @@ var DeleteCommand = &cli.Command{
 			Usage:   "Force delete without confirmation",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
-		if len(ctx.Args().Slice()) == 0 {
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
+
+		if len(c.Args().Slice()) == 0 {
 			return cli.Exit("Please provide a friend name, nickname, or ID to delete.", 1)
 		}
 
-		friends := make([]friend.Person, 0, len(ctx.Args().Slice()))
+		friends := make([]friend.Person, 0, len(c.Args().Slice()))
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx)
+		jr := jctx.Journal
 
-		for _, fID := range ctx.Args().Slice() {
+		for _, fID := range c.Args().Slice() {
 			f, err := jr.GetFriend(fID)
 			if err != nil {
 				return err
@@ -73,7 +78,7 @@ var DeleteCommand = &cli.Command{
 
 		// TODO: check if interactive mode
 		fmt.Println("\n⚠️  You're about to permanently delete these " + frenWord + ".")
-		if !ctx.Bool("force") && !tui.ConfirmAction("Are you sure?") {
+		if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
 			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
 		}

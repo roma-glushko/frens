@@ -12,31 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package journal
+package telegram
 
-import (
-	"fmt"
+import "github.com/urfave/cli/v2"
 
-	jctx "github.com/roma-glushko/frens/internal/context"
-
-	"github.com/urfave/cli/v2"
-)
-
-var StatsCommand = &cli.Command{
-	Name:  "stats",
-	Usage: "Show journal statistics",
-	Action: func(c *cli.Context) error {
-		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-
-		stats := jctx.Journal.Stats()
-
-		fmt.Println("Journal Statistics:")
-		fmt.Printf("  • Friends: %d\n", stats.Friends)
-		fmt.Printf("  • Locations: %d\n", stats.Locations)
-		fmt.Printf("  • Activities: %d\n", stats.Activities)
-		fmt.Printf("  • Notes: %d\n", stats.Notes)
-
-		return nil
+var Commands = &cli.Command{
+	Name:      "telegram",
+	Aliases:   []string{"tg"},
+	Usage:     "Manage Telegram integration",
+	UsageText: "frens telegram [command] [options]",
+	Subcommands: []*cli.Command{
+		BotCommand,
 	},
 }

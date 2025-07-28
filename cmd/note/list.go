@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package note
 
 import (
 	"fmt"
@@ -35,17 +35,12 @@ var boldNameStyle = lipgloss.NewStyle().Bold(true)
 var ListCommand = &cli.Command{
 	Name:    "list",
 	Aliases: []string{"l", "ls"},
-	Usage:   "List all friends",
+	Usage:   "List all notes",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "search",
 			Aliases: []string{"q"},
-			Usage:   "Search by name or description",
-		},
-		&cli.StringSliceFlag{
-			Name:    "location",
-			Aliases: []string{"l", "loc", "in"},
-			Usage:   "List friends by location(s)",
+			Usage:   "Search by keyword",
 		},
 		&cli.StringSliceFlag{
 			Name:    "tag",
@@ -53,10 +48,20 @@ var ListCommand = &cli.Command{
 			Usage:   "Filter by tag(s)",
 		},
 		&cli.StringFlag{
+			Name:    "from",
+			Aliases: []string{"since"},
+			Usage:   "Filter notes since a specific date",
+		},
+		&cli.StringFlag{
+			Name:    "to",
+			Aliases: []string{"until"},
+			Usage:   "Filter notes until a specific date",
+		},
+		&cli.StringFlag{
 			Name:    "sort",
 			Aliases: []string{"s"},
 			Value:   "alpha",
-			Usage:   "Sort by one of alpha, activities, recency",
+			Usage:   "Sort by one of alpha, recency",
 			Action: func(c *cli.Context, s string) error {
 				return friend.ValidateSortOption(s)
 			},
@@ -79,33 +84,33 @@ var ListCommand = &cli.Command{
 			sortOrder = friend.SortOrderReverse
 		}
 
-		friends := jr.ListFriends(friend.ListFriendQuery{
+		notes := jr.ListEvents(friend.ListEventQuery{
+			Type:      friend.EventTypeNote,
 			Keyword:   strings.TrimSpace(c.String("search")),
-			Locations: c.StringSlice("location"),
 			Tags:      c.StringSlice("tag"),
+			Since:     lang.ExtractDate(c.String("from")),
+			Until:     lang.ExtractDate(c.String("to")),
 			SortBy:    friend.SortOption(c.String("sort")),
 			SortOrder: sortOrder,
 		})
 
-		if len(friends) == 0 {
-			fmt.Println("No friends found")
+		if len(notes) == 0 {
+			fmt.Println("No notes found")
 			return nil
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "", "", "", "")
-		_, _ = fmt.Fprintln(w, "\t👤  Name\t🏷️  Tags\t📍  Location")
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "", "", "", "")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "Notes", "🏷️  Tags")
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
 
-		for _, f := range friends {
-			// TODO: improve output formatting
+		for _, nt := range notes {
 			_, _ = fmt.Fprintf(
 				w,
-				"%s\t%s\t%s\t%s\n",
-				f.ID,
-				boldNameStyle.Render(f.String()),
-				lang.RenderTags(f.Tags),
-				lang.RenderLocMarkers(f.Locations),
+				"%s\t%s\t%s\n",
+				nt.ID,
+				boldNameStyle.Render(nt.Desc),
+				lang.RenderTags(nt.Tags),
 			)
 		}
 

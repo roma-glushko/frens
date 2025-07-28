@@ -30,6 +30,11 @@ var (
 		FormatTags,
 		FormatLocationMarkers,
 	)
+	FormatPersonQuery = fmt.Sprintf(
+		"[SEARCH TERM] [%s] [%s] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
+		FormatTags,
+		FormatLocationMarkers,
+	)
 	ErrNoInfo = errors.New("no information provided")
 	personRe  *regexp.Regexp
 )
@@ -42,6 +47,11 @@ func init() {
 
 type personProps struct {
 	ID string `frentxt:"id"`
+}
+
+type orderProps struct {
+	SortBy    string `frentxt:"sort"`
+	SortOrder string `frentxt:"order"`
 }
 
 func extractNicknames(raw string) []string {
@@ -97,6 +107,33 @@ func ExtractPerson(s string) (friend.Person, error) {
 	}, nil
 }
 
+func ExtractPersonQuery(q string) (friend.ListFriendQuery, error) {
+	tags := tag.Tags(ExtractTags(q)).ToNames()
+	locations := ExtractLocMarkers(q)
+
+	props, err := ExtractProps[orderProps](q)
+	if err != nil {
+		return friend.ListFriendQuery{}, fmt.Errorf(
+			"failed to parse friend list query properties: %w",
+			err,
+		)
+	}
+
+	q = RemoveTags(q)
+	q = RemoveLocMarkers(q)
+	q = RemoveProps(q)
+
+	search := strings.TrimSpace(q)
+
+	return friend.ListFriendQuery{
+		Keyword:   search,
+		Locations: locations,
+		Tags:      tags,
+		SortBy:    friend.SortOption(props.SortBy),
+		SortOrder: friend.SortOrderOption(props.SortOrder),
+	}, nil
+}
+
 func RenderPerson(p friend.Person) string {
 	var sb strings.Builder
 
@@ -109,7 +146,9 @@ func RenderPerson(p friend.Person) string {
 	}
 
 	if p.Desc != "" {
-		sb.WriteString(" :: ")
+		sb.WriteString(" ")
+		sb.WriteString(DescSeparator)
+		sb.WriteString(" ")
 		sb.WriteString(p.Desc)
 	}
 

@@ -19,6 +19,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/roma-glushko/frens/cmd/telegram"
+
 	"github.com/roma-glushko/frens/internal/journaldir"
 
 	"github.com/charmbracelet/log"
@@ -30,7 +32,6 @@ import (
 	"github.com/roma-glushko/frens/cmd/location"
 	"github.com/roma-glushko/frens/cmd/note"
 	jctx "github.com/roma-glushko/frens/internal/context"
-	jrnal "github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/version"
 	"github.com/urfave/cli/v2"
 )
@@ -92,17 +93,15 @@ func NewApp() cli.App {
 				JournalDir: jDir,
 			}
 
-			ctx.Context = jctx.WithCtx(ctx.Context, &jCtx)
-
 			if journaldir.Exists(jDir) {
 				// load only if the journal directory exists (it may not if this is the first run or a new journal path)
-				jr, err := journaldir.Load(jDir)
+				jCtx.Journal, err = journaldir.Load(jDir)
 				if err != nil {
 					return fmt.Errorf("failed to load journal from %s: %w", jDir, err)
 				}
-
-				ctx.Context = jrnal.WithCtx(ctx.Context, jr)
 			}
+
+			ctx.Context = jctx.WithCtx(ctx.Context, &jCtx)
 
 			return nil
 		},
@@ -112,6 +111,7 @@ func NewApp() cli.App {
 			location.Commands,
 			note.Commands,
 			activity.Commands,
+			telegram.Commands,
 			ZenCommand,
 		},
 	}

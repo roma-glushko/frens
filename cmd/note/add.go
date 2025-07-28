@@ -17,6 +17,9 @@ package note
 import (
 	"fmt"
 	"strings"
+	"time"
+
+	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
@@ -40,10 +43,10 @@ var AddCommand = &cli.Command{
 			Usage:   "Set the date of the note (format: YYYY/MM/DD or relative like 'yesterday')",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
+	Action: func(c *cli.Context) error {
 		var info string
 
-		if ctx.NArg() == 0 {
+		if c.NArg() == 0 {
 			// TODO: also check if we are in the interactive mode
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
 				Title:      "Add a new note:",
@@ -58,7 +61,7 @@ var AddCommand = &cli.Command{
 
 			info = inputForm.Textarea.Value()
 		} else {
-			info = strings.Join(ctx.Args().Slice(), " ")
+			info = strings.Join(c.Args().Slice(), " ")
 		}
 
 		if info == "" {
@@ -70,17 +73,18 @@ var AddCommand = &cli.Command{
 			return cli.Exit("Failed to parse note description: "+err.Error(), 1)
 		}
 
-		date := ctx.String("date")
+		date := c.String("date")
 
 		if date != "" {
-			e.Date = lang.ExtractDate(date)
+			e.Date = lang.ExtractDate(date, time.Now().UTC())
 		}
 
 		if err := e.Validate(); err != nil {
 			return err
 		}
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(c.Context)
+		jr := jctx.Journal
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
 			e, err = j.AddEvent(e)

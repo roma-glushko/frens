@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"strings"
 
+	jctx "github.com/roma-glushko/frens/internal/context"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
@@ -147,7 +149,8 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
+		jr := jctx.Journal
 
 		err = journaldir.Update(jr, func(l *journal.Journal) error {
 			l.AddFriend(f)

@@ -17,6 +17,9 @@ package activity
 import (
 	"fmt"
 	"strings"
+	"time"
+
+	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
 
@@ -83,14 +86,15 @@ var AddCommand = &cli.Command{
 		date := ctx.String("date")
 
 		if date != "" {
-			e.Date = lang.ExtractDate(date)
+			e.Date = lang.ExtractDate(date, time.Now().UTC())
 		}
 
 		if err := e.Validate(); err != nil {
 			return err
 		}
 
-		jr := journal.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(ctx.Context)
+		jr := jctx.Journal
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
 			e, err = j.AddEvent(e)

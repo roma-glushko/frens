@@ -31,9 +31,14 @@ var (
 )
 
 var (
+	LocationMarker        = "@"
 	FormatLocationMarkers = "@location1[, @location2...]"
 	FormatLocationInfo    = fmt.Sprintf(
 		"NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] :: DESCRIPTION [%s] [$id:LOCATION_ID]",
+		FormatTags,
+	)
+	FormatLocationQuery = fmt.Sprintf(
+		"[SEARCH TERM] [%s] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
 		FormatTags,
 	)
 )
@@ -86,6 +91,30 @@ func ExtractLocation(s string) (friend.Location, error) {
 	}, nil
 }
 
+func ExtractLocationQuery(q string) (friend.ListLocationQuery, error) {
+	props, err := ExtractProps[orderProps](q)
+	if err != nil {
+		return friend.ListLocationQuery{}, fmt.Errorf(
+			"failed to parse location list query properties: %w",
+			err,
+		)
+	}
+
+	tags := tag.Tags(ExtractTags(q)).ToNames()
+
+	q = RemoveTags(q)
+	q = RemoveProps(q)
+
+	search := strings.TrimSpace(q)
+
+	return friend.ListLocationQuery{
+		Keyword:   search,
+		Tags:      tags,
+		SortBy:    friend.SortOption(props.SortBy),
+		SortOrder: friend.SortOrderOption(props.SortOrder),
+	}, nil
+}
+
 func RenderLocation(l friend.Location) string {
 	var sb strings.Builder
 
@@ -103,7 +132,9 @@ func RenderLocation(l friend.Location) string {
 	}
 
 	if l.Desc != "" {
-		sb.WriteString(" :: ")
+		sb.WriteString(" ")
+		sb.WriteString(DescSeparator)
+		sb.WriteString(" ")
 		sb.WriteString(l.Desc)
 	}
 
@@ -122,10 +153,10 @@ func RenderLocation(l friend.Location) string {
 
 func ExtractLocMarkers(s string) []string {
 	matches := locMarkerRe.FindAllString(s, -1)
-	locationIDs := make([]string, len(matches))
+	locationIDs := make([]string, 0, len(matches))
 
-	for i, match := range matches {
-		locationIDs[i] = strings.TrimLeft(match, "@")
+	for _, match := range matches {
+		locationIDs = append(locationIDs, strings.TrimLeft(match, LocationMarker))
 	}
 
 	return utils.Unique(locationIDs)
@@ -140,16 +171,16 @@ func RenderLocMarkers(locations []string) string {
 		return ""
 	}
 
-	markers := make([]string, len(locations))
+	markers := make([]string, 0, len(locations))
 
-	for i, loc := range locations {
+	for _, loc := range locations {
 		loc = strings.TrimSpace(loc)
 
 		if loc == "" {
 			continue
 		}
 
-		markers[i] = "@" + loc
+		markers = append(markers, LocationMarker+loc)
 	}
 
 	return strings.Join(markers, " ")

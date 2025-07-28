@@ -14,10 +14,15 @@
 
 package context
 
-import "context"
+import (
+	"context"
+
+	"github.com/roma-glushko/frens/internal/journal"
+)
 
 type AppContext struct {
 	JournalDir string
+	Journal    *journal.Journal
 }
 
 type ctxKey struct{}

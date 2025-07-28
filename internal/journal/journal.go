@@ -34,64 +34,7 @@ import (
 	"github.com/roma-glushko/frens/internal/tag"
 )
 
-type SortOption string
-
-const (
-	SortAlpha      SortOption = "alpha"
-	SortActivities SortOption = "activities"
-	SortRecency    SortOption = "recency"
-)
-
-var SortOptions = []SortOption{
-	SortAlpha,
-	SortActivities,
-	SortRecency,
-}
-
-func ValidateSortOption(s string) error {
-	validOpts := make([]string, 0, len(SortOptions))
-
-	for _, sortOpt := range SortOptions {
-		opt := string(sortOpt)
-
-		validOpts = append(validOpts, opt)
-
-		if s == opt {
-			return nil
-		}
-	}
-
-	return fmt.Errorf(
-		"invalid sort value '%s' (valid: %s)",
-		s,
-		strings.Join(validOpts, ", "),
-	)
-}
-
-type OrderOption string
-
-const (
-	OrderDirect  OrderOption = "direct"
-	OrderReverse OrderOption = "reverse"
-)
-
 var ErrEventNotFound = errors.New("event not found")
-
-type ListFriendQuery struct {
-	Search    string
-	Locations []string
-	Tags      []string
-	SortBy    SortOption
-	OrderBy   OrderOption
-}
-
-type ListLocationQuery struct {
-	Search    string
-	Countries []string
-	Tags      []string
-	SortBy    SortOption
-	OrderBy   OrderOption
-}
 
 type Stats struct {
 	Friends    int `json:"friends"`
@@ -300,13 +243,13 @@ func (j *Journal) UpdateLocation(o, n friend.Location) {
 	j.AddLocation(n)
 }
 
-func (j *Journal) ListLocations(q ListLocationQuery) []*friend.Location { //nolint:cyclop
+func (j *Journal) ListLocations(q friend.ListLocationQuery) []*friend.Location { //nolint:cyclop
 	locations := make([]*friend.Location, 0, 10)
 
 	for _, l := range j.Locations {
-		if q.Search != "" &&
-			!strings.Contains(strings.ToLower(l.Name), strings.ToLower(q.Search)) &&
-			!strings.Contains(strings.ToLower(l.Desc), strings.ToLower(q.Search)) {
+		if q.Keyword != "" &&
+			!strings.Contains(strings.ToLower(l.Name), strings.ToLower(q.Keyword)) &&
+			!strings.Contains(strings.ToLower(l.Desc), strings.ToLower(q.Keyword)) {
 			continue
 		}
 
@@ -327,20 +270,20 @@ func (j *Journal) ListLocations(q ListLocationQuery) []*friend.Location { //noli
 
 	sort.SliceStable(locations, func(i, j int) bool {
 		switch q.SortBy {
-		case SortAlpha:
-			if q.OrderBy == OrderReverse {
+		case friend.SortAlpha:
+			if q.SortOrder == friend.SortOrderReverse {
 				return strings.ToLower(locations[i].Name) > strings.ToLower(locations[j].Name)
 			}
 
 			return strings.ToLower(locations[i].Name) < strings.ToLower(locations[j].Name)
-		case SortActivities:
-			if q.OrderBy == OrderReverse {
+		case friend.SortActivities:
+			if q.SortOrder == friend.SortOrderReverse {
 				return locations[i].Activities < locations[j].Activities
 			}
 
 			return locations[i].Activities > locations[j].Activities
-		case SortRecency:
-			if q.OrderBy == OrderReverse {
+		case friend.SortRecency:
+			if q.SortOrder == friend.SortOrderReverse {
 				return locations[i].MostRecentActivity.After(locations[j].MostRecentActivity)
 			}
 
@@ -545,6 +488,60 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	return j.AddEvent(n)
 }
 
+func (j *Journal) ListEvents(q friend.ListEventQuery) []*friend.Event { //nolint:cyclop
+	notes := make([]*friend.Event, 0, 10)
+
+	for _, note := range j.Notes {
+		if q.Type != note.Type {
+			continue
+		}
+
+		if q.Keyword != "" &&
+			!strings.Contains(strings.ToLower(note.Desc), strings.ToLower(q.Keyword)) {
+			continue
+		}
+
+		if len(q.Tags) > 0 && !tag.HasTags(note, q.Tags) {
+			continue
+		}
+
+		if !q.Since.IsZero() && note.Date.Before(q.Since) {
+			continue
+		}
+
+		if !q.Until.IsZero() && note.Date.After(q.Until) {
+			continue
+		}
+
+		notes = append(notes, note)
+	}
+
+	if len(notes) == 0 {
+		return notes
+	}
+
+	sort.SliceStable(notes, func(i, j int) bool {
+		switch q.SortBy { //nolint:exhaustive
+		case friend.SortAlpha:
+			if q.SortOrder == friend.SortOrderReverse {
+				return strings.ToLower(notes[i].Desc) > strings.ToLower(notes[j].Desc)
+			}
+
+			return strings.ToLower(notes[i].Desc) < strings.ToLower(notes[j].Desc)
+		case friend.SortRecency:
+			if q.SortOrder == friend.SortOrderReverse {
+				return notes[i].Date.After(notes[j].Date)
+			}
+
+			return notes[i].Date.Before(notes[j].Date)
+		default:
+			return false
+		}
+	})
+
+	return notes
+}
+
 func (j *Journal) RemoveEvents(t friend.EventType, toRemove []*friend.Event) {
 	for _, act := range toRemove {
 		if t == friend.EventTypeActivity {
@@ -571,13 +568,13 @@ func (j *Journal) RemoveEvents(t friend.EventType, toRemove []*friend.Event) {
 	}
 }
 
-func (j *Journal) ListFriends(q ListFriendQuery) []*friend.Person { //nolint:cyclop
+func (j *Journal) ListFriends(q friend.ListFriendQuery) []*friend.Person { //nolint:cyclop
 	fl := make([]*friend.Person, 0, 10)
 
 	for _, f := range j.Friends {
-		if q.Search != "" &&
-			!strings.Contains(strings.ToLower(f.Name), strings.ToLower(q.Search)) &&
-			!strings.Contains(strings.ToLower(f.Desc), strings.ToLower(q.Search)) {
+		if q.Keyword != "" &&
+			!strings.Contains(strings.ToLower(f.Name), strings.ToLower(q.Keyword)) &&
+			!strings.Contains(strings.ToLower(f.Desc), strings.ToLower(q.Keyword)) {
 			continue
 		}
 
@@ -599,20 +596,20 @@ func (j *Journal) ListFriends(q ListFriendQuery) []*friend.Person { //nolint:cyc
 	// sort by and order by friends
 	sort.SliceStable(fl, func(i, j int) bool {
 		switch q.SortBy {
-		case SortAlpha:
-			if q.OrderBy == OrderReverse {
+		case friend.SortAlpha:
+			if q.SortOrder == friend.SortOrderDirect {
 				return strings.ToLower(fl[i].Name) > strings.ToLower(fl[j].Name)
 			}
 
 			return strings.ToLower(fl[i].Name) < strings.ToLower(fl[j].Name)
-		case SortActivities:
-			if q.OrderBy == OrderReverse {
+		case friend.SortActivities:
+			if q.SortOrder == friend.SortOrderDirect {
 				return fl[i].Activities < fl[j].Activities
 			}
 
 			return fl[i].Activities > fl[j].Activities
-		case SortRecency:
-			if q.OrderBy == OrderReverse {
+		case friend.SortRecency:
+			if q.SortOrder == friend.SortOrderDirect {
 				return fl[i].MostRecentActivity.After(fl[j].MostRecentActivity)
 			}
 
