@@ -116,6 +116,47 @@ func TestExtractPersonQuery(t *testing.T) {
 				Keyword: "michael",
 			},
 		},
+		{
+			title: "keyword search & locations",
+			input: "michael @scranton @nyc",
+			query: friend.ListFriendQuery{
+				Keyword:   "michael",
+				Locations: []string{"scranton", "nyc"},
+			},
+		},
+		{
+			title: "tags only",
+			input: "#office #dunderm",
+			query: friend.ListFriendQuery{
+				Tags: []string{"office", "dunderm"},
+			},
+		},
+		{
+			title: "locations only",
+			input: "@scranton @utica",
+			query: friend.ListFriendQuery{
+				Locations: []string{"scranton", "utica"},
+			},
+		},
+		{
+			title: "sort",
+			input: "$sort:alpha $order:reverse",
+			query: friend.ListFriendQuery{
+				SortBy:    friend.SortAlpha,
+				SortOrder: friend.SortOrderReverse,
+			},
+		},
+		{
+			title: "all query information",
+			input: "pam #art @nyc $sort:recency $order:direct",
+			query: friend.ListFriendQuery{
+				Keyword:   "pam",
+				Locations: []string{"nyc"},
+				Tags:      []string{"art"},
+				SortBy:    friend.SortRecency,
+				SortOrder: friend.SortOrderDirect,
+			},
+		},
 	}
 
 	for _, tt := range testcases {
@@ -124,8 +165,8 @@ func TestExtractPersonQuery(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Equal(t, tt.query.Keyword, q.Keyword)
-			require.Equal(t, tt.query.Locations, q.Locations)
-			require.Equal(t, tt.query.Tags, q.Tags)
+			require.ElementsMatch(t, tt.query.Locations, q.Locations)
+			require.ElementsMatch(t, tt.query.Tags, q.Tags)
 			require.Equal(t, tt.query.SortBy, q.SortBy)
 			require.Equal(t, tt.query.SortOrder, q.SortOrder)
 		})

@@ -23,16 +23,24 @@ import (
 	"github.com/roma-glushko/frens/internal/tag"
 )
 
-var FormatEventInfo = fmt.Sprintf(
-	"[DATE or RELATIVE DATE ::] DESCRIPTION [%s] [%s]",
-	FormatTags,
-	FormatLocationMarkers,
+var (
+	FormatEventInfo = fmt.Sprintf(
+		"[DATE or RELATIVE DATE ::] DESCRIPTION [%s] [%s]",
+		FormatTags,
+		FormatLocationMarkers,
+	)
+	FormatEventQuery = fmt.Sprintf(
+		"[SEARCH TERM] [%s] [%s] [$unti:DATE] [$until:DATE] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
+		FormatTags,
+		FormatLocationMarkers,
+	)
 )
 
 type eventProps struct {
-	orderProps
-	Since string `frentxt:"since"`
-	Until string `frentxt:"until"`
+	SortBy    string `frentxt:"sort"`
+	SortOrder string `frentxt:"order"`
+	Since     string `frentxt:"since"`
+	Until     string `frentxt:"until"`
 }
 
 func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
@@ -101,6 +109,7 @@ func RenderEvent(e *friend.Event) string {
 
 func ExtractEventQuery(q string) (friend.ListEventQuery, error) {
 	props, err := ExtractProps[eventProps](q)
+
 	if err != nil {
 		return friend.ListEventQuery{}, fmt.Errorf(
 			"failed to parse event list query properties: %w",
@@ -109,6 +118,7 @@ func ExtractEventQuery(q string) (friend.ListEventQuery, error) {
 	}
 
 	tags := tag.Tags(ExtractTags(q)).ToNames()
+	locations := ExtractLocMarkers(q)
 
 	q = RemoveTags(q)
 	q = RemoveLocMarkers(q)
@@ -119,9 +129,10 @@ func ExtractEventQuery(q string) (friend.ListEventQuery, error) {
 	return friend.ListEventQuery{
 		Keyword:   search,
 		Tags:      tags,
+		Locations: locations,
 		Since:     ExtractDate(props.Since),
 		Until:     ExtractDate(props.Until),
 		SortBy:    friend.SortOption(props.SortBy),
-		SortOrder: friend.SortOrderOption(props.Order),
+		SortOrder: friend.SortOrderOption(props.SortOrder),
 	}, nil
 }

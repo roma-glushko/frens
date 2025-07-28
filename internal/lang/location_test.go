@@ -108,3 +108,58 @@ func TestExtractLocation(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractLocationQuery(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		title string
+		input string
+		query friend.ListLocationQuery
+	}{
+		{
+			title: "keyword search",
+			input: "electric",
+			query: friend.ListLocationQuery{
+				Keyword: "electric",
+			},
+		},
+		{
+			title: "tags only",
+			input: "#office #dunderm",
+			query: friend.ListLocationQuery{
+				Tags: []string{"office", "dunderm"},
+			},
+		},
+		{
+			title: "sort & order",
+			input: "$sort:alpha $order:reverse",
+			query: friend.ListLocationQuery{
+				SortBy:    friend.SortAlpha,
+				SortOrder: friend.SortOrderReverse,
+			},
+		},
+		{
+			title: "all query information",
+			input: "new #corporate $sort:recency $order:direct",
+			query: friend.ListLocationQuery{
+				Keyword:   "new",
+				Tags:      []string{"corporate"},
+				SortBy:    friend.SortRecency,
+				SortOrder: friend.SortOrderDirect,
+			},
+		},
+	}
+
+	for _, tt := range testcases {
+		t.Run(tt.title, func(t *testing.T) {
+			q, err := ExtractLocationQuery(tt.input)
+			require.NoError(t, err)
+
+			require.Equal(t, tt.query.Keyword, q.Keyword)
+			require.ElementsMatch(t, tt.query.Tags, q.Tags)
+			require.Equal(t, tt.query.SortBy, q.SortBy)
+			require.Equal(t, tt.query.SortOrder, q.SortOrder)
+		})
+	}
+}

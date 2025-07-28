@@ -37,6 +37,10 @@ var (
 		"NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] :: DESCRIPTION [%s] [$id:LOCATION_ID]",
 		FormatTags,
 	)
+	FormatLocationQuery = fmt.Sprintf(
+		"[SEARCH TERM] [%s] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
+		FormatTags,
+	)
 )
 
 func init() {
@@ -99,6 +103,7 @@ func ExtractLocationQuery(q string) (friend.ListLocationQuery, error) {
 	tags := tag.Tags(ExtractTags(q)).ToNames()
 
 	q = RemoveTags(q)
+	q = RemoveProps(q)
 
 	search := strings.TrimSpace(q)
 
@@ -106,7 +111,7 @@ func ExtractLocationQuery(q string) (friend.ListLocationQuery, error) {
 		Keyword:   search,
 		Tags:      tags,
 		SortBy:    friend.SortOption(props.SortBy),
-		SortOrder: friend.SortOrderOption(props.Order),
+		SortOrder: friend.SortOrderOption(props.SortOrder),
 	}, nil
 }
 

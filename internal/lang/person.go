@@ -50,8 +50,8 @@ type personProps struct {
 }
 
 type orderProps struct {
-	SortBy string `frentxt:"sort"`
-	Order  string `frentxt:"order"`
+	SortBy    string `frentxt:"sort"`
+	SortOrder string `frentxt:"order"`
 }
 
 func extractNicknames(raw string) []string {
@@ -130,7 +130,7 @@ func ExtractPersonQuery(q string) (friend.ListFriendQuery, error) {
 		Locations: locations,
 		Tags:      tags,
 		SortBy:    friend.SortOption(props.SortBy),
-		SortOrder: friend.SortOrderOption(props.Order),
+		SortOrder: friend.SortOrderOption(props.SortOrder),
 	}, nil
 }
 
