@@ -116,7 +116,7 @@ var EditCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			j.UpdateFriend(*pOld, pNew)
+			j.UpdateFriend(pOld, &pNew)
 			return nil
 		})
 		if err != nil {

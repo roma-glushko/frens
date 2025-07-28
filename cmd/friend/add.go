@@ -154,7 +154,7 @@ var AddCommand = &cli.Command{
 		jr := jctx.Journal
 
 		err = journaldir.Update(jr, func(l *journal.Journal) error {
-			l.AddFriend(f)
+			l.AddFriend(&f)
 			return nil
 		})
 
@@ -163,6 +163,7 @@ var AddCommand = &cli.Command{
 		}
 
 		log.Info(" ✔ Friend added\n")
+		log.Info("==> Friend Information\n")
 		//log.PrintEntity(f)
 
 		fmtr := formatter.PersonTextFormatter{}

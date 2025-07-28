@@ -90,7 +90,7 @@ func (j *Journal) Path() string {
 	return j.DirPath
 }
 
-func (j *Journal) AddFriend(f friend.Person) {
+func (j *Journal) AddFriend(f *friend.Person) {
 	if f.ID == "" {
 		f.ID = slug.Make(f.Name)
 	}
@@ -98,7 +98,7 @@ func (j *Journal) AddFriend(f friend.Person) {
 	// TODO: check for duplicated IDs
 	// TODO: check for duplicated aliases
 
-	j.Friends = append(j.Friends, &f)
+	j.Friends = append(j.Friends, f)
 	j.SetDirty(true)
 }
 
@@ -140,10 +140,10 @@ func (j *Journal) GetFriend(q string) (*friend.Person, error) {
 	return m.Entities[0], nil
 }
 
-func (j *Journal) UpdateFriend(o, n friend.Person) {
+func (j *Journal) UpdateFriend(o, n *friend.Person) {
 	for i, f := range j.Friends {
 		if f.Name == o.Name {
-			j.Friends[i] = &n
+			j.Friends[i] = n
 			j.SetDirty(true)
 
 			return

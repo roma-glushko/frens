@@ -2,10 +2,20 @@ package formatter
 
 import (
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
 	"strings"
+)
+
+var (
+	symbolStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("2")) // green
+	labelStyle    = lipgloss.NewStyle().Bold(true)
+	valueStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("7")) // gray
+	descStyle     = lipgloss.NewStyle().PaddingLeft(4)
+	tagStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("6")) // cyan
+	locationStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("5")) // magenta
 )
 
 func init() {
@@ -53,22 +63,23 @@ func (p PersonTextFormatter) FormatSingle(e any) (string, error) {
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("%-14s %s\n", "NAME", person.String()))
+	sb.WriteString(fmt.Sprintf(" %s [%s]", labelStyle.Render(person.String()), person.ID))
+	sb.WriteString("\n")
 
 	if len(person.Tags) > 0 {
-		sb.WriteString(fmt.Sprintf("%-14s %s\n", "TAGS", lang.RenderTags(person.Tags)))
+		sb.WriteString(" " + tagStyle.Render(lang.RenderTags(person.Tags)))
+		sb.WriteString(" ")
 	}
 
 	if len(person.Locations) > 0 {
-		sb.WriteString(fmt.Sprintf("%-14s %s\n", "LOCATIONS", lang.RenderLocMarkers(person.Locations)))
+		sb.WriteString(locationStyle.Render(lang.RenderLocMarkers(person.Locations)))
 	}
 
 	if person.Desc != "" {
-		sb.WriteString("DESCRIPTION \n\n")
-		indent := strings.Repeat(" ", 4)
-		wrapped := wrapText(person.Desc, 80-4)
+		sb.WriteString("\n")
+		wrapped := wrapText(person.Desc, 80)
 		for _, line := range wrapped {
-			sb.WriteString(indent + line + "\n")
+			sb.WriteString(" " + line + "\n")
 		}
 		sb.WriteString("\n")
 	}
