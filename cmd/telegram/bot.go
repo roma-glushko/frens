@@ -208,7 +208,7 @@ var BotCommand = &cli.Command{
 			notes := jr.ListEvents(q)
 
 			if len(notes) == 0 {
-				return c.Send("No nots found matching your query.")
+				return c.Send("No notes found matching your query.")
 			}
 
 			var sb strings.Builder

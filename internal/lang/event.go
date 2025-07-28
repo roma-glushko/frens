@@ -30,7 +30,7 @@ var (
 		FormatLocationMarkers,
 	)
 	FormatEventQuery = fmt.Sprintf(
-		"[SEARCH TERM] [%s] [%s] [$unti:DATE] [$until:DATE] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
+		"[SEARCH TERM] [%s] [%s] [$since:DATE] [$until:DATE] [$sort:SORT_OPTION] [$order:ORDER_OPTION]",
 		FormatTags,
 		FormatLocationMarkers,
 	)
@@ -109,7 +109,6 @@ func RenderEvent(e *friend.Event) string {
 
 func ExtractEventQuery(q string) (friend.ListEventQuery, error) {
 	props, err := ExtractProps[eventProps](q)
-
 	if err != nil {
 		return friend.ListEventQuery{}, fmt.Errorf(
 			"failed to parse event list query properties: %w",
