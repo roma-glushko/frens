@@ -15,18 +15,23 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/urfave/cli/v2"
+	"strings"
 )
 
 var ZenCommand = &cli.Command{
 	Name:  "zen",
 	Usage: "Print the zen of friendship",
 	Action: func(_ *cli.Context) error {
-		fmt.Println("🌿 The Zen of Friendship:")
-		fmt.Println("   • Treat others as you would like them to treat you.")
-		fmt.Println("   • You should \"buy\" yourself a friend.")
+		var sb strings.Builder
+
+		sb.WriteString("The Zen of Friendship:\n")
+		sb.WriteString(" • Treat others as you would like them to treat you.\n")
+		sb.WriteString(" • You should \"buy\" yourself a friend.\n")
+
+		log.Info(sb.String())
+
 		return nil
 	},
 }
