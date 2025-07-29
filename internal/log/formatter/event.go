@@ -29,7 +29,7 @@ func init() {
 	log.RegisterFormatter(log.FormatText, friend.Event{}, EventTextFormatter{})
 }
 
-func CutText(s string, maxLen int) string {
+func CutStr(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s
 	}
@@ -95,7 +95,7 @@ func (f EventTextFormatter) FormatList(el any) (string, error) {
 			" %s\t%s\t%s\t%s\t%s\t%s\n",
 			idStyle.Render(e.ID),
 			e.Date.Format("Mon Jan 2, 2006 15:04 MST"),
-			labelStyle.Render(CutText(e.Desc, 80)),
+			labelStyle.Render(CutStr(e.Desc, 80)),
 			friendStyle.Render(strings.Join(e.Friends, " ")),
 			tagStyle.Render(lang.RenderTags(e.Tags)),
 			locationStyle.Render(lang.RenderLocMarkers(e.Locations)),

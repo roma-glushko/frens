@@ -67,16 +67,16 @@ var DeleteCommand = &cli.Command{
 		}
 
 		locWord := utils.P(len(locations), "location", "locations")
-		fmt.Printf("🔍 Found %d %s:\n", len(locations), locWord)
+		fmt.Printf("\n Found %d %s:\n\n", len(locations), locWord)
 
 		for _, l := range locations {
-			fmt.Printf("   • %s \n", l.String())
+			fmt.Printf(" • %s \n", l.String())
 		}
 
 		// TODO: check if interactive mode
-		fmt.Println("\n⚠️  You're about to permanently delete the " + locWord + ".")
-		if !ctx.Bool("force") && !tui.ConfirmAction("Are you sure?") {
-			fmt.Println("\n↩️  Deletion canceled.")
+		fmt.Println("\n You're about to permanently delete the " + locWord + ".")
+		if !ctx.Bool("force") && !tui.ConfirmAction(" Are you sure?") {
+			fmt.Println("\n ↩ Deletion canceled.")
 			return nil
 		}
 
@@ -88,7 +88,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(locWord))
+		fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(locWord))
 
 		return nil
 	},

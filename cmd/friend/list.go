@@ -83,7 +83,7 @@ var ListCommand = &cli.Command{
 		})
 
 		if len(friends) == 0 {
-			log.Info("No friends found")
+			log.Info("No friends found for given query.")
 			return nil
 		}
 

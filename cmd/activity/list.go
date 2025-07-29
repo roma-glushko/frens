@@ -25,6 +25,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/roma-glushko/frens/internal/lang"
+	"github.com/roma-glushko/frens/internal/log"
 
 	"github.com/urfave/cli/v2"
 )
@@ -94,7 +95,7 @@ var ListCommand = &cli.Command{
 		})
 
 		if len(activity) == 0 {
-			fmt.Println("No activities found")
+			log.Info("No activities found for given query.")
 			return nil
 		}
 

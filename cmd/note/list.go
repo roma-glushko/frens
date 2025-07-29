@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/log"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/log/formatter"
 
@@ -94,7 +96,7 @@ var ListCommand = &cli.Command{
 		})
 
 		if len(notes) == 0 {
-			fmt.Println("No notes found")
+			log.Info("No notes found")
 			return nil
 		}
 
