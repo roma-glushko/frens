@@ -53,7 +53,7 @@ var ListCommand = &cli.Command{
 			Value:   "alpha",
 			Usage:   "Sort by one of alpha, activities, recency",
 			Action: func(c *cli.Context, s string) error {
-				return friend.ValidateSortOption(s)
+				return friend.ValidateEntitySortOption(s)
 			},
 		},
 		&cli.BoolFlag{

@@ -205,7 +205,11 @@ var BotCommand = &cli.Command{
 
 			q.Type = friend.EventTypeNote
 
-			notes := jr.ListEvents(q)
+			notes, err := jr.ListEvents(q)
+
+			if err != nil {
+				return c.Send(fmt.Sprintf("Failed to list notes: %v", err))
+			}
 
 			if len(notes) == 0 {
 				return c.Send("No notes found matching your query.")
@@ -238,7 +242,11 @@ var BotCommand = &cli.Command{
 
 			q.Type = friend.EventTypeActivity
 
-			activities := jr.ListEvents(q)
+			activities, err := jr.ListEvents(q)
+
+			if err != nil {
+				return c.Send(fmt.Sprintf("Failed to list activities: %v", err))
+			}
 
 			if len(activities) == 0 {
 				return c.Send("No activities found matching your query.")

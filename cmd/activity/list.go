@@ -57,10 +57,10 @@ var ListCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:    "sort",
 			Aliases: []string{"s"},
-			Value:   "alpha",
-			Usage:   "Sort by one of alpha, recency",
+			Value:   "recency",
+			Usage:   "Sort by one of: recency, alpha",
 			Action: func(c *cli.Context, s string) error {
-				return friend.ValidateSortOption(s)
+				return friend.ValidateEventSortOption(s)
 			},
 		},
 		&cli.BoolFlag{
@@ -81,7 +81,7 @@ var ListCommand = &cli.Command{
 			orderBy = friend.SortOrderReverse
 		}
 
-		activity := jr.ListEvents(friend.ListEventQuery{
+		activity, err := jr.ListEvents(friend.ListEventQuery{
 			Type:      friend.EventTypeActivity,
 			Keyword:   strings.TrimSpace(c.String("search")),
 			Tags:      c.StringSlice("tag"),
@@ -90,6 +90,10 @@ var ListCommand = &cli.Command{
 			SortBy:    friend.SortOption(c.String("sort")),
 			SortOrder: orderBy,
 		})
+
+		if err != nil {
+			return fmt.Errorf("failed to list activities: %w", err)
+		}
 
 		if len(activity) == 0 {
 			log.Info("No activities found for given query.")

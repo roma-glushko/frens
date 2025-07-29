@@ -542,14 +542,21 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	return j.AddEvent(n)
 }
 
-func (j *Journal) ListEvents(q friend.ListEventQuery) []*friend.Event { //nolint:cyclop
-	notes := make([]*friend.Event, 0, 10)
+func (j *Journal) ListEvents(q friend.ListEventQuery) ([]*friend.Event, error) { //nolint:cyclop
+	events := make([]*friend.Event, 0, 10)
 
-	for _, note := range j.Notes {
-		if q.Type != note.Type {
-			continue
-		}
+	var source *[]*friend.Event
 
+	switch q.Type {
+	case friend.EventTypeActivity:
+		source = &j.Activities
+	case friend.EventTypeNote:
+		source = &j.Notes
+	default:
+		return events, fmt.Errorf("unknown event type: %s", q.Type)
+	}
+
+	for _, note := range *source {
 		if q.Keyword != "" &&
 			!strings.Contains(strings.ToLower(note.Desc), strings.ToLower(q.Keyword)) {
 			continue
@@ -567,33 +574,33 @@ func (j *Journal) ListEvents(q friend.ListEventQuery) []*friend.Event { //nolint
 			continue
 		}
 
-		notes = append(notes, note)
+		events = append(events, note)
 	}
 
-	if len(notes) == 0 {
-		return notes
+	if len(events) == 0 {
+		return events, nil
 	}
 
-	sort.SliceStable(notes, func(i, j int) bool {
+	sort.SliceStable(events, func(i, j int) bool {
 		switch q.SortBy { //nolint:exhaustive
 		case friend.SortAlpha:
 			if q.SortOrder == friend.SortOrderReverse {
-				return strings.ToLower(notes[i].Desc) > strings.ToLower(notes[j].Desc)
+				return strings.ToLower(events[i].Desc) > strings.ToLower(events[j].Desc)
 			}
 
-			return strings.ToLower(notes[i].Desc) < strings.ToLower(notes[j].Desc)
+			return strings.ToLower(events[i].Desc) < strings.ToLower(events[j].Desc)
 		case friend.SortRecency:
 			if q.SortOrder == friend.SortOrderReverse {
-				return notes[i].Date.After(notes[j].Date)
+				return events[i].Date.After(events[j].Date)
 			}
 
-			return notes[i].Date.Before(notes[j].Date)
+			return events[i].Date.Before(events[j].Date)
 		default:
 			return false
 		}
 	})
 
-	return notes
+	return events, nil
 }
 
 func (j *Journal) RemoveEvents(t friend.EventType, toRemove []*friend.Event) {

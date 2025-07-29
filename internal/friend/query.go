@@ -28,16 +28,21 @@ const (
 	SortRecency    SortOption = "recency"
 )
 
-var SortOptions = []SortOption{
+var EntitySortOptions = []SortOption{
 	SortAlpha,
 	SortActivities,
 	SortRecency,
 }
 
-func ValidateSortOption(s string) error {
-	validOpts := make([]string, 0, len(SortOptions))
+var EventSortOptions = []SortOption{
+	SortAlpha,
+	SortRecency,
+}
 
-	for _, sortOpt := range SortOptions {
+func ValidateEntitySortOption(s string) error {
+	validOpts := make([]string, 0, len(EntitySortOptions))
+
+	for _, sortOpt := range EntitySortOptions {
 		opt := string(sortOpt)
 
 		validOpts = append(validOpts, opt)
@@ -48,7 +53,27 @@ func ValidateSortOption(s string) error {
 	}
 
 	return fmt.Errorf(
-		"invalid sort value '%s' (valid: %s)",
+		"invalid sort value '%s' (supported: %s)",
+		s,
+		strings.Join(validOpts, ", "),
+	)
+}
+
+func ValidateEventSortOption(s string) error {
+	validOpts := make([]string, 0, len(EventSortOptions))
+
+	for _, sortOpt := range EventSortOptions {
+		opt := string(sortOpt)
+
+		validOpts = append(validOpts, opt)
+
+		if s == opt {
+			return nil
+		}
+	}
+
+	return fmt.Errorf(
+		"invalid event sort value '%s' (supported: %s)",
 		s,
 		strings.Join(validOpts, ", "),
 	)
