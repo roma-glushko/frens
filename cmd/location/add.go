@@ -51,6 +51,10 @@ var AddCommand = &cli.Command{
 	`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
+			Name:  "id",
+			Usage: "Location's unique identifier (used for linking with other data, editing, etc.)",
+		},
+		&cli.StringFlag{
 			Name:    "name",
 			Aliases: []string{"n"},
 			Usage:   "Name of the location",
@@ -110,11 +114,16 @@ var AddCommand = &cli.Command{
 		}
 
 		// apply CLI flags
+		id := ctx.String("id")
 		name := ctx.String("name")
 		country := ctx.String("country")
 		desc := ctx.String("desc")
 		aliases := ctx.StringSlice("alias")
 		tags := ctx.StringSlice("tag")
+
+		if id != "" {
+			l.ID = id
+		}
 
 		if name != "" {
 			l.Name = name

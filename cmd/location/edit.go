@@ -40,6 +40,10 @@ var EditCommand = &cli.Command{
 	ArgsUsage: `<LOCATION_NAME, LOCATION_NICKNAME, LOCATION_ID>`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
+			Name:  "id",
+			Usage: "Location's unique identifier (used for linking with other data, editing, etc.)",
+		},
+		&cli.StringFlag{
 			Name:    "name",
 			Aliases: []string{"n"},
 			Usage:   "Set location's name",
@@ -95,9 +99,18 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
+		id := ctx.String("id")
 		name := ctx.String("name")
 		desc := ctx.String("desc")
 		aliases := ctx.StringSlice("alias")
+
+		if lNew.ID == "" {
+			lNew.ID = lOld.ID
+		}
+
+		if id != "" {
+			lNew.ID = id
+		}
 
 		if name != "" {
 			lNew.Name = name
