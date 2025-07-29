@@ -27,6 +27,7 @@ var Commands = &cli.Command{
 		AddCommand,
 		EditCommand,
 		ListCommand,
+		GraphCommand,
 		DeleteCommand,
 	},
 }
