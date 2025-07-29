@@ -16,21 +16,15 @@ package location
 
 import (
 	"fmt"
-	"os"
 	"strings"
-	"text/tabwriter"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/roma-glushko/frens/internal/friend"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/roma-glushko/frens/internal/lang"
-
 	"github.com/urfave/cli/v2"
 )
-
-var boldNameStyle = lipgloss.NewStyle().Bold(true)
 
 var ListCommand = &cli.Command{
 	Name:    "list",
@@ -92,22 +86,10 @@ var ListCommand = &cli.Command{
 			return nil
 		}
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "📍  Location", "🏷️  Tags")
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
+		fmtr := formatter.LocationTextFormatter{}
 
-		for _, l := range locations {
-			_, _ = fmt.Fprintf(
-				w,
-				"%s\t%s\t%s\n",
-				l.ID,
-				boldNameStyle.Render(l.String()),
-				lang.RenderTags(l.Tags),
-			)
-		}
-
-		_ = w.Flush()
+		o, _ := fmtr.FormatList(locations)
+		fmt.Println(o)
 
 		return nil
 	},

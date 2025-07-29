@@ -19,6 +19,9 @@ import (
 	"fmt"
 	"strings"
 
+	log "github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/log/formatter"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -26,7 +29,6 @@ import (
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/tui"
 
-	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/urfave/cli/v2"
@@ -92,7 +94,7 @@ var AddCommand = &cli.Command{
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 			if _, err := teaUI.Run(); err != nil {
-				log.Error("uh oh", "err", err)
+				log.Errorf("uh oh: %v", err)
 				return err
 			}
 
@@ -108,7 +110,7 @@ var AddCommand = &cli.Command{
 			f, err = lang.ExtractPerson(info)
 
 			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Error("failed to parse friend info", "err", err)
+				log.Errorf("failed to parse friend info: %v", err)
 				return err
 			}
 		}
@@ -153,20 +155,21 @@ var AddCommand = &cli.Command{
 		jr := jctx.Journal
 
 		err = journaldir.Update(jr, func(l *journal.Journal) error {
-			l.AddFriend(f)
+			l.AddFriend(&f)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("✅ Added new friend: " + f.String())
-		if len(f.Locations) > 0 {
-			fmt.Println("📍 Locations: " + strings.Join(f.Locations, ", "))
-		}
-		if len(f.Tags) > 0 {
-			fmt.Println("🏷️ Tags: " + strings.Join(f.Tags, ", "))
-		}
+		log.Info(" ✔ Friend added\n")
+		log.Info("==> Friend Information\n")
+		// log.PrintEntity(f)
+
+		fmtr := formatter.PersonTextFormatter{}
+
+		o, _ := fmtr.FormatSingle(f)
+		fmt.Println(o)
 
 		return nil
 	},

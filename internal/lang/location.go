@@ -143,7 +143,7 @@ func RenderLocation(l friend.Location) string {
 		sb.WriteString(RenderTags(l.Tags))
 	}
 
-	if l.ID == "" {
+	if l.ID != "" {
 		sb.WriteString(" ")
 		sb.WriteString(RenderProps(locProps{ID: l.ID}))
 	}

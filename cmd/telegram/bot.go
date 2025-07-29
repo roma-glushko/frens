@@ -277,7 +277,7 @@ var BotCommand = &cli.Command{
 			}
 
 			err = journaldir.Update(jr, func(l *journal.Journal) error {
-				l.AddFriend(f)
+				l.AddFriend(&f)
 				return nil
 			})
 			if err != nil {
@@ -319,7 +319,7 @@ var BotCommand = &cli.Command{
 			}
 
 			err = journaldir.Update(jr, func(j *journal.Journal) error {
-				j.AddLocation(l)
+				j.AddLocation(&l)
 				return nil
 			})
 			if err != nil {
@@ -417,6 +417,22 @@ var BotCommand = &cli.Command{
 			}
 
 			return c.Send(sb.String())
+		})
+
+		bot.Handle("/edit", func(c tele.Context) error {
+			// Assume person is selected; in real bot use DB lookup
+			// personID := "person_123"
+			// editMgr.BeginEdit(c.Sender().ID, personID)
+
+			markup := &tele.ReplyMarkup{}
+			btnName := markup.Data("✏️ Name", "edit_name")
+			btnDesc := markup.Data("📝 Desc", "edit_desc")
+			btnTags := markup.Data("🏷️ Tags", "edit_tags")
+			btnLoc := markup.Data("📍 Location", "edit_location")
+
+			markup.Inline(markup.Row(btnName, btnDesc), markup.Row(btnTags, btnLoc))
+
+			return c.Send("What field do you want to edit?", markup)
 		})
 
 		go func() {

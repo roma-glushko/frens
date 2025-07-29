@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/charmbracelet/log"
 
@@ -76,16 +77,16 @@ var DeleteCommand = &cli.Command{
 		}
 
 		actWord := utils.P(len(events), "note", "notes")
-		fmt.Printf("🔍 Found %d %s:\n", len(events), actWord)
+		fmt.Printf("\n Found %d %s:\n\n", len(events), actWord)
 
 		for _, act := range events {
-			fmt.Printf("   • %s\n", act.ID)
+			fmt.Printf(" • [%s] %s\n", act.ID, formatter.CutStr(act.Desc, 80))
 		}
 
 		// TODO: check if interactive mode
-		fmt.Println("\n⚠️  You're about to permanently delete the " + actWord + ".")
-		if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
-			fmt.Println("\n↩️  Deletion canceled.")
+		fmt.Println("\n You're about to permanently delete the " + actWord + ".")
+		if !c.Bool("force") && !tui.ConfirmAction(" Are you sure?") {
+			fmt.Println("\n ↩ Deletion canceled.")
 			return nil
 		}
 
@@ -97,7 +98,7 @@ var DeleteCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(actWord))
+		fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(actWord))
 
 		return nil
 	},

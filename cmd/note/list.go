@@ -16,21 +16,19 @@ package note
 
 import (
 	"fmt"
-	"os"
 	"strings"
-	"text/tabwriter"
+
+	"github.com/roma-glushko/frens/internal/log"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/roma-glushko/frens/internal/friend"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/roma-glushko/frens/internal/lang"
 
 	"github.com/urfave/cli/v2"
 )
-
-var boldNameStyle = lipgloss.NewStyle().Bold(true)
 
 var ListCommand = &cli.Command{
 	Name:    "list",
@@ -95,26 +93,14 @@ var ListCommand = &cli.Command{
 		})
 
 		if len(notes) == 0 {
-			fmt.Println("No notes found")
+			log.Info("No notes found")
 			return nil
 		}
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "Notes", "🏷️  Tags")
-		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", "", "", "")
+		fmtr := formatter.EventTextFormatter{}
 
-		for _, nt := range notes {
-			_, _ = fmt.Fprintf(
-				w,
-				"%s\t%s\t%s\n",
-				nt.ID,
-				boldNameStyle.Render(nt.Desc),
-				lang.RenderTags(nt.Tags),
-			)
-		}
-
-		_ = w.Flush()
+		o, _ := fmtr.FormatList(notes)
+		fmt.Println(o)
 
 		return nil
 	},

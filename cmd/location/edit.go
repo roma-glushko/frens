@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/log/formatter"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -37,6 +39,10 @@ var EditCommand = &cli.Command{
 	Args:      true,
 	ArgsUsage: `<LOCATION_NAME, LOCATION_NICKNAME, LOCATION_ID>`,
 	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "id",
+			Usage: "Location's unique identifier (used for linking with other data, editing, etc.)",
+		},
 		&cli.StringFlag{
 			Name:    "name",
 			Aliases: []string{"n"},
@@ -93,9 +99,18 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
+		id := ctx.String("id")
 		name := ctx.String("name")
 		desc := ctx.String("desc")
 		aliases := ctx.StringSlice("alias")
+
+		if lNew.ID == "" {
+			lNew.ID = lOld.ID
+		}
+
+		if id != "" {
+			lNew.ID = id
+		}
 
 		if name != "" {
 			lNew.Name = name
@@ -119,14 +134,20 @@ var EditCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			j.UpdateLocation(*lOld, lNew)
+			j.UpdateLocation(lOld, &lNew)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("🔄 Updated location: " + lNew.String())
+		fmt.Println(" ✔ Location updated")
+		log.Info("==> Location Information\n")
+
+		fmtr := formatter.LocationTextFormatter{}
+
+		o, _ := fmtr.FormatSingle(lNew)
+		fmt.Println(o)
 
 		return nil
 	},

@@ -109,6 +109,48 @@ func TestExtractLocation(t *testing.T) {
 	}
 }
 
+func TestRenderLocation(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		title string
+		loc   friend.Location
+		want  string
+	}{
+		{
+			title: "Location with all information",
+			loc: friend.Location{
+				Name:    "Scranton",
+				Country: "USA",
+				Aliases: []string{"The Electric City"},
+				Desc:    "Branch of Dunder Mifflin",
+				Tags:    []string{"office", "dunderm"},
+			},
+			want: "Scranton, USA (a.k.a. The Electric City) :: Branch of Dunder Mifflin #dunderm #office",
+		},
+		{
+			title: "Location with ID",
+			loc: friend.Location{
+				ID:      "nyc",
+				Name:    "New York City",
+				Country: "USA",
+				Aliases: []string{"NYC", "The City of Love"},
+				Desc:    "HQ of Dunder Mifflin",
+				Tags:    []string{"office", "dunderm"},
+			},
+			want: "New York City, USA (a.k.a. NYC, The City of Love) :: HQ of Dunder Mifflin #dunderm #office $id:nyc",
+		},
+	}
+
+	for _, tt := range testcases {
+		t.Run(tt.title, func(t *testing.T) {
+			locInfo := RenderLocation(tt.loc)
+
+			require.Equal(t, tt.want, locInfo)
+		})
+	}
+}
+
 func TestExtractLocationQuery(t *testing.T) {
 	t.Parallel()
 
