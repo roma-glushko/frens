@@ -17,38 +17,40 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/roma-glushko/frens/cmd/telegram"
 
 	"github.com/roma-glushko/frens/internal/journaldir"
 
-	"github.com/charmbracelet/log"
 	"github.com/mattn/go-isatty"
-	"github.com/muesli/termenv"
 	"github.com/roma-glushko/frens/cmd/activity"
 	"github.com/roma-glushko/frens/cmd/friend"
 	"github.com/roma-glushko/frens/cmd/journal"
 	"github.com/roma-glushko/frens/cmd/location"
 	"github.com/roma-glushko/frens/cmd/note"
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/version"
 	"github.com/urfave/cli/v2"
 )
 
-func InitLogging(debugLevel bool) {
-	log.SetOutput(os.Stdout)
-	log.SetPrefix(version.AppName)
-	log.SetLevel(log.InfoLevel)
-	log.SetReportTimestamp(false)
-	log.SetColorProfile(termenv.TrueColor)
+func InitLogging(verbose bool, quiet bool) {
+	level := log.LogLevelStandard
 
-	if debugLevel {
-		log.SetLevel(log.DebugLevel)
-		log.SetReportTimestamp(true)
-		log.SetTimeFormat(time.Kitchen)
-		log.SetReportCaller(true)
+	if verbose {
+		level = log.LogLevelVerbose
 	}
+
+	if quiet {
+		level = log.LogLevelQuiet
+	}
+
+	if verbose && quiet {
+		level = log.LogLevelStandard
+		log.Warn("cannot set both verbose and quiet modes at the same time, ignoring both flags")
+	}
+
+	log.SetLevel(level)
 }
 
 const Copyright = `2025-Present, Roma Hlushko & Friends (c)`
@@ -65,7 +67,12 @@ func NewApp() cli.App {
 			&cli.BoolFlag{
 				Name:    "debug",
 				Aliases: []string{"d"},
-				Usage:   "set verbose level",
+				Usage:   "enable verbose output",
+			},
+			&cli.BoolFlag{
+				Name:    "quiet",
+				Aliases: []string{"q"},
+				Usage:   "enable quiet output",
 			},
 			&cli.BoolFlag{
 				Name:    "interactive",
@@ -81,13 +88,16 @@ func NewApp() cli.App {
 		},
 		Before: func(ctx *cli.Context) error {
 			debugLevel := ctx.Bool("debug")
+			quietLevel := ctx.Bool("quiet")
 
-			InitLogging(debugLevel)
+			InitLogging(debugLevel, quietLevel)
 
 			jDir, err := journaldir.Dir(ctx.String("journal"))
 			if err != nil {
 				return fmt.Errorf("could not load journal directory from %s: %v", jDir, err)
 			}
+
+			log.Debugf(" Using journal directory: %s", jDir)
 
 			jCtx := jctx.AppContext{
 				JournalDir: jDir,

@@ -88,6 +88,7 @@ func RenderProps[T any](props T) string {
 			continue
 		}
 
+		sb.WriteString("$")
 		sb.WriteString(key)
 		sb.WriteString(":")
 		sb.WriteString(value.String())

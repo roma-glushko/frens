@@ -71,7 +71,7 @@ func TestPersonParser(t *testing.T) {
 	}
 }
 
-func TestPersonFormatter(t *testing.T) {
+func TestRenderPersonInfo(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
@@ -89,6 +89,16 @@ func TestPersonFormatter(t *testing.T) {
 				Tags:      []string{"office"},
 			},
 			want: "Michael Harry Scott (a.k.a. The World's Best Boss, Mike) :: my Dunder Mifflin boss @Scranton #office",
+		},
+		{
+			title: "Person with props",
+			person: friend.Person{
+				ID:        "toby",
+				Name:      "Toby Flenderson",
+				Desc:      "HR at Dunder Mifflin",
+				Nicknames: []string{"Toby"},
+			},
+			want: "Toby Flenderson (a.k.a. Toby) :: HR at Dunder Mifflin $id:toby",
 		},
 	}
 

@@ -18,15 +18,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/log/formatter"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -72,7 +74,7 @@ var EditCommand = &cli.Command{
 		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 		if _, err := teaUI.Run(); err != nil {
-			log.Error("uh oh", "err", err)
+			log.Errorf("uh oh: %v", err)
 			return err
 		}
 
@@ -99,7 +101,12 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Println("🔄 Updated note: " + actNew.ID)
+		log.Info(" ✔ Note Updated")
+		log.Info("==> Note Information\n")
+
+		fmtr := formatter.EventTextFormatter{}
+		o, _ := fmtr.FormatSingle(actNew)
+		fmt.Println(o)
 
 		return nil
 	},

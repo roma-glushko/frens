@@ -12,27 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package log
 
 import (
-	"strings"
-
-	"github.com/roma-glushko/frens/internal/log"
-	"github.com/urfave/cli/v2"
+	"encoding/json"
+	"fmt"
+	"io"
 )
 
-var ZenCommand = &cli.Command{
-	Name:  "zen",
-	Usage: "Print the zen of friendship",
-	Action: func(_ *cli.Context) error {
-		var sb strings.Builder
+type OutputHandler = func(w io.Writer, data any)
 
-		sb.WriteString("The Zen of Friendship:\n")
-		sb.WriteString(" • Treat others as you would like them to treat you.\n")
-		sb.WriteString(" • You should \"buy\" yourself a friend.\n")
+func TextOutputHandler(w io.Writer, data any) {
+	_, _ = fmt.Fprintln(w, data)
+}
 
-		log.Info(sb.String())
+func JSONOutputHandler(w io.Writer, data any) {
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		_, _ = fmt.Fprintf(w, "Error formatting JSON output: %v\n", err)
+		return
+	}
 
-		return nil
-	},
+	_, _ = fmt.Fprintln(w, string(jsonData))
 }
