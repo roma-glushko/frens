@@ -19,6 +19,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/roma-glushko/frens/internal/tag"
+
 	"github.com/roma-glushko/frens/internal/friend"
 
 	"github.com/markusmobius/go-dateparser"
@@ -26,7 +28,10 @@ import (
 
 var Separator = "::"
 
-var FormatDateInfo = "[LABEL ::] DATE [$cal:gregorian|hebrew]"
+var FormatDateInfo = fmt.Sprintf(
+	"DATE [:: DESCRIPTION] [%s] [$cal:gregorian|hebrew]",
+	FormatTags,
+)
 
 // ExtractDate parses a free-form & relative date string and returns a time.Time object.
 // If some parts of the timestamp are missing, it will assume the current year, month, and day, etc.
@@ -53,41 +58,28 @@ type dateProps struct {
 	Calendar string `frentxt:"cal"`
 }
 
-func ParseExactDate(s string) (time.Time, error) {
-	timeMarker := time.Time{}
-	c := dateparser.Configuration{
-		CurrentTime: timeMarker,
-	} // empty date as default, so we can infer which parts of the date are missing
-
-	parsedDate, err := dateparser.Parse(&c, s)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("failed to parse date: %w", err)
-	}
-
-	return parsedDate.Time, nil
-}
-
 func ExtractDateInfo(s string) (*friend.Date, error) {
 	props, err := ExtractProps[dateProps](s)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse date properties: %w", err)
 	}
 
+	tags := tag.Tags(ExtractTags(s)).ToNames()
+
+	s = RemoveTags(s)
 	s = RemoveProps(s)
 
 	parts := strings.SplitN(s, Separator, 2)
 
-	var label string
-
-	var dateExpr string
+	var dateExpr, desc string
 
 	if len(parts) == 0 {
 		return nil, fmt.Errorf("invalid date info format, expected format: %s", FormatDateInfo)
 	}
 
 	if len(parts) == 2 {
-		label = strings.TrimSpace(parts[0])
-		dateExpr = strings.TrimSpace(parts[1])
+		dateExpr = strings.TrimSpace(parts[0])
+		desc = strings.TrimSpace(parts[1])
 	} else {
 		dateExpr = strings.TrimSpace(parts[0])
 	}
@@ -109,8 +101,38 @@ func ExtractDateInfo(s string) (*friend.Date, error) {
 	}
 
 	return &friend.Date{
-		Label:    label,
-		DateExpr: dateExpr,
 		Calendar: cal,
+		DateExpr: dateExpr,
+		Desc:     desc,
+		Tags:     tags,
 	}, nil
+}
+
+func RenderDateInfo(d *friend.Date) string {
+	if d == nil {
+		return ""
+	}
+
+	var sb strings.Builder
+
+	sb.WriteString(d.DateExpr)
+
+	if d.Desc != "" {
+		sb.WriteString(" ")
+		sb.WriteString(d.Desc)
+	}
+
+	if len(d.Tags) > 0 {
+		sb.WriteString(" ")
+		sb.WriteString(RenderTags(d.Tags))
+	}
+
+	if d.Calendar != friend.CalendarGregorian {
+		sb.WriteString(" ")
+		sb.WriteString(RenderProps[dateProps](
+			dateProps{Calendar: d.Calendar},
+		))
+	}
+
+	return sb.String()
 }

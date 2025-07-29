@@ -35,9 +35,9 @@ var AddCommand = &cli.Command{
 	Name:      "add",
 	Aliases:   []string{"a", "new", "create"},
 	Usage:     "Add a new date to a friend",
-	UsageText: "frens friend dates add [OPTIONS] [INFO]",
+	UsageText: "frens friend dates add [OPTIONS] <FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID> [INFO]",
 	Args:      true,
-	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID> <INFO>
+	ArgsUsage: `<INFO>
 		If no arguments are provided, a textarea will be shown to fill in the details interactively.
 		Otherwise, the information will be parsed from the command options.
 		
@@ -50,9 +50,8 @@ var AddCommand = &cli.Command{
 	`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:    "label",
-			Aliases: []string{"l"},
-			Usage:   "Label for the date (e.g., birthday, anniversary)",
+			Name:  "desc",
+			Usage: "Description of the date",
 		},
 		&cli.StringFlag{
 			Name:    "date",
@@ -63,6 +62,11 @@ var AddCommand = &cli.Command{
 			Name:    "calendar",
 			Aliases: []string{"cal"},
 			Usage:   "Calendar type to use for the date (e.g., gregorian, hebrew)",
+		},
+		&cli.StringSliceFlag{
+			Name:    "tag",
+			Aliases: []string{"t"},
+			Usage:   "Add tags to the date (e.g., 'birthday', 'anniversary')",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
@@ -111,12 +115,13 @@ var AddCommand = &cli.Command{
 		}
 
 		// apply CLI flags
-		label := ctx.String("label")
+		desc := ctx.String("desc")
 		dateExpr := ctx.String("date")
 		calendar := ctx.String("calendar") // TODO: parse and validate calendar
+		tags := ctx.StringSlice("tag")
 
-		if label != "" {
-			d.Label = label
+		if desc != "" {
+			d.Desc = desc
 		}
 
 		if dateExpr != "" {
@@ -125,6 +130,10 @@ var AddCommand = &cli.Command{
 
 		if calendar != "" {
 			d.Calendar = calendar
+		}
+
+		if len(tags) > 0 {
+			d.Tags = tags
 		}
 
 		if err := d.Validate(); err != nil {
@@ -141,7 +150,7 @@ var AddCommand = &cli.Command{
 		}
 
 		log.Info(" ✔ Date added")
-		log.Infof("  %s: %s", d.Label, d.DateExpr)
+		log.Infof("  %s: %s", d.DateExpr, d.Desc) // TODO: improve this output
 
 		return nil
 	},

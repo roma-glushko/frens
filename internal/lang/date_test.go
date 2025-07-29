@@ -26,37 +26,39 @@ import (
 func TestExtractDate(t *testing.T) {
 	t.Parallel()
 
+	n := time.Now().UTC()
+
 	tests := []struct {
 		dateStr string
 		date    time.Time
 	}{
 		{
 			dateStr: "a min ago",
-			date:    time.Now().Add(-1 * time.Minute),
+			date:    n.Add(-1 * time.Minute),
 		},
 		{
 			dateStr: "yesterday",
-			date:    time.Now().Add(-24 * time.Hour),
+			date:    n.Add(-24 * time.Hour),
 		},
 		{
 			dateStr: "2 days ago",
-			date:    time.Now().Add(-2 * 24 * time.Hour),
+			date:    n.Add(-2 * 24 * time.Hour),
 		},
 		{
 			dateStr: "3 weeks ago",
-			date:    time.Now().Add(-3 * 7 * 24 * time.Hour),
+			date:    n.Add(-3 * 7 * 24 * time.Hour),
 		},
 		{
 			dateStr: "a year ago",
-			date:    time.Now().Add(-1 * 365 * 24 * time.Hour),
+			date:    n.Add(-1 * 365 * 24 * time.Hour),
 		},
 		{
 			dateStr: "Apr 1st",
-			date:    time.Date(time.Now().Year(), time.April, 1, 0, 0, 0, 0, time.UTC),
+			date:    time.Date(n.Year(), time.April, 1, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			dateStr: "9/11",
-			date:    time.Date(time.Now().Year(), time.September, 11, 0, 0, 0, 0, time.UTC),
+			date:    time.Date(n.Year(), time.September, 11, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			dateStr: "1967-07-30",
@@ -64,18 +66,18 @@ func TestExtractDate(t *testing.T) {
 		},
 		{
 			dateStr: "March 21st",
-			date:    time.Date(time.Now().Year(), time.March, 21, 0, 0, 0, 0, time.UTC),
+			date:    time.Date(n.Year(), time.March, 21, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			dateStr: "tomorrow",
-			date:    time.Now().Add(24 * time.Hour),
+			date:    n.Add(24 * time.Hour),
 		},
 		{
 			dateStr: "today 5pm",
 			date: time.Date(
-				time.Now().Year(),
-				time.Now().Month(),
-				time.Now().Day(),
+				n.Year(),
+				n.Month(),
+				n.Day(),
 				17,
 				0,
 				0,
@@ -89,7 +91,7 @@ func TestExtractDate(t *testing.T) {
 		},
 		{
 			dateStr: "1991",
-			date:    time.Date(1991, time.January, 1, 0, 0, 0, 0, time.UTC),
+			date:    time.Date(1991, n.Month(), n.Day(), 0, 0, 0, 0, time.UTC),
 		},
 	}
 
@@ -103,19 +105,24 @@ func TestExtractDate(t *testing.T) {
 }
 
 func TestExtractDateInfo(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
+		name     string
 		input    string
 		expected friend.Date
 	}{
 		{
-			input: "birthday :: May 13th",
+			name:  "date & desc",
+			input: "May 13th :: birthday",
 			expected: friend.Date{
-				Label:    "birthday",
 				DateExpr: "May 13th",
+				Desc:     "birthday",
 				Calendar: friend.CalendarGregorian,
 			},
 		},
 		{
+			name:  "just date",
 			input: "Jul 30 1996",
 			expected: friend.Date{
 				DateExpr: "Jul 30 1996",
@@ -123,11 +130,22 @@ func TestExtractDateInfo(t *testing.T) {
 			},
 		},
 		{
-			input: "birthday :: Av 16 5784 $cal:hebrew",
+			name:  "date & desc & cal",
+			input: "Av 16 5784 :: birthday   $cal:hebrew",
 			expected: friend.Date{
-				Label:    "birthday",
-				DateExpr: "Av 16 5784",
 				Calendar: friend.CalendarHebrew,
+				DateExpr: "Av 16 5784",
+				Desc:     "birthday",
+			},
+		},
+		{
+			name:  "date & desc & tags",
+			input: "Jul 30 :: birthday #bday",
+			expected: friend.Date{
+				Calendar: friend.CalendarGregorian,
+				DateExpr: "Jul 30",
+				Desc:     "birthday",
+				Tags:     []string{"bday"},
 			},
 		},
 	}
@@ -137,41 +155,10 @@ func TestExtractDateInfo(t *testing.T) {
 			result, err := ExtractDateInfo(tt.input)
 			require.NoError(t, err)
 
-			require.Equal(t, tt.expected.Label, result.Label)
-			require.Equal(t, tt.expected.DateExpr, result.DateExpr)
 			require.Equal(t, tt.expected.Calendar, result.Calendar)
-		})
-	}
-}
-
-func TestParseExactDate(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected time.Time
-	}{
-		{
-			input:    "2023-10-01",
-			expected: time.Date(2023, 10, 1, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			input:    "March 21st",
-			expected: time.Date(1, time.March, 21, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			input:    "1996",
-			expected: time.Date(1, time.March, 21, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			input:    "Dec 1984",
-			expected: time.Date(1, time.December, 21, 0, 0, 0, 0, time.UTC),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			result, err := ParseExactDate(tt.input)
-			require.NoError(t, err)
-			require.Equal(t, tt.expected.UTC(), result.UTC())
+			require.Equal(t, tt.expected.DateExpr, result.DateExpr)
+			require.Equal(t, tt.expected.Desc, result.Desc)
+			require.ElementsMatch(t, tt.expected.Tags, result.Tags)
 		})
 	}
 }

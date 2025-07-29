@@ -14,29 +14,25 @@
 
 package friend
 
-import (
-	"errors"
-)
+import "time"
 
-type Calendar = string
+type Recurrence = string
 
 var (
-	CalendarGregorian Calendar = "gregorian"
-	CalendarHebrew    Calendar = "hebrew"
+	RecurrenceOnce    Recurrence = "once"
+	RecurrenceMonthly Recurrence = "monthly"
+	RecurrenceYearly  Recurrence = "yearly"
 )
 
-type Date struct {
-	ID       string   `toml:"id"`
-	Calendar Calendar `toml:"calendar"`
-	DateExpr string   `toml:"date_expr"`
-	Desc     string   `toml:"desc"`
-	Tags     []string `toml:"tags"`
-}
+type OffsetDirection = string
 
-func (d Date) Validate() error {
-	if d.DateExpr == "" {
-		return errors.New("date expression cannot be empty")
-	}
+var (
+	OffsetDirectionBefore OffsetDirection = "before"
+	OffsetDirectionAfter  OffsetDirection = "after"
+)
 
-	return nil
+type Reminder struct {
+	Recurrence      Recurrence      `toml:"recurrence,omitempty"`
+	OffsetDirection OffsetDirection `toml:"offset_direction,omitempty"`
+	Offset          *time.Duration  `toml:"offset,omitempty"`
 }
