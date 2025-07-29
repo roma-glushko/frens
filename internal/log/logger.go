@@ -81,7 +81,7 @@ func (l *DefaultLogger) Debug(msg string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	if l.Level < LogLevelVerbose {
+	if l.Level > LogLevelVerbose {
 		return
 	}
 
@@ -92,7 +92,7 @@ func (l *DefaultLogger) Debugf(format string, args ...interface{}) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	if l.Level < LogLevelVerbose {
+	if l.Level > LogLevelVerbose {
 		return
 	}
 
