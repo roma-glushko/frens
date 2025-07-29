@@ -45,7 +45,7 @@ func (f EventTextFormatter) FormatSingle(entity any) (string, error) {
 	e, ok := entity.(friend.Event)
 
 	if !ok {
-		return "", fmt.Errorf("expected 'friend.Event'")
+		return "", ErrInvalidEntity
 	}
 
 	date := e.Date.Format("Mon Jan 2, 2006 15:04 MST")
@@ -82,7 +82,7 @@ func (f EventTextFormatter) FormatList(el any) (string, error) {
 	events, ok := el.([]*friend.Event)
 
 	if !ok {
-		return "", fmt.Errorf("expected 'friend.Event'")
+		return "", ErrInvalidEntity
 	}
 
 	var buf bytes.Buffer

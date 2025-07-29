@@ -16,6 +16,7 @@ package formatter
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strings"
 	"text/tabwriter"
@@ -24,6 +25,8 @@ import (
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
 )
+
+var ErrInvalidEntity = errors.New("invalid entity")
 
 func init() {
 	log.RegisterFormatter(log.FormatText, friend.Person{}, PersonTextFormatter{})
@@ -64,7 +67,7 @@ func (p PersonTextFormatter) FormatSingle(e any) (string, error) {
 	person, ok := e.(friend.Person)
 
 	if !ok {
-		return "", fmt.Errorf("expected 'friend.Person'")
+		return "", ErrInvalidEntity
 	}
 
 	var sb strings.Builder
@@ -100,7 +103,7 @@ func (p PersonTextFormatter) FormatList(el any) (string, error) {
 	persons, ok := el.([]*friend.Person)
 
 	if !ok {
-		return "", fmt.Errorf("expected 'friend.Person'")
+		return "", ErrInvalidEntity
 	}
 
 	var buf bytes.Buffer

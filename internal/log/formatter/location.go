@@ -37,7 +37,7 @@ func (l LocationTextFormatter) FormatSingle(e any) (string, error) {
 	location, ok := e.(friend.Location)
 
 	if !ok {
-		return "", fmt.Errorf("expected 'friend.Location'")
+		return "", ErrInvalidEntity
 	}
 
 	var sb strings.Builder
@@ -69,7 +69,7 @@ func (l LocationTextFormatter) FormatList(el any) (string, error) {
 	locations, ok := el.([]*friend.Location)
 
 	if !ok {
-		return "", fmt.Errorf("expected '[]friend.Location'")
+		return "", ErrInvalidEntity
 	}
 
 	var buf bytes.Buffer
