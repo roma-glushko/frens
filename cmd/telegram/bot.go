@@ -206,7 +206,6 @@ var BotCommand = &cli.Command{
 			q.Type = friend.EventTypeNote
 
 			notes, err := jr.ListEvents(q)
-
 			if err != nil {
 				return c.Send(fmt.Sprintf("Failed to list notes: %v", err))
 			}
@@ -243,7 +242,6 @@ var BotCommand = &cli.Command{
 			q.Type = friend.EventTypeActivity
 
 			activities, err := jr.ListEvents(q)
-
 			if err != nil {
 				return c.Send(fmt.Sprintf("Failed to list activities: %v", err))
 			}

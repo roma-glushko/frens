@@ -91,7 +91,6 @@ var ListCommand = &cli.Command{
 			SortBy:    friend.SortOption(c.String("sort")),
 			SortOrder: sortOrder,
 		})
-
 		if err != nil {
 			return fmt.Errorf("failed to list notes: %w", err)
 		}

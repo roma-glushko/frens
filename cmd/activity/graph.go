@@ -16,12 +16,13 @@ package activity
 
 import (
 	"fmt"
+	"strings"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/graph"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/urfave/cli/v2"
-	"strings"
 )
 
 var GraphCommand = &cli.Command{
@@ -64,7 +65,6 @@ var GraphCommand = &cli.Command{
 			SortBy:    friend.SortRecency,
 			SortOrder: friend.SortOrderDirect,
 		})
-
 		if err != nil {
 			return fmt.Errorf("failed to list activities: %w", err)
 		}
