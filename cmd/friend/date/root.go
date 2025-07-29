@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dates
+package date
 
 import (
 	"github.com/urfave/cli/v2"
 )
 
 var Commands = &cli.Command{
-	Name:        "dates",
-	Aliases:     []string{"dt", "date"},
+	Name:        "date",
+	Aliases:     []string{"dt"},
 	Usage:       "Manage your friend's important dates",
-	UsageText:   "frens friend dates [command] [options]",
+	UsageText:   "frens friend date [command] [options]",
 	Description: `Important dates lets you keep track of your friend's birthdays, anniversaries, and other significant events.`,
 	Subcommands: []*cli.Command{
 		AddCommand,

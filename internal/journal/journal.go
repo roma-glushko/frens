@@ -140,6 +140,60 @@ func (j *Journal) GetFriend(q string) (*friend.Person, error) {
 	return m.Entities[0], nil
 }
 
+func (j *Journal) ListFriends(q friend.ListFriendQuery) []*friend.Person { //nolint:cyclop
+	fl := make([]*friend.Person, 0, 10)
+
+	for _, f := range j.Friends {
+		if q.Keyword != "" &&
+			!strings.Contains(strings.ToLower(f.Name), strings.ToLower(q.Keyword)) &&
+			!strings.Contains(strings.ToLower(f.Desc), strings.ToLower(q.Keyword)) {
+			continue
+		}
+
+		if len(q.Locations) > 0 && !f.HasLocations(q.Locations) {
+			continue
+		}
+
+		if len(q.Tags) > 0 && !tag.HasTags(f, q.Tags) {
+			continue
+		}
+
+		fl = append(fl, f)
+	}
+
+	if len(fl) == 0 {
+		return fl
+	}
+
+	// sort by and order by friends
+	sort.SliceStable(fl, func(i, j int) bool {
+		switch q.SortBy {
+		case friend.SortAlpha:
+			if q.SortOrder == friend.SortOrderDirect {
+				return strings.ToLower(fl[i].Name) < strings.ToLower(fl[j].Name)
+			}
+
+			return strings.ToLower(fl[i].Name) > strings.ToLower(fl[j].Name)
+		case friend.SortActivities:
+			if q.SortOrder == friend.SortOrderDirect {
+				return fl[i].Activities < fl[j].Activities
+			}
+
+			return fl[i].Activities > fl[j].Activities
+		case friend.SortRecency:
+			if q.SortOrder == friend.SortOrderDirect {
+				return fl[i].MostRecentActivity.After(fl[j].MostRecentActivity)
+			}
+
+			return fl[i].MostRecentActivity.Before(fl[j].MostRecentActivity)
+		default:
+			return false
+		}
+	})
+
+	return fl
+}
+
 func (j *Journal) UpdateFriend(o, n *friend.Person) {
 	for i, f := range j.Friends {
 		if f.Name == o.Name {
@@ -568,58 +622,21 @@ func (j *Journal) RemoveEvents(t friend.EventType, toRemove []*friend.Event) {
 	}
 }
 
-func (j *Journal) ListFriends(q friend.ListFriendQuery) []*friend.Person { //nolint:cyclop
-	fl := make([]*friend.Person, 0, 10)
-
-	for _, f := range j.Friends {
-		if q.Keyword != "" &&
-			!strings.Contains(strings.ToLower(f.Name), strings.ToLower(q.Keyword)) &&
-			!strings.Contains(strings.ToLower(f.Desc), strings.ToLower(q.Keyword)) {
-			continue
-		}
-
-		if len(q.Locations) > 0 && !f.HasLocations(q.Locations) {
-			continue
-		}
-
-		if len(q.Tags) > 0 && !tag.HasTags(f, q.Tags) {
-			continue
-		}
-
-		fl = append(fl, f)
+func (j *Journal) AddFriendDate(fID string, d *friend.Date) (*friend.Date, error) {
+	f, err := j.GetFriend(fID)
+	if err != nil {
+		return &friend.Date{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
 	}
 
-	if len(fl) == 0 {
-		return fl
+	if d.ID == "" {
+		d.ID = ksuid.New().String()
 	}
 
-	// sort by and order by friends
-	sort.SliceStable(fl, func(i, j int) bool {
-		switch q.SortBy {
-		case friend.SortAlpha:
-			if q.SortOrder == friend.SortOrderDirect {
-				return strings.ToLower(fl[i].Name) < strings.ToLower(fl[j].Name)
-			}
+	f.Dates = append(f.Dates, d)
 
-			return strings.ToLower(fl[i].Name) > strings.ToLower(fl[j].Name)
-		case friend.SortActivities:
-			if q.SortOrder == friend.SortOrderDirect {
-				return fl[i].Activities < fl[j].Activities
-			}
+	j.SetDirty(true)
 
-			return fl[i].Activities > fl[j].Activities
-		case friend.SortRecency:
-			if q.SortOrder == friend.SortOrderDirect {
-				return fl[i].MostRecentActivity.After(fl[j].MostRecentActivity)
-			}
-
-			return fl[i].MostRecentActivity.Before(fl[j].MostRecentActivity)
-		default:
-			return false
-		}
-	})
-
-	return fl
+	return d, nil
 }
 
 func (j *Journal) Stats() Stats {

@@ -18,6 +18,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/roma-glushko/frens/internal/friend"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -60,6 +62,35 @@ func TestExtractDate(t *testing.T) {
 			dateStr: "1967-07-30",
 			date:    time.Date(1967, time.July, 30, 0, 0, 0, 0, time.UTC),
 		},
+		{
+			dateStr: "March 21st",
+			date:    time.Date(time.Now().Year(), time.March, 21, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			dateStr: "tomorrow",
+			date:    time.Now().Add(24 * time.Hour),
+		},
+		{
+			dateStr: "today 5pm",
+			date: time.Date(
+				time.Now().Year(),
+				time.Now().Month(),
+				time.Now().Day(),
+				17,
+				0,
+				0,
+				0,
+				time.UTC,
+			),
+		},
+		{
+			dateStr: "in 3 days",
+			date:    time.Now().Add(3 * 24 * time.Hour),
+		},
+		{
+			dateStr: "1991",
+			date:    time.Date(1991, time.January, 1, 0, 0, 0, 0, time.UTC),
+		},
 	}
 
 	for _, test := range tests {
@@ -67,6 +98,80 @@ func TestExtractDate(t *testing.T) {
 			gotDate := ExtractDate(test.dateStr)
 
 			require.WithinDuration(t, test.date, gotDate, 1*time.Second)
+		})
+	}
+}
+
+func TestExtractDateInfo(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected friend.Date
+	}{
+		{
+			input: "birthday :: May 13th",
+			expected: friend.Date{
+				Label:    "birthday",
+				DateExpr: "May 13th",
+				Calendar: friend.CalendarGregorian,
+			},
+		},
+		{
+			input: "Jul 30 1996",
+			expected: friend.Date{
+				DateExpr: "Jul 30 1996",
+				Calendar: friend.CalendarGregorian,
+			},
+		},
+		{
+			input: "birthday :: Av 16 5784 $cal:hebrew",
+			expected: friend.Date{
+				Label:    "birthday",
+				DateExpr: "Av 16 5784",
+				Calendar: friend.CalendarHebrew,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			result, err := ExtractDateInfo(tt.input)
+			require.NoError(t, err)
+
+			require.Equal(t, tt.expected.Label, result.Label)
+			require.Equal(t, tt.expected.DateExpr, result.DateExpr)
+			require.Equal(t, tt.expected.Calendar, result.Calendar)
+		})
+	}
+}
+
+func TestParseExactDate(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected time.Time
+	}{
+		{
+			input:    "2023-10-01",
+			expected: time.Date(2023, 10, 1, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			input:    "March 21st",
+			expected: time.Date(1, time.March, 21, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			input:    "1996",
+			expected: time.Date(1, time.March, 21, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			input:    "Dec 1984",
+			expected: time.Date(1, time.December, 21, 0, 0, 0, 0, time.UTC),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			result, err := ParseExactDate(tt.input)
+			require.NoError(t, err)
+			require.Equal(t, tt.expected.UTC(), result.UTC())
 		})
 	}
 }

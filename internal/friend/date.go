@@ -14,7 +14,10 @@
 
 package friend
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type Calendar = string
 
@@ -45,7 +48,16 @@ type Reminder struct {
 }
 
 type Date struct {
+	ID       string   `toml:"id"`
 	Label    string   `toml:"label"`
-	Date     string   `toml:"date"`
+	DateExpr string   `toml:"date_expr"`
 	Calendar Calendar `toml:"calendar"`
+}
+
+func (d Date) Validate() error {
+	if d.DateExpr == "" {
+		return errors.New("date expression cannot be empty")
+	}
+
+	return nil
 }

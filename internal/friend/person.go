@@ -45,7 +45,7 @@ type Person struct {
 	Nicknames []string `toml:"nicknames,omitempty"`
 	Tags      []string `toml:"tags,omitempty"`
 	Locations []string `toml:"locations,omitempty"`
-	Reminders []string `toml:"reminders,omitempty"`
+	Dates     []*Date  `toml:"dates,omitempty"`
 	// Cached information
 	Activities         int       `toml:"activities,omitempty"`
 	Notes              int       `toml:"notes,omitempty"`

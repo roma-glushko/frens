@@ -48,7 +48,7 @@ func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 		return friend.Event{}, ErrNoInfo
 	}
 
-	parts := strings.SplitN(s, DescSeparator, 2)
+	parts := strings.SplitN(s, Separator, 2)
 
 	dateStr := ""
 	desc := parts[0]
@@ -88,7 +88,7 @@ func RenderEvent(e *friend.Event) string {
 	if !e.Date.IsZero() {
 		sb.WriteString(e.Date.Format("2006-01-02 15:04:05"))
 		sb.WriteString(" ")
-		sb.WriteString(DescSeparator)
+		sb.WriteString(Separator)
 		sb.WriteString(" ")
 	}
 

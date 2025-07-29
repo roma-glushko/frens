@@ -147,7 +147,7 @@ func RenderPerson(p friend.Person) string {
 
 	if p.Desc != "" {
 		sb.WriteString(" ")
-		sb.WriteString(DescSeparator)
+		sb.WriteString(Separator)
 		sb.WriteString(" ")
 		sb.WriteString(p.Desc)
 	}

@@ -12,23 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dates
+package date
 
 import (
 	"errors"
-	"fmt"
 	"strings"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/roma-glushko/frens/internal/tui"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/lang"
-	"github.com/roma-glushko/frens/internal/tui"
-
-	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
+	"github.com/roma-glushko/frens/internal/lang"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/urfave/cli/v2"
 )
 
@@ -38,7 +37,7 @@ var AddCommand = &cli.Command{
 	Usage:     "Add a new date to a friend",
 	UsageText: "frens friend dates add [OPTIONS] [INFO]",
 	Args:      true,
-	ArgsUsage: `<INFO>
+	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID> <INFO>
 		If no arguments are provided, a textarea will be shown to fill in the details interactively.
 		Otherwise, the information will be parsed from the command options.
 		
@@ -58,7 +57,7 @@ var AddCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:    "date",
 			Aliases: []string{"d"},
-			Usage:   "Date in a free-form format (e.g., 'May 13th', '2009-9-09')",
+			Usage:   "Date in a free-form format (e.g., 'May 13th', '1996-7-30', '1985')",
 		},
 		&cli.StringFlag{
 			Name:    "calendar",
@@ -70,6 +69,19 @@ var AddCommand = &cli.Command{
 		var info string
 
 		if ctx.NArg() == 0 {
+			return cli.Exit("You must provide a friend name, nickname, or ID to add a date.", 1)
+		}
+
+		jctx := jctx.FromCtx(ctx.Context)
+		jr := jctx.Journal
+
+		pID := ctx.Args().First()
+		p, err := jr.GetFriend(pID)
+		if err != nil {
+			return err
+		}
+
+		if ctx.NArg() == 1 {
 			// TODO: also check if we are in the interactive mode
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
 				Title:      "Add a new friend date information:",
@@ -78,81 +90,58 @@ var AddCommand = &cli.Command{
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 			if _, err := teaUI.Run(); err != nil {
-				log.Error("uh oh", "err", err)
+				log.Errorf("uh oh: %v", err)
 				return err
 			}
 
 			info = inputForm.Textarea.Value()
 		} else {
-			info = strings.Join(ctx.Args().Slice(), " ")
+			info = strings.Join(ctx.Args().Slice()[1:], " ")
 		}
 
-		var f friend.Person
-		var err error
+		var d *friend.Date
 
 		if info != "" {
-			f, err = lang.ExtractPerson(info)
+			d, err = lang.ExtractDateInfo(info)
 
 			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Error("failed to parse friend info", "err", err)
+				log.Errorf("failed to parse date info: %v", err)
 				return err
 			}
 		}
 
 		// apply CLI flags
-		id := ctx.String("id")
-		name := ctx.String("name")
-		desc := ctx.String("desc")
-		nicknames := ctx.StringSlice("nickname")
-		tags := ctx.StringSlice("tag")
-		locs := ctx.StringSlice("location")
+		label := ctx.String("label")
+		dateExpr := ctx.String("date")
+		calendar := ctx.String("calendar") // TODO: parse and validate calendar
 
-		if id != "" {
-			f.ID = id
+		if label != "" {
+			d.Label = label
 		}
 
-		if name != "" {
-			f.Name = name
+		if dateExpr != "" {
+			d.DateExpr = dateExpr
 		}
 
-		if desc != "" {
-			f.Desc = desc
+		if calendar != "" {
+			d.Calendar = calendar
 		}
 
-		if len(nicknames) > 0 {
-			f.Nicknames = nicknames
-		}
-
-		if len(tags) > 0 {
-			f.Tags = tags
-		}
-
-		if len(locs) > 0 {
-			f.Locations = locs
-		}
-
-		if err := f.Validate(); err != nil {
+		if err := d.Validate(); err != nil {
 			return err
 		}
 
-		jctx := jctx.FromCtx(ctx.Context)
-		jr := jctx.Journal
+		err = journaldir.Update(jr, func(j *journal.Journal) error {
+			d, err = j.AddFriendDate(p.ID, d)
 
-		err = journaldir.Update(jr, func(l *journal.Journal) error {
-			l.AddFriend(f)
-			return nil
+			return err
 		})
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("✅ Added new friend: " + f.String())
-		if len(f.Locations) > 0 {
-			fmt.Println("📍 Locations: " + strings.Join(f.Locations, ", "))
-		}
-		if len(f.Tags) > 0 {
-			fmt.Println("🏷️ Tags: " + strings.Join(f.Tags, ", "))
-		}
+		log.Info(" ✔ Date added")
+		log.Infof("  %s: %s", d.Label, d.DateExpr)
 
 		return nil
 	},
