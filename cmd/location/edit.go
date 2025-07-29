@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/log/formatter"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -126,7 +128,13 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Println("🔄 Updated location: " + lNew.String())
+		fmt.Println(" ✔ Location updated")
+		log.Info("==> Location Information\n")
+
+		fmtr := formatter.LocationTextFormatter{}
+
+		o, _ := fmtr.FormatSingle(lNew)
+		fmt.Println(o)
 
 		return nil
 	},

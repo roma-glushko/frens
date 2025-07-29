@@ -16,6 +16,7 @@ package friend
 
 import (
 	"fmt"
+
 	"github.com/charmbracelet/lipgloss"
 
 	jctx "github.com/roma-glushko/frens/internal/context"

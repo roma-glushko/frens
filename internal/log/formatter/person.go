@@ -44,6 +44,7 @@ func wrapText(text string, width int) []string {
 			if current != "" {
 				current += " "
 			}
+
 			current += word
 		}
 	}
@@ -82,10 +83,13 @@ func (p PersonTextFormatter) FormatSingle(e any) (string, error) {
 
 	if person.Desc != "" {
 		sb.WriteString("\n")
+
 		wrapped := wrapText(person.Desc, 80)
+
 		for _, line := range wrapped {
 			sb.WriteString(" " + line + "\n")
 		}
+
 		sb.WriteString("\n")
 	}
 

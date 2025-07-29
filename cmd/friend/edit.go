@@ -19,13 +19,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/log/formatter"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/log"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -37,6 +39,10 @@ var EditCommand = &cli.Command{
 	Args:      true,
 	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID>`,
 	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "id",
+			Usage: "Set friend's unique identifier (used for linking with other data, editing, etc.)",
+		},
 		&cli.StringFlag{
 			Name:    "name",
 			Aliases: []string{"n"},
@@ -78,21 +84,30 @@ var EditCommand = &cli.Command{
 		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 		if _, err := teaUI.Run(); err != nil {
-			log.Error("uh oh", "err", err)
+			log.Errorf("uh oh: %v", err)
 			return err
 		}
 
 		infoTxt := inputForm.Textarea.Value()
 
 		if infoTxt == "" {
-			return errors.New("no friend info found")
+			return errors.New("no friend info provided")
 		}
 
 		pNew, err := lang.ExtractPerson(infoTxt)
 
+		id := ctx.String("id")
 		name := ctx.String("name")
 		desc := ctx.String("desc")
 		nicknames := ctx.StringSlice("nickname")
+
+		if pNew.ID == "" {
+			pNew.ID = pOld.ID
+		}
+
+		if id != "" {
+			pNew.ID = id
+		}
 
 		if name != "" {
 			pNew.Name = name
@@ -107,7 +122,7 @@ var EditCommand = &cli.Command{
 		}
 
 		if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-			log.Error("failed to parse friend info", "err", err)
+			log.Errorf(" ✖ failed to parse friend info: %v", err)
 			return err
 		}
 
@@ -123,7 +138,13 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Println("🔄 Updated friend: " + pNew.Name)
+		log.Info(" ✔ Friend updated")
+		log.Info("==> Friend Information\n")
+
+		fmtr := formatter.PersonTextFormatter{}
+
+		o, _ := fmtr.FormatSingle(pNew)
+		fmt.Println(o)
 
 		return nil
 	},

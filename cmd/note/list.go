@@ -25,13 +25,10 @@ import (
 
 	"github.com/roma-glushko/frens/internal/friend"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/roma-glushko/frens/internal/lang"
 
 	"github.com/urfave/cli/v2"
 )
-
-var boldNameStyle = lipgloss.NewStyle().Bold(true)
 
 var ListCommand = &cli.Command{
 	Name:    "list",

@@ -1,6 +1,7 @@
 package log
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -54,7 +55,7 @@ func (l *DefaultLogger) SetOutputHandler(h OutputHandler) error {
 	defer l.mu.Unlock()
 
 	if h == nil {
-		return fmt.Errorf("output handler cannot be nil")
+		return errors.New("output handler cannot be nil")
 	}
 
 	l.OutputHandler = h
