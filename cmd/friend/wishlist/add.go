@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package date
+package wishlist
 
 import (
 	"errors"
+	"fmt"
 	"strings"
+
+	"github.com/roma-glushko/frens/internal/wishlist"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -24,8 +27,8 @@ import (
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
+	//"github.com/roma-glushko/frens/internal/journal"
+	//"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/urfave/cli/v2"
@@ -34,53 +37,57 @@ import (
 var AddCommand = &cli.Command{
 	Name:      "add",
 	Aliases:   []string{"a", "new", "create"},
-	Usage:     "Add a new date to a friend",
-	UsageText: "frens friend date add [OPTIONS] <FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID> [INFO]",
+	Usage:     "Add a new item to friend's wishlist",
+	UsageText: "frens friend wishlist add [OPTIONS] <FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID> [INFO]",
 	Args:      true,
 	ArgsUsage: `<INFO>
 		If no arguments are provided, a textarea will be shown to fill in the details interactively.
 		Otherwise, the information will be parsed from the command options.
 		
 		<INFO> format:
-			` + lang.FormatDateInfo + `
+			` + lang.FormatWishlistItem + `
 
 		For example:
-			"birthday :: May 13th"
-			"anniversary :: 2009-9-09"
+			"https://amazon.com/cool-keyboard #techgift"
+			"Cool mouse #tech #gaming"
 	`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "desc",
-			Usage: "Description of the date",
-		},
-		&cli.StringFlag{
-			Name:    "date",
+			Name:    "desc",
 			Aliases: []string{"d"},
-			Usage:   "Date in a free-form format (e.g., 'May 13th', '1996-7-30', '1985')",
+			Usage:   "Description of the wishlist item",
 		},
 		&cli.StringFlag{
-			Name:    "calendar",
-			Aliases: []string{"cal"},
-			Usage:   "Calendar type to use for the date (e.g., gregorian, hebrew)",
+			Name:    "link",
+			Aliases: []string{"l"},
+			Usage:   "Link to the wishlist item (e.g., product page URL)",
+		},
+		&cli.StringFlag{
+			Name:    "price",
+			Aliases: []string{"p"},
+			Usage:   "Price of the wishlist item (e.g., 29.99USD)",
 		},
 		&cli.StringSliceFlag{
 			Name:    "tag",
 			Aliases: []string{"t"},
-			Usage:   "Add tags to the date (e.g., 'birthday', 'anniversary')",
+			Usage:   "Add tags to the date (e.g., 'gift', 'tech', 'gaming')",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
 		var info string
 
 		if ctx.NArg() == 0 {
-			return cli.Exit("You must provide a friend name, nickname, or ID to add a date.", 1)
+			return cli.Exit(
+				"You must provide a friend name, nickname, or ID to add a wishlist item.",
+				1,
+			)
 		}
 
 		jctx := jctx.FromCtx(ctx.Context)
 		jr := jctx.Journal
 
 		pID := ctx.Args().First()
-		p, err := jr.GetFriend(pID)
+		_, err := jr.GetFriend(pID)
 		if err != nil {
 			return err
 		}
@@ -88,8 +95,8 @@ var AddCommand = &cli.Command{
 		if ctx.NArg() == 1 {
 			// TODO: also check if we are in the interactive mode
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
-				Title:      "Add a new friend date information:",
-				SyntaxHint: lang.FormatDateInfo,
+				Title:      "Add a new friend wishlist item information:",
+				SyntaxHint: lang.FormatWishlistItem,
 			})
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
@@ -103,10 +110,10 @@ var AddCommand = &cli.Command{
 			info = strings.Join(ctx.Args().Slice()[1:], " ")
 		}
 
-		var d *friend.Date
+		var w *friend.WishlistItem
 
 		if info != "" {
-			d, err = lang.ExtractDateInfo(info)
+			w, err = lang.ExtractWishlistItem(info)
 
 			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
 				log.Errorf("failed to parse date info: %v", err)
@@ -116,41 +123,46 @@ var AddCommand = &cli.Command{
 
 		// apply CLI flags
 		desc := ctx.String("desc")
-		dateExpr := ctx.String("date")
-		calendar := ctx.String("calendar") // TODO: parse and validate calendar
+		link := ctx.String("link")
 		tags := ctx.StringSlice("tag")
 
 		if desc != "" {
-			d.Desc = desc
+			w.Desc = desc
 		}
 
-		if dateExpr != "" {
-			d.DateExpr = dateExpr
-		}
-
-		if calendar != "" {
-			d.Calendar = calendar
+		if link != "" {
+			w.Link = link
 		}
 
 		if len(tags) > 0 {
-			d.Tags = tags
+			w.Tags = tags
 		}
 
-		if err := d.Validate(); err != nil {
+		if err := w.Validate(); err != nil {
 			return err
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			d, err = j.AddFriendDate(p.ID, d)
+		urlMan := wishlist.NewURLManager()
 
-			return err
-		})
-		if err != nil {
-			return err
+		if w.Link != "" {
+			pInfo, err := urlMan.Scrape(ctx.Context, w.Link)
+			if err != nil {
+				return fmt.Errorf("failed to scrape product info: %v", err)
+			}
+
+			fmt.Printf("%+v", pInfo)
 		}
 
-		log.Info(" ✔ Date added")
-		log.Infof("  %s: %s", d.DateExpr, d.Desc) // TODO: improve this output
+		//err = journaldir.Update(jr, func(j *journal.Journal) error {
+		//	d, err = j.AddFriendDate(p.ID, d)
+		//
+		//	return err
+		//})
+		//if err != nil {
+		//	return err
+		//}
+		//
+		log.Info(" ✔ Wishlist item added")
 
 		return nil
 	},

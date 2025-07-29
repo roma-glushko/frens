@@ -12,26 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package wishlist
 
 import (
-	"github.com/roma-glushko/frens/cmd/friend/date"
-	"github.com/roma-glushko/frens/cmd/friend/wishlist"
 	"github.com/urfave/cli/v2"
 )
 
 var Commands = &cli.Command{
-	Name:        "friend",
-	Aliases:     []string{"f", "fr"},
-	Usage:       "Manage your friends",
-	UsageText:   "frens friend [command] [options]",
-	Description: `Friends are people you know, interact with, and share experiences. They can be added to activities, locations, and notes.`,
+	Name:        "wishlist",
+	Aliases:     []string{"wish", "wl"},
+	Usage:       "Manage your friend's wishlist",
+	UsageText:   "frens friend wishlist [command] [options]",
+	Description: "Manage your friend's wishlist.",
 	Subcommands: []*cli.Command{
 		AddCommand,
-		EditCommand,
-		ListCommand,
-		DeleteCommand,
-		date.Commands,
-		wishlist.Commands,
 	},
 }
