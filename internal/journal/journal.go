@@ -646,6 +646,108 @@ func (j *Journal) AddFriendDate(fID string, d *friend.Date) (*friend.Date, error
 	return d, nil
 }
 
+func (j *Journal) UpdateFriendDate(o, n *friend.Date) (*friend.Date, error) {
+	n.ID = o.ID
+
+	for _, f := range j.Friends {
+		for i, d := range f.Dates {
+			if d.ID == o.ID {
+				f.Dates[i] = n
+
+				j.SetDirty(true)
+
+				return n, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("date with ID %s not found", o.ID)
+}
+
+func (j *Journal) GetFriendDate(dID string) (*friend.Date, error) {
+	for _, f := range j.Friends {
+		for _, d := range f.Dates {
+			if d.ID == dID {
+				return d, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("date with ID %s not found", dID)
+}
+
+func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]*friend.Date, error) {
+	dates := make([]*friend.Date, 0, 10)
+
+	frs := j.Friends
+
+	if len(q.Friends) > 0 {
+		frs = make([]*friend.Person, 0, len(q.Friends))
+
+		for _, fID := range q.Friends {
+			f, err := j.GetFriend(fID)
+
+			if err != nil {
+				return dates, fmt.Errorf("failed to get friend %s: %w", fID, err)
+			}
+
+			frs = append(frs, f)
+		}
+	}
+
+	for _, f := range frs {
+		for _, d := range f.Dates {
+			if q.Keyword != "" &&
+				!strings.Contains(strings.ToLower(d.Desc), strings.ToLower(q.Keyword)) {
+				continue
+			}
+
+			if len(q.Tags) > 0 && !tag.HasTags(d, q.Tags) {
+				continue
+			}
+
+			dates = append(dates, d)
+		}
+	}
+
+	if len(dates) == 0 {
+		return dates, nil
+	}
+
+	// TODO: sorting by date?
+
+	return dates, nil
+}
+
+func (j *Journal) RemoveFriendDates(toRemove []*friend.Date) error {
+	for _, dID := range toRemove {
+		found := false
+
+		for _, f := range j.Friends {
+			for i, d := range f.Dates {
+				if d.ID == dID.ID {
+					f.Dates = append(f.Dates[:i], f.Dates[i+1:]...)
+					found = true
+
+					j.SetDirty(true)
+
+					break
+				}
+			}
+
+			if found {
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("date with ID %s not found", dID.ID)
+		}
+	}
+
+	return nil
+}
+
 func (j *Journal) Stats() Stats {
 	return Stats{
 		Friends:    len(j.Friends),

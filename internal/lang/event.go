@@ -25,7 +25,8 @@ import (
 
 var (
 	FormatEventInfo = fmt.Sprintf(
-		"[DATE or RELATIVE DATE ::] DESCRIPTION [%s] [%s]",
+		"[DATE or RELATIVE DATE %s] DESCRIPTION [%s] [%s]",
+		Separator,
 		FormatTags,
 		FormatLocationMarkers,
 	)

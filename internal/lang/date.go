@@ -29,7 +29,8 @@ import (
 var Separator = "::"
 
 var FormatDateInfo = fmt.Sprintf(
-	"DATE [:: DESCRIPTION] [%s] [$cal:gregorian|hebrew]",
+	"DATE [%s DESCRIPTION] [%s] [$cal:gregorian|hebrew]",
+	Separator,
 	FormatTags,
 )
 
@@ -119,6 +120,8 @@ func RenderDateInfo(d *friend.Date) string {
 
 	if d.Desc != "" {
 		sb.WriteString(" ")
+		sb.WriteString(Separator)
+		sb.WriteString(" ")
 		sb.WriteString(d.Desc)
 	}
 
@@ -127,7 +130,7 @@ func RenderDateInfo(d *friend.Date) string {
 		sb.WriteString(RenderTags(d.Tags))
 	}
 
-	if d.Calendar != friend.CalendarGregorian {
+	if d.Calendar != "" && d.Calendar != friend.CalendarGregorian {
 		sb.WriteString(" ")
 		sb.WriteString(RenderProps[dateProps](
 			dateProps{Calendar: d.Calendar},

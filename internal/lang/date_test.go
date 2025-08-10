@@ -162,3 +162,46 @@ func TestExtractDateInfo(t *testing.T) {
 		})
 	}
 }
+
+func TestRenderDateInfo(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		date     friend.Date
+		expected string
+	}{
+		{
+			name: "date with description",
+			date: friend.Date{
+				DateExpr: "May 13th",
+				Desc:     "birthday",
+				Calendar: friend.CalendarGregorian,
+			},
+			expected: "May 13th :: birthday",
+		},
+		{
+			name: "date without description",
+			date: friend.Date{
+				DateExpr: "Jul 30 1996",
+				Calendar: friend.CalendarGregorian,
+			},
+			expected: "Jul 30 1996",
+		},
+		{
+			name: "date with description and tags",
+			date: friend.Date{
+				DateExpr: "Jul 30",
+				Desc:     "birthday",
+				Tags:     []string{"bday"},
+			},
+			expected: "Jul 30 :: birthday #bday",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := RenderDateInfo(&tt.date)
+			require.Equal(t, tt.expected, result)
+		})
+	}
+}

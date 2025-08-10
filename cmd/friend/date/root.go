@@ -26,5 +26,8 @@ var Commands = &cli.Command{
 	Description: `Important dates lets you keep track of your friend's birthdays, anniversaries, and other significant events.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
+		EditCommand,
+		ListCommand,
+		DeleteCommand,
 	},
 }

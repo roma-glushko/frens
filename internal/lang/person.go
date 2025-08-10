@@ -26,7 +26,8 @@ import (
 
 var (
 	FormatPersonInfo = fmt.Sprintf(
-		"NAME [(aka NICK1[, NICK2...])] :: DESCRIPTION [%s] [%s] [$id:FRIEND_ID]",
+		"NAME [(aka NICK1[, NICK2...])] %s DESCRIPTION [%s] [%s] [$id:FRIEND_ID]",
+		Separator,
 		FormatTags,
 		FormatLocationMarkers,
 	)

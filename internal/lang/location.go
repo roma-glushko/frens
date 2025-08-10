@@ -34,7 +34,8 @@ var (
 	LocationMarker        = "@"
 	FormatLocationMarkers = "@location1[, @location2...]"
 	FormatLocationInfo    = fmt.Sprintf(
-		"NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] :: DESCRIPTION [%s] [$id:LOCATION_ID]",
+		"NAME[, COUNTRY] [(aka ALIAS1[, ALIAS2...])] %s DESCRIPTION [%s] [$id:LOCATION_ID]",
+		Separator,
 		FormatTags,
 	)
 	FormatLocationQuery = fmt.Sprintf(

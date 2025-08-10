@@ -111,3 +111,9 @@ type ListEventQuery struct {
 	SortBy       SortOption
 	SortOrder    SortOrderOption
 }
+
+type ListDateQuery struct {
+	Keyword string
+	Friends []string
+	Tags    []string
+}

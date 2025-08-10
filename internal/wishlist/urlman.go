@@ -88,7 +88,7 @@ func (m *URLManager) Scrape(ctx context.Context, url string) (*ProductInfo, erro
 	return p, nil
 }
 
-func (m *URLManager) extractProductInfo(r io.Reader) (*ProductInfo, error) {
+func (m *URLManager) extractProductInfo(r io.Reader) (*ProductInfo, error) { //nolint:cyclop
 	doc, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse HTML: %w", err)
@@ -104,6 +104,7 @@ func (m *URLManager) extractProductInfo(r io.Reader) (*ProductInfo, error) {
 
 	doc.Find("script[type='application/ld+json']").Each(func(_ int, s *goquery.Selection) {
 		var obj map[string]interface{}
+
 		err := json.Unmarshal([]byte(s.Text()), &obj)
 		if err != nil {
 			log.Infof("Failed to parse JSON-LD: %v", err)
@@ -117,7 +118,7 @@ func (m *URLManager) extractProductInfo(r io.Reader) (*ProductInfo, error) {
 		log.Debug("Found JSON-LD Product type")
 		log.Debugf("%+v", obj)
 
-		if offers, ok := obj["offers"].([]interface{}); ok && len(offers) > 0 {
+		if offers, ok := obj["offers"].([]interface{}); ok && len(offers) > 0 { //nolint:nestif
 			for _, offer := range offers {
 				offerMap, ok := offer.(map[string]interface{})
 				if !ok {
@@ -163,10 +164,9 @@ func (m *URLManager) extractProductInfo(r io.Reader) (*ProductInfo, error) {
 			}
 		}
 
-		if offers, ok := obj["offers"].(map[string]interface{}); ok {
+		if offers, ok := obj["offers"].(map[string]interface{}); ok { //nolint:nestif
 			if price, ok := offers["highPrice"].(string); ok {
 				priceFloat, err := strconv.ParseFloat(price, 64)
-
 				if err == nil {
 					p.PriceAmount = fmt.Sprintf("%.2f", priceFloat)
 					log.Debugf("Extracted price amount from offers.highPrice: %s", p.PriceAmount)
@@ -177,7 +177,6 @@ func (m *URLManager) extractProductInfo(r io.Reader) (*ProductInfo, error) {
 
 			if price, ok := offers["price"].(string); ok {
 				priceFloat, err := strconv.ParseFloat(price, 64)
-
 				if err == nil {
 					p.PriceAmount = fmt.Sprintf("%.2f", priceFloat)
 					log.Debugf("Extracted price amount from offers.price: %s", p.PriceAmount)
@@ -208,17 +207,18 @@ func (m *URLManager) extractProductInfo(r io.Reader) (*ProductInfo, error) {
 		p.PriceCurrency, _ = doc.Find("meta[itemprop='priceCurrency']").Attr("content")
 	}
 
-	if p.PriceAmount == "" {
+	if p.PriceAmount == "" { //nolint:nestif
 		// 3. Heuristic search for currency strings
 		text := doc.Text()
+
 		re := regexp.MustCompile(`\d[\d\s,]*\.?\d*\s*(грн|uah|usd|€|₴)`)
+
 		if m := re.FindString(text); m != "" {
 			cleaned := regexp.MustCompile(`[^\d.,]`).ReplaceAllString(m, "")
 			cleaned = strings.ReplaceAll(cleaned, " ", "")
 			cleaned = strings.ReplaceAll(cleaned, " ", "")
 
 			price, err := strconv.ParseFloat(cleaned, 64)
-
 			if err == nil {
 				p.PriceAmount = fmt.Sprintf("%.2f", price)
 			} else {

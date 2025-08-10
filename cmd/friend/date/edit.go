@@ -12,17 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package activity
+package date
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-
-	"github.com/roma-glushko/frens/internal/friend"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/journal"
@@ -36,41 +35,55 @@ import (
 var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
-	Usage:     "Update an activity log",
+	Usage:     "Update date information",
 	Args:      true,
-	ArgsUsage: `<ACTIVITY_ID> [<DESCRIPTION>]`,
+	ArgsUsage: `<DATE_ID>`,
 	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "desc",
+			Usage: "Description of the date",
+		},
 		&cli.StringFlag{
 			Name:    "date",
 			Aliases: []string{"d"},
-			Usage:   "Set the date of the activity (format: YYYY/MM/DD or relative like 'yesterday')",
+			Usage:   "Date in a free-form format (e.g., 'May 13th', '1996-7-30', '1985')",
+		},
+		&cli.StringFlag{
+			Name:    "calendar",
+			Aliases: []string{"cal"},
+			Usage:   "Calendar type to use for the date (e.g., gregorian, hebrew)",
+		},
+		&cli.StringSliceFlag{
+			Name:    "tag",
+			Aliases: []string{"t"},
+			Usage:   "Add tags to the date (e.g., 'birthday', 'anniversary')",
 		},
 	},
-	Action: func(c *cli.Context) error {
-		ctx := c.Context
-		if c.NArg() < 1 {
+	Action: func(ctx *cli.Context) error {
+		if ctx.NArg() < 1 {
 			return cli.Exit(
-				"You must provide an activity ID to edit. Execute `frens activity ls` to find out.",
+				"You must provide a date ID. Execute `frens friend dt ls` to find out.",
 				1,
 			)
 		}
 
-		actID := c.Args().First()
-		desc := strings.TrimSpace(strings.Join(c.Args().Slice()[1:], " "))
+		dtID := strings.Join(ctx.Args().Slice(), " ")
 
-		jctx := jctx.FromCtx(ctx)
+		jctx := jctx.FromCtx(ctx.Context)
 		jr := jctx.Journal
 
-		actOld, err := jr.GetEvent(friend.EventTypeActivity, actID)
+		dtOld, err := jr.GetFriendDate(dtID)
 		if err != nil {
-			return cli.Exit("Activity not found: "+actID, 1)
+			return err
 		}
 
 		inputForm := tui.NewEditorForm(tui.EditorOptions{
-			Title:      fmt.Sprintf("Edit activity log (%s):", actOld.ID),
-			SyntaxHint: lang.FormatEventInfo,
+			Title:      "Edit " + dtOld.ID + " information:",
+			SyntaxHint: lang.FormatDateInfo,
 		})
-		inputForm.Textarea.SetValue(lang.RenderEvent(actOld))
+
+		dateInfo := lang.RenderDateInfo(dtOld)
+		inputForm.Textarea.SetValue(dateInfo)
 
 		// TODO: check if interactive mode is enabled
 		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
@@ -82,33 +95,58 @@ var EditCommand = &cli.Command{
 
 		infoTxt := inputForm.Textarea.Value()
 
+		if infoTxt == "" {
+			return errors.New("no date info provided")
+		}
+
+		dtNew, err := lang.ExtractDateInfo(infoTxt)
+
+		date := ctx.String("date")
+		desc := ctx.String("desc")
+		cal := ctx.String("calendar")
+		tags := ctx.StringSlice("tag")
+
+		if date != "" {
+			dtNew.DateExpr = date
+		}
+
 		if desc != "" {
-			infoTxt = desc
+			dtNew.Desc = desc
 		}
 
-		actNew, err := lang.ExtractEvent(friend.EventTypeActivity, infoTxt)
-		if err != nil {
-			return cli.Exit("Failed to parse activity description: "+err.Error(), 1)
+		if cal != "" {
+			dtNew.Calendar = cal
 		}
 
-		if err := actNew.Validate(); err != nil {
+		if len(tags) > 0 {
+			dtNew.Tags = tags
+		}
+
+		if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+			log.Errorf(" ✖ failed to parse friend info: %v", err)
+			return err
+		}
+
+		if err := dtNew.Validate(); err != nil {
 			return err
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			actNew, err = j.UpdateEvent(*actOld, actNew)
+			dtNew, err = j.UpdateFriendDate(dtOld, dtNew)
+
 			return err
 		})
+
 		if err != nil {
 			return err
 		}
 
-		log.Info(" ✔ Activity updated")
-		log.Info("==> Activity Information\n")
+		log.Info(" ✔ Date updated")
+		log.Info("==> Date Information\n")
 
-		fmtr := formatter.EventTextFormatter{}
+		fmtr := formatter.DateTextFormatter{}
 
-		o, _ := fmtr.FormatSingle(actNew)
+		o, _ := fmtr.FormatSingle(dtNew)
 		fmt.Println(o)
 
 		return nil

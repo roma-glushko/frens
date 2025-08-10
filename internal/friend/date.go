@@ -16,6 +16,7 @@ package friend
 
 import (
 	"errors"
+	"github.com/roma-glushko/frens/internal/tag"
 )
 
 type Calendar = string
@@ -32,6 +33,16 @@ type Date struct {
 	Desc     string   `toml:"desc"`
 	Tags     []string `toml:"tags"`
 }
+
+func (d Date) SetTags(tags []string) {
+	d.Tags = tags
+}
+
+func (d Date) GetTags() []string {
+	return d.Tags
+}
+
+var _ tag.Tagged = (*Date)(nil)
 
 func (d Date) Validate() error {
 	if d.DateExpr == "" {

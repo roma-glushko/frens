@@ -61,7 +61,10 @@ var EditCommand = &cli.Command{
 	},
 	Action: func(ctx *cli.Context) error {
 		if ctx.NArg() < 1 {
-			return cli.Exit("You must provide a friend name, nickname, or ID to edit.", 1)
+			return cli.Exit(
+				"You must provide a friend name, nickname, or ID to edit. Execute `frens friend ls` to find out.",
+				1,
+			)
 		}
 
 		pID := strings.Join(ctx.Args().Slice(), " ")
