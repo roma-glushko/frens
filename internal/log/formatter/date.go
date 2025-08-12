@@ -17,11 +17,12 @@ package formatter
 import (
 	"bytes"
 	"fmt"
+	"strings"
+	"text/tabwriter"
+
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
-	"strings"
-	"text/tabwriter"
 )
 
 func init() {
@@ -33,7 +34,7 @@ type DateTextFormatter struct{}
 var _ log.Formatter = (*DateTextFormatter)(nil)
 
 func (f DateTextFormatter) FormatSingle(e any) (string, error) {
-	dt, ok := e.(friend.Date)
+	dt, ok := e.(*friend.Date)
 
 	if !ok {
 		return "", ErrInvalidEntity
@@ -41,10 +42,10 @@ func (f DateTextFormatter) FormatSingle(e any) (string, error) {
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(" %s [%s]", labelStyle.Render(dt.DateExpr), dt.ID))
-	sb.WriteString("\n")
+	sb.WriteString(fmt.Sprintf("[%s] %s", idStyle.Render(dt.ID), labelStyle.Render(dt.DateExpr)))
 
 	if len(dt.Tags) > 0 {
+		sb.WriteString("\n")
 		sb.WriteString(" • " + tagStyle.Render(lang.RenderTags(dt.Tags)))
 		sb.WriteString(" ")
 	}
@@ -57,8 +58,6 @@ func (f DateTextFormatter) FormatSingle(e any) (string, error) {
 		for _, line := range wrapped {
 			sb.WriteString(" " + line + "\n")
 		}
-
-		sb.WriteString("\n")
 	}
 
 	return sb.String(), nil
@@ -78,8 +77,9 @@ func (f DateTextFormatter) FormatList(el any) (string, error) {
 	for _, dt := range dates {
 		_, _ = fmt.Fprintf(
 			w,
-			" %s\t%s\t%s\n",
+			" %s\t%s\t%s\t%s\n",
 			idStyle.Render(dt.ID),
+			labelStyle.Render(dt.Person),
 			labelStyle.Render(dt.DateExpr),
 			tagStyle.Render(lang.RenderTags(dt.Tags)),
 		)

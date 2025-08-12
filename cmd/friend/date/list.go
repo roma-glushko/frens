@@ -16,6 +16,7 @@ package date
 
 import (
 	"fmt"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/log/formatter"
 
@@ -56,7 +57,6 @@ var ListCommand = &cli.Command{
 			Friends: c.StringSlice("with"),
 			Tags:    c.StringSlice("tag"),
 		})
-
 		if err != nil {
 			return err
 		}

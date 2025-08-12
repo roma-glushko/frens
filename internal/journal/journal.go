@@ -668,6 +668,8 @@ func (j *Journal) GetFriendDate(dID string) (*friend.Date, error) {
 	for _, f := range j.Friends {
 		for _, d := range f.Dates {
 			if d.ID == dID {
+				d.Person = f.ID
+
 				return d, nil
 			}
 		}
@@ -676,7 +678,7 @@ func (j *Journal) GetFriendDate(dID string) (*friend.Date, error) {
 	return nil, fmt.Errorf("date with ID %s not found", dID)
 }
 
-func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]*friend.Date, error) {
+func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]*friend.Date, error) { //nolint:cyclop
 	dates := make([]*friend.Date, 0, 10)
 
 	frs := j.Friends
@@ -686,7 +688,6 @@ func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]*friend.Date, error
 
 		for _, fID := range q.Friends {
 			f, err := j.GetFriend(fID)
-
 			if err != nil {
 				return dates, fmt.Errorf("failed to get friend %s: %w", fID, err)
 			}
@@ -705,6 +706,8 @@ func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]*friend.Date, error
 			if len(q.Tags) > 0 && !tag.HasTags(d, q.Tags) {
 				continue
 			}
+
+			d.Person = f.ID
 
 			dates = append(dates, d)
 		}

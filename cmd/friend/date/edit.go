@@ -136,7 +136,6 @@ var EditCommand = &cli.Command{
 
 			return err
 		})
-
 		if err != nil {
 			return err
 		}

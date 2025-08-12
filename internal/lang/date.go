@@ -60,6 +60,12 @@ type dateProps struct {
 }
 
 func ExtractDateInfo(s string) (*friend.Date, error) {
+	s = strings.TrimSpace(s)
+
+	if s == "" {
+		return nil, ErrNoInfo
+	}
+
 	props, err := ExtractProps[dateProps](s)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse date properties: %w", err)
