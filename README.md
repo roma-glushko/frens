@@ -14,7 +14,7 @@ with other people you care about.
 
 > [!NOTE]
 >
-> 🚧 **This project is under active development, so some CLI or behaviours may change.** 🚧
+> 🚧 **This project is under active development, so some CLI or behaviors may change.** 🚧
 
 ## Features
 
