@@ -283,7 +283,7 @@ var BotCommand = &cli.Command{
 			}
 
 			err = journaldir.Update(jr, func(l *journal.Journal) error {
-				l.AddFriend(&f)
+				l.AddFriend(f)
 				return nil
 			})
 			if err != nil {
@@ -325,7 +325,7 @@ var BotCommand = &cli.Command{
 			}
 
 			err = journaldir.Update(jr, func(j *journal.Journal) error {
-				j.AddLocation(&l)
+				j.AddLocation(l)
 				return nil
 			})
 			if err != nil {

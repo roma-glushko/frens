@@ -90,7 +90,7 @@ func (j *Journal) Path() string {
 	return j.DirPath
 }
 
-func (j *Journal) AddFriend(f *friend.Person) {
+func (j *Journal) AddFriend(f friend.Person) {
 	if f.ID == "" {
 		f.ID = slug.Make(f.Name)
 	}
@@ -98,15 +98,15 @@ func (j *Journal) AddFriend(f *friend.Person) {
 	// TODO: check for duplicated IDs
 	// TODO: check for duplicated aliases
 
-	j.Friends = append(j.Friends, f)
+	j.Friends = append(j.Friends, &f)
 	j.SetDirty(true)
 }
 
-func (j *Journal) GetFriend(q string) (*friend.Person, error) {
+func (j *Journal) GetFriend(q string) (friend.Person, error) {
 	matches := j.frenMatcher().Match(q)
 
 	if len(matches) == 0 {
-		return nil, fmt.Errorf("no friends found for '%s'", q)
+		return friend.Person{}, fmt.Errorf("no friends found for '%s'", q)
 	}
 
 	if len(matches) > 1 {
@@ -118,13 +118,17 @@ func (j *Journal) GetFriend(q string) (*friend.Person, error) {
 			}
 		}
 
-		return nil, fmt.Errorf("multiple friends found for '%s': %s", q, strings.Join(names, ", "))
+		return friend.Person{}, fmt.Errorf(
+			"multiple friends found for '%s': %s",
+			q,
+			strings.Join(names, ", "),
+		)
 	}
 
 	m := matches[0]
 
 	if len(m.Entities) == 0 {
-		return nil, fmt.Errorf("no friend found for '%s'", q)
+		return friend.Person{}, fmt.Errorf("no friend found for '%s'", q)
 	}
 
 	if len(m.Entities) > 1 {
@@ -134,14 +138,18 @@ func (j *Journal) GetFriend(q string) (*friend.Person, error) {
 			names = append(names, f.Name)
 		}
 
-		return nil, fmt.Errorf("multiple friends found for '%s': %s", q, strings.Join(names, ", "))
+		return friend.Person{}, fmt.Errorf(
+			"multiple friends found for '%s': %s",
+			q,
+			strings.Join(names, ", "),
+		)
 	}
 
-	return m.Entities[0], nil
+	return *m.Entities[0], nil
 }
 
-func (j *Journal) ListFriends(q friend.ListFriendQuery) []*friend.Person { //nolint:cyclop
-	fl := make([]*friend.Person, 0, 10)
+func (j *Journal) ListFriends(q friend.ListFriendQuery) []friend.Person { //nolint:cyclop
+	fl := make([]friend.Person, 0, 10)
 
 	for _, f := range j.Friends {
 		if q.Keyword != "" &&
@@ -158,7 +166,7 @@ func (j *Journal) ListFriends(q friend.ListFriendQuery) []*friend.Person { //nol
 			continue
 		}
 
-		fl = append(fl, f)
+		fl = append(fl, *f)
 	}
 
 	if len(fl) == 0 {
@@ -194,10 +202,10 @@ func (j *Journal) ListFriends(q friend.ListFriendQuery) []*friend.Person { //nol
 	return fl
 }
 
-func (j *Journal) UpdateFriend(o, n *friend.Person) {
+func (j *Journal) UpdateFriend(o, n friend.Person) {
 	for i, f := range j.Friends {
 		if f.Name == o.Name {
-			j.Friends[i] = n
+			j.Friends[i] = &n
 			j.SetDirty(true)
 
 			return
@@ -223,7 +231,7 @@ func (j *Journal) RemoveFriends(toRemove []friend.Person) {
 	}
 }
 
-func (j *Journal) AddLocation(l *friend.Location) {
+func (j *Journal) AddLocation(l friend.Location) {
 	if l.ID == "" {
 		l.ID = slug.Make(l.Name)
 	}
@@ -231,15 +239,15 @@ func (j *Journal) AddLocation(l *friend.Location) {
 	// TODO: check for duplicated IDs
 	// TODO: check for duplicated aliases
 
-	j.Locations = append(j.Locations, l)
+	j.Locations = append(j.Locations, &l)
 	j.SetDirty(true)
 }
 
-func (j *Journal) GetLocation(q string) (*friend.Location, error) {
+func (j *Journal) GetLocation(q string) (friend.Location, error) {
 	matches := j.locMatcher().Match(q)
 
 	if len(matches) == 0 {
-		return nil, fmt.Errorf("no locations found for '%s'", q)
+		return friend.Location{}, fmt.Errorf("no locations found for '%s'", q)
 	}
 
 	if len(matches) > 1 {
@@ -251,7 +259,7 @@ func (j *Journal) GetLocation(q string) (*friend.Location, error) {
 			}
 		}
 
-		return nil, fmt.Errorf(
+		return friend.Location{}, fmt.Errorf(
 			"multiple locations found for '%s': %s",
 			q,
 			strings.Join(names, ", "),
@@ -261,7 +269,7 @@ func (j *Journal) GetLocation(q string) (*friend.Location, error) {
 	m := matches[0]
 
 	if len(m.Entities) == 0 {
-		return nil, fmt.Errorf("no locations found for '%s'", q)
+		return friend.Location{}, fmt.Errorf("no locations found for '%s'", q)
 	}
 
 	if len(m.Entities) > 1 {
@@ -271,20 +279,20 @@ func (j *Journal) GetLocation(q string) (*friend.Location, error) {
 			names = append(names, f.Name)
 		}
 
-		return nil, fmt.Errorf(
+		return friend.Location{}, fmt.Errorf(
 			"multiple locations found for '%s': %s",
 			q,
 			strings.Join(names, ", "),
 		)
 	}
 
-	return m.Entities[0], nil
+	return *m.Entities[0], nil
 }
 
-func (j *Journal) UpdateLocation(o, n *friend.Location) {
+func (j *Journal) UpdateLocation(o, n friend.Location) {
 	for i, l := range j.Locations {
 		if l.Name == o.Name {
-			j.Locations[i] = n
+			j.Locations[i] = &n
 			j.SetDirty(true)
 
 			return
@@ -297,8 +305,8 @@ func (j *Journal) UpdateLocation(o, n *friend.Location) {
 	j.AddLocation(n)
 }
 
-func (j *Journal) ListLocations(q friend.ListLocationQuery) []*friend.Location { //nolint:cyclop
-	locations := make([]*friend.Location, 0, 10)
+func (j *Journal) ListLocations(q friend.ListLocationQuery) []friend.Location { //nolint:cyclop
+	locations := make([]friend.Location, 0, 10)
 
 	for _, l := range j.Locations {
 		if q.Keyword != "" &&
@@ -315,7 +323,7 @@ func (j *Journal) ListLocations(q friend.ListLocationQuery) []*friend.Location {
 			continue
 		}
 
-		locations = append(locations, l)
+		locations = append(locations, *l)
 	}
 
 	if len(locations) == 0 {
@@ -491,11 +499,11 @@ func (j *Journal) AddEvent(e friend.Event) (friend.Event, error) {
 	return e, nil
 }
 
-func (j *Journal) GetEvent(t friend.EventType, q string) (*friend.Event, error) {
+func (j *Journal) GetEvent(t friend.EventType, q string) (friend.Event, error) {
 	if t == friend.EventTypeActivity {
 		for _, act := range j.Activities {
 			if act.ID == q {
-				return act, nil
+				return *act, nil
 			}
 		}
 	}
@@ -503,12 +511,12 @@ func (j *Journal) GetEvent(t friend.EventType, q string) (*friend.Event, error) 
 	if t == friend.EventTypeNote {
 		for _, note := range j.Notes {
 			if note.ID == q {
-				return note, nil
+				return *note, nil
 			}
 		}
 	}
 
-	return nil, ErrEventNotFound
+	return friend.Event{}, ErrEventNotFound
 }
 
 func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
@@ -542,21 +550,21 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	return j.AddEvent(n)
 }
 
-func (j *Journal) ListEvents(q friend.ListEventQuery) ([]*friend.Event, error) { //nolint:cyclop
-	events := make([]*friend.Event, 0, 10)
+func (j *Journal) ListEvents(q friend.ListEventQuery) ([]friend.Event, error) { //nolint:cyclop
+	events := make([]friend.Event, 0, 10)
 
-	var source *[]*friend.Event
+	var source []*friend.Event
 
 	switch q.Type {
 	case friend.EventTypeActivity:
-		source = &j.Activities
+		source = j.Activities
 	case friend.EventTypeNote:
-		source = &j.Notes
+		source = j.Notes
 	default:
 		return events, fmt.Errorf("unknown event type: %s", q.Type)
 	}
 
-	for _, note := range *source {
+	for _, note := range source {
 		if q.Keyword != "" &&
 			!strings.Contains(strings.ToLower(note.Desc), strings.ToLower(q.Keyword)) {
 			continue
@@ -574,7 +582,7 @@ func (j *Journal) ListEvents(q friend.ListEventQuery) ([]*friend.Event, error) {
 			continue
 		}
 
-		events = append(events, note)
+		events = append(events, *note)
 	}
 
 	if len(events) == 0 {
@@ -603,7 +611,7 @@ func (j *Journal) ListEvents(q friend.ListEventQuery) ([]*friend.Event, error) {
 	return events, nil
 }
 
-func (j *Journal) RemoveEvents(t friend.EventType, toRemove []*friend.Event) {
+func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
 	for _, act := range toRemove {
 		if t == friend.EventTypeActivity {
 			for i, a := range j.Activities {
@@ -692,7 +700,7 @@ func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]friend.Date, error)
 				return dates, fmt.Errorf("failed to get friend %s: %w", fID, err)
 			}
 
-			frs = append(frs, f)
+			frs = append(frs, &f)
 		}
 	}
 

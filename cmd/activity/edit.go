@@ -96,7 +96,7 @@ var EditCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			actNew, err = j.UpdateEvent(*actOld, actNew)
+			actNew, err = j.UpdateEvent(actOld, actNew)
 			return err
 		})
 		if err != nil {

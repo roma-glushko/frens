@@ -155,7 +155,7 @@ var AddCommand = &cli.Command{
 		jr := jctx.Journal
 
 		err = journaldir.Update(jr, func(l *journal.Journal) error {
-			l.AddFriend(&f)
+			l.AddFriend(f)
 			return nil
 		})
 		if err != nil {

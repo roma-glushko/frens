@@ -63,7 +63,7 @@ var DeleteCommand = &cli.Command{
 				return err
 			}
 
-			locations = append(locations, *l)
+			locations = append(locations, l)
 		}
 
 		locWord := utils.P(len(locations), "location", "locations")

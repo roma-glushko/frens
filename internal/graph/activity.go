@@ -72,7 +72,7 @@ var colors = []RGB{
 
 // ActivityGraph holds the data needed to produce a graph.
 type ActivityGraph struct {
-	filteredActivities []*friend.Event
+	filteredActivities []friend.Event
 	allActivities      []*friend.Event
 	scaled             bool
 	startDate          time.Time
@@ -80,7 +80,7 @@ type ActivityGraph struct {
 }
 
 // NewActivityGraph creates a new graph instance.
-func NewActivityGraph(filtered, all []*friend.Event, scaled bool) *ActivityGraph {
+func NewActivityGraph(filtered []friend.Event, all []*friend.Event, scaled bool) *ActivityGraph {
 	g := &ActivityGraph{
 		filteredActivities: filtered,
 		allActivities:      all,

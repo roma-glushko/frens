@@ -73,7 +73,7 @@ var DeleteCommand = &cli.Command{
 				return err
 			}
 
-			friends = append(friends, *f)
+			friends = append(friends, f)
 		}
 
 		frenWord := utils.P(len(friends), "friend", "friends")
