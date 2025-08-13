@@ -629,30 +629,30 @@ func (j *Journal) RemoveEvents(t friend.EventType, toRemove []*friend.Event) {
 	}
 }
 
-func (j *Journal) AddFriendDate(fID string, d *friend.Date) (*friend.Date, error) {
+func (j *Journal) AddFriendDate(fID string, d friend.Date) (friend.Date, error) {
 	f, err := j.GetFriend(fID)
 	if err != nil {
-		return &friend.Date{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
+		return friend.Date{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
 	}
 
 	if d.ID == "" {
 		d.ID = ksuid.New().String()
 	}
 
-	f.Dates = append(f.Dates, d)
+	f.Dates = append(f.Dates, &d)
 
 	j.SetDirty(true)
 
 	return d, nil
 }
 
-func (j *Journal) UpdateFriendDate(o, n *friend.Date) (*friend.Date, error) {
+func (j *Journal) UpdateFriendDate(o, n friend.Date) (friend.Date, error) {
 	n.ID = o.ID
 
 	for _, f := range j.Friends {
 		for i, d := range f.Dates {
 			if d.ID == o.ID {
-				f.Dates[i] = n
+				f.Dates[i] = &n
 
 				j.SetDirty(true)
 
@@ -661,25 +661,25 @@ func (j *Journal) UpdateFriendDate(o, n *friend.Date) (*friend.Date, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("date with ID %s not found", o.ID)
+	return friend.Date{}, fmt.Errorf("date with ID %s not found", o.ID)
 }
 
-func (j *Journal) GetFriendDate(dID string) (*friend.Date, error) {
+func (j *Journal) GetFriendDate(dID string) (friend.Date, error) {
 	for _, f := range j.Friends {
 		for _, d := range f.Dates {
 			if d.ID == dID {
 				d.Person = f.ID
 
-				return d, nil
+				return *d, nil
 			}
 		}
 	}
 
-	return nil, fmt.Errorf("date with ID %s not found", dID)
+	return friend.Date{}, fmt.Errorf("date with ID %s not found", dID)
 }
 
-func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]*friend.Date, error) { //nolint:cyclop
-	dates := make([]*friend.Date, 0, 10)
+func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]friend.Date, error) { //nolint:cyclop
+	dates := make([]friend.Date, 0, 10)
 
 	frs := j.Friends
 
@@ -709,7 +709,7 @@ func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]*friend.Date, error
 
 			d.Person = f.ID
 
-			dates = append(dates, d)
+			dates = append(dates, *d)
 		}
 	}
 
@@ -722,7 +722,7 @@ func (j *Journal) ListFriendDates(q friend.ListDateQuery) ([]*friend.Date, error
 	return dates, nil
 }
 
-func (j *Journal) RemoveFriendDates(toRemove []*friend.Date) error {
+func (j *Journal) RemoveFriendDates(toRemove []friend.Date) error {
 	for _, dID := range toRemove {
 		found := false
 

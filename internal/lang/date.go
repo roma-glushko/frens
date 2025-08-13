@@ -59,16 +59,16 @@ type dateProps struct {
 	Calendar string `frentxt:"cal"`
 }
 
-func ExtractDateInfo(s string) (*friend.Date, error) {
+func ExtractDateInfo(s string) (friend.Date, error) {
 	s = strings.TrimSpace(s)
 
 	if s == "" {
-		return nil, ErrNoInfo
+		return friend.Date{}, ErrNoInfo
 	}
 
 	props, err := ExtractProps[dateProps](s)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse date properties: %w", err)
+		return friend.Date{}, fmt.Errorf("failed to parse date properties: %w", err)
 	}
 
 	tags := tag.Tags(ExtractTags(s)).ToNames()
@@ -81,7 +81,10 @@ func ExtractDateInfo(s string) (*friend.Date, error) {
 	var dateExpr, desc string
 
 	if len(parts) == 0 {
-		return nil, fmt.Errorf("invalid date info format, expected format: %s", FormatDateInfo)
+		return friend.Date{}, fmt.Errorf(
+			"invalid date info format, expected format: %s",
+			FormatDateInfo,
+		)
 	}
 
 	if len(parts) == 2 {
@@ -100,14 +103,14 @@ func ExtractDateInfo(s string) (*friend.Date, error) {
 		case friend.CalendarHebrew:
 			cal = friend.CalendarHebrew
 		default:
-			return nil, fmt.Errorf(
+			return friend.Date{}, fmt.Errorf(
 				"unsupported calendar type: %s",
 				props.Calendar,
 			) // TODO: list available calendars
 		}
 	}
 
-	return &friend.Date{
+	return friend.Date{
 		Calendar: cal,
 		DateExpr: dateExpr,
 		Desc:     desc,
@@ -115,11 +118,7 @@ func ExtractDateInfo(s string) (*friend.Date, error) {
 	}, nil
 }
 
-func RenderDateInfo(d *friend.Date) string {
-	if d == nil {
-		return ""
-	}
-
+func RenderDateInfo(d friend.Date) string {
 	var sb strings.Builder
 
 	sb.WriteString(d.DateExpr)

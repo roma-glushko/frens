@@ -200,7 +200,7 @@ func TestRenderDateInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := RenderDateInfo(&tt.date)
+			result := RenderDateInfo(tt.date)
 			require.Equal(t, tt.expected, result)
 		})
 	}

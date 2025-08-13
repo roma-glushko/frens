@@ -51,7 +51,7 @@ var DeleteCommand = &cli.Command{
 			return cli.Exit("Please provide a date ID to delete.", 1)
 		}
 
-		dates := make([]*friend.Date, 0, len(c.Args().Slice()))
+		dates := make([]friend.Date, 0, len(c.Args().Slice()))
 
 		jctx := jctx.FromCtx(c.Context)
 		jr := jctx.Journal

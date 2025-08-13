@@ -103,7 +103,7 @@ var AddCommand = &cli.Command{
 			info = strings.Join(ctx.Args().Slice()[1:], " ")
 		}
 
-		var d *friend.Date
+		var d friend.Date
 
 		if info != "" {
 			d, err = lang.ExtractDateInfo(info)
