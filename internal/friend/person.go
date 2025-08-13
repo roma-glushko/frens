@@ -39,13 +39,14 @@ func (p Persons) Less(i, j int) bool { return p[i].Name < p[j].Name }
 func (p Persons) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 type Person struct {
-	ID        string   `toml:"id"`
-	Name      string   `toml:"name"`
-	Desc      string   `toml:"desc,omitempty"`
-	Nicknames []string `toml:"nicknames,omitempty"`
-	Tags      []string `toml:"tags,omitempty"`
-	Locations []string `toml:"locations,omitempty"`
-	Reminders []string `toml:"reminders,omitempty"`
+	ID        string          `toml:"id"`
+	Name      string          `toml:"name"`
+	Desc      string          `toml:"desc,omitempty"`
+	Nicknames []string        `toml:"nicknames,omitempty"`
+	Tags      []string        `toml:"tags,omitempty"`
+	Locations []string        `toml:"locations,omitempty"`
+	Dates     []*Date         `toml:"dates,omitempty"`
+	Wishlist  []*WishlistItem `toml:"wishlist,omitempty"`
 	// Cached information
 	Activities         int       `toml:"activities,omitempty"`
 	Notes              int       `toml:"notes,omitempty"`

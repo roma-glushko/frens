@@ -61,7 +61,10 @@ var EditCommand = &cli.Command{
 	},
 	Action: func(ctx *cli.Context) error {
 		if ctx.NArg() < 1 {
-			return cli.Exit("You must provide a location name, nickname, or ID to edit.", 1)
+			return cli.Exit(
+				"You must provide a location name, nickname, or ID to edit. Execute `frens location ls` to find out.",
+				1,
+			)
 		}
 
 		lID := strings.Join(ctx.Args().Slice(), " ")
@@ -78,7 +81,7 @@ var EditCommand = &cli.Command{
 			Title:      "Edit " + lOld.Name + " information:",
 			SyntaxHint: lang.FormatLocationInfo,
 		})
-		inputForm.Textarea.SetValue(lang.RenderLocation(*lOld))
+		inputForm.Textarea.SetValue(lang.RenderLocation(lOld))
 
 		// TODO: check if interactive mode is enabled
 		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
@@ -134,7 +137,7 @@ var EditCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			j.UpdateLocation(lOld, &lNew)
+			j.UpdateLocation(lOld, lNew)
 			return nil
 		})
 		if err != nil {

@@ -12,22 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package activity
+package wishlist
 
 import (
 	"github.com/urfave/cli/v2"
 )
 
 var Commands = &cli.Command{
-	Name:        "activity",
-	Aliases:     []string{"a", "act"},
-	Usage:       "Manage your activity logs",
-	Description: `Activity logs are events, interactions with people or locations. They may optionally contain any number of friends, locations, and tags.`,
+	Name:        "wishlist",
+	Aliases:     []string{"wish", "wl"},
+	Usage:       "Manage your friend's wishlist",
+	UsageText:   "frens friend wishlist [command] [options]",
+	Description: "Manage your friend's wishlist.",
 	Subcommands: []*cli.Command{
 		AddCommand,
-		EditCommand,
-		ListCommand,
-		GraphCommand,
-		DeleteCommand,
 	},
 }

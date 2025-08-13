@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package activity
+package date
 
 import (
 	"github.com/urfave/cli/v2"
 )
 
 var Commands = &cli.Command{
-	Name:        "activity",
-	Aliases:     []string{"a", "act"},
-	Usage:       "Manage your activity logs",
-	Description: `Activity logs are events, interactions with people or locations. They may optionally contain any number of friends, locations, and tags.`,
+	Name:        "date",
+	Aliases:     []string{"dt"},
+	Usage:       "Manage your friend's important dates",
+	UsageText:   "frens friend date [command] [options]",
+	Description: `Important dates lets you keep track of your friend's birthdays, anniversaries, and other significant events.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
 		EditCommand,
 		ListCommand,
-		GraphCommand,
 		DeleteCommand,
 	},
 }

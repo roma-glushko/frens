@@ -26,7 +26,8 @@ import (
 
 var (
 	FormatPersonInfo = fmt.Sprintf(
-		"NAME [(aka NICK1[, NICK2...])] :: DESCRIPTION [%s] [%s] [$id:FRIEND_ID]",
+		"NAME [(aka NICK1[, NICK2...])] %s DESCRIPTION [%s] [%s] [$id:FRIEND_ID]",
+		Separator,
 		FormatTags,
 		FormatLocationMarkers,
 	)
@@ -147,7 +148,7 @@ func RenderPerson(p friend.Person) string {
 
 	if p.Desc != "" {
 		sb.WriteString(" ")
-		sb.WriteString(DescSeparator)
+		sb.WriteString(Separator)
 		sb.WriteString(" ")
 		sb.WriteString(p.Desc)
 	}

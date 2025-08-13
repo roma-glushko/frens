@@ -12,6 +12,10 @@ with other people you care about.
 - A low-effort way to record and remember big moments in your life.
 - A way to track how your relationships develop over time.
 
+> [!NOTE]
+>
+> 🚧 **This project is under active development, so some CLI or behaviors may change.** 🚧
+
 ## Features
 
 - Record your relationships with friends, family, colleagues, and acquaintances using a simple set of concepts like `Friends`, `Locations`, `Activities`, and `Notes`.

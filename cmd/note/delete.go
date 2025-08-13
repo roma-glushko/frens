@@ -57,7 +57,7 @@ var DeleteCommand = &cli.Command{
 			return cli.Exit("Please provide a note ID to delete.", 1)
 		}
 
-		events := make([]*friend.Event, 0, len(c.Args().Slice()))
+		events := make([]friend.Event, 0, len(c.Args().Slice()))
 
 		jctx := jctx.FromCtx(c.Context)
 		jr := jctx.Journal

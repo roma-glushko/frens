@@ -19,26 +19,16 @@ import (
 	"strings"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-	"github.com/roma-glushko/frens/internal/log/formatter"
-
 	"github.com/roma-glushko/frens/internal/friend"
-
+	"github.com/roma-glushko/frens/internal/graph"
 	"github.com/roma-glushko/frens/internal/lang"
-	"github.com/roma-glushko/frens/internal/log"
-
 	"github.com/urfave/cli/v2"
 )
 
-var ListCommand = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l", "ls"},
-	Usage:   "List all activities",
+var GraphCommand = &cli.Command{
+	Name:  "graph",
+	Usage: "Print the zen of friendship",
 	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "search",
-			Aliases: []string{"q"},
-			Usage:   "Search by keyword",
-		},
 		&cli.StringSliceFlag{
 			Name:    "tag",
 			Aliases: []string{"t"},
@@ -54,20 +44,11 @@ var ListCommand = &cli.Command{
 			Aliases: []string{"until"},
 			Usage:   "Filter notes until a specific date",
 		},
-		&cli.StringFlag{
-			Name:    "sort",
-			Aliases: []string{"s"},
-			Value:   "recency",
-			Usage:   "Sort by one of: recency, alpha",
-			Action: func(c *cli.Context, s string) error {
-				return friend.ValidateEventSortOption(s)
-			},
-		},
 		&cli.BoolFlag{
-			Name:    "reverse",
-			Aliases: []string{"r"},
+			Name:    "unscaled",
+			Aliases: []string{"s"},
 			Value:   false,
-			Usage:   "Reverse sort order",
+			Usage:   "Disable scaling of the graph bars",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -75,34 +56,33 @@ var ListCommand = &cli.Command{
 		jctx := jctx.FromCtx(ctx)
 		jr := jctx.Journal
 
-		orderBy := friend.SortOrderDirect
-
-		if c.Bool("reverse") {
-			orderBy = friend.SortOrderReverse
-		}
-
-		activity, err := jr.ListEvents(friend.ListEventQuery{
+		activities, err := jr.ListEvents(friend.ListEventQuery{
 			Type:      friend.EventTypeActivity,
 			Keyword:   strings.TrimSpace(c.String("search")),
 			Tags:      c.StringSlice("tag"),
 			Since:     lang.ExtractDate(c.String("from")),
 			Until:     lang.ExtractDate(c.String("to")),
-			SortBy:    friend.SortOption(c.String("sort")),
-			SortOrder: orderBy,
+			SortBy:    friend.SortRecency,
+			SortOrder: friend.SortOrderDirect,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list activities: %w", err)
 		}
 
-		if len(activity) == 0 {
-			log.Info("No activities found for given query.")
+		if len(activities) == 0 {
+			fmt.Println("No activities found for given query.")
 			return nil
 		}
 
-		fmtr := formatter.EventTextFormatter{}
+		graph := graph.NewActivityGraph(
+			activities,
+			jr.Activities,
+			!c.Bool("unscaled"),
+		)
 
-		o, _ := fmtr.FormatList(activity)
-		fmt.Println(o)
+		for _, o := range graph.Output() {
+			fmt.Println(o)
+		}
 
 		return nil
 	},

@@ -12,22 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package activity
+package friend
 
-import (
-	"github.com/urfave/cli/v2"
+import "time"
+
+type Recurrence = string
+
+var (
+	RecurrenceOnce    Recurrence = "once"
+	RecurrenceMonthly Recurrence = "monthly"
+	RecurrenceYearly  Recurrence = "yearly"
 )
 
-var Commands = &cli.Command{
-	Name:        "activity",
-	Aliases:     []string{"a", "act"},
-	Usage:       "Manage your activity logs",
-	Description: `Activity logs are events, interactions with people or locations. They may optionally contain any number of friends, locations, and tags.`,
-	Subcommands: []*cli.Command{
-		AddCommand,
-		EditCommand,
-		ListCommand,
-		GraphCommand,
-		DeleteCommand,
-	},
+type OffsetDirection = string
+
+var (
+	OffsetDirectionBefore OffsetDirection = "before"
+	OffsetDirectionAfter  OffsetDirection = "after"
+)
+
+type Reminder struct {
+	Recurrence      Recurrence      `toml:"recurrence,omitempty"`
+	OffsetDirection OffsetDirection `toml:"offset_direction,omitempty"`
+	Offset          *time.Duration  `toml:"offset,omitempty"`
 }

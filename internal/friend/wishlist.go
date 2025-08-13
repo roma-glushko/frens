@@ -14,12 +14,30 @@
 
 package friend
 
-import "time"
+import (
+	"errors"
+	"strings"
+	"time"
+)
 
-type Wishlist struct {
+type WishlistItem struct {
+	ID        string    `toml:"id"`
 	CreatedAt time.Time `toml:"created_at"`
-	Title     string    `toml:"title"`
+	Desc      string    `toml:"desc,omitempty"`
 	Link      string    `toml:"link,omitempty"`
-	Priority  int       `toml:"priority"`
-	Note      string    `toml:"note,omitempty"`
+	Price     string    `toml:"price,omitempty"`
+	Tags      []string  `toml:"tags,omitempty"`
+	Location  []string  `toml:"locations,omitempty"`
+}
+
+func (i *WishlistItem) Validate() error {
+	if i.Desc == "" && i.Link == "" {
+		return errors.New("wishlist item must have either a description or a link")
+	}
+
+	if i.Link != "" && !strings.HasPrefix(i.Link, "http") {
+		return errors.New("wishlist item link must start with http or https")
+	}
+
+	return nil
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package date
 
 import (
 	"errors"
@@ -35,53 +35,55 @@ import (
 var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
-	Usage:     "Update main friend information",
+	Usage:     "Update date information",
 	Args:      true,
-	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID>`,
+	ArgsUsage: `<DATE_ID>`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "id",
-			Usage: "Set friend's unique identifier (used for linking with other data, editing, etc.)",
+			Name:  "desc",
+			Usage: "Description of the date",
 		},
 		&cli.StringFlag{
-			Name:    "name",
-			Aliases: []string{"n"},
-			Usage:   "Set friend's name",
-		},
-		&cli.StringFlag{
-			Name:    "desc",
+			Name:    "date",
 			Aliases: []string{"d"},
-			Usage:   "Set description of the friend",
+			Usage:   "Date in a free-form format (e.g., 'May 13th', '1996-7-30', '1985')",
+		},
+		&cli.StringFlag{
+			Name:    "calendar",
+			Aliases: []string{"cal"},
+			Usage:   "Calendar type to use for the date (e.g., gregorian, hebrew)",
 		},
 		&cli.StringSliceFlag{
-			Name:    "nickname",
-			Aliases: []string{"a", "aka", "alias", "nick"},
-			Usage:   "Set friend's nicknames (override existing ones)",
+			Name:    "tag",
+			Aliases: []string{"t"},
+			Usage:   "Add tags to the date (e.g., 'birthday', 'anniversary')",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
 		if ctx.NArg() < 1 {
 			return cli.Exit(
-				"You must provide a friend name, nickname, or ID to edit. Execute `frens friend ls` to find out.",
+				"You must provide a date ID. Execute `frens friend dt ls` to find out.",
 				1,
 			)
 		}
 
-		pID := strings.Join(ctx.Args().Slice(), " ")
+		dtID := strings.Join(ctx.Args().Slice(), " ")
 
 		jctx := jctx.FromCtx(ctx.Context)
 		jr := jctx.Journal
 
-		pOld, err := jr.GetFriend(pID)
+		dtOld, err := jr.GetFriendDate(dtID)
 		if err != nil {
 			return err
 		}
 
 		inputForm := tui.NewEditorForm(tui.EditorOptions{
-			Title:      "Edit " + pOld.Name + " information:",
-			SyntaxHint: lang.FormatPersonInfo,
+			Title:      "Edit " + dtOld.ID + " information:",
+			SyntaxHint: lang.FormatDateInfo,
 		})
-		inputForm.Textarea.SetValue(lang.RenderPerson(pOld))
+
+		dateInfo := lang.RenderDateInfo(dtOld)
+		inputForm.Textarea.SetValue(dateInfo)
 
 		// TODO: check if interactive mode is enabled
 		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
@@ -94,34 +96,30 @@ var EditCommand = &cli.Command{
 		infoTxt := inputForm.Textarea.Value()
 
 		if infoTxt == "" {
-			return errors.New("no friend info provided")
+			return errors.New("no date info provided")
 		}
 
-		pNew, err := lang.ExtractPerson(infoTxt)
+		dtNew, err := lang.ExtractDateInfo(infoTxt)
 
-		id := ctx.String("id")
-		name := ctx.String("name")
+		date := ctx.String("date")
 		desc := ctx.String("desc")
-		nicknames := ctx.StringSlice("nickname")
+		cal := ctx.String("calendar")
+		tags := ctx.StringSlice("tag")
 
-		if pNew.ID == "" {
-			pNew.ID = pOld.ID
-		}
-
-		if id != "" {
-			pNew.ID = id
-		}
-
-		if name != "" {
-			pNew.Name = name
+		if date != "" {
+			dtNew.DateExpr = date
 		}
 
 		if desc != "" {
-			pNew.Desc = desc
+			dtNew.Desc = desc
 		}
 
-		if len(nicknames) > 0 {
-			pNew.Nicknames = nicknames
+		if cal != "" {
+			dtNew.Calendar = cal
+		}
+
+		if len(tags) > 0 {
+			dtNew.Tags = tags
 		}
 
 		if err != nil && !errors.Is(err, lang.ErrNoInfo) {
@@ -129,24 +127,25 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		if err := pNew.Validate(); err != nil {
+		if err := dtNew.Validate(); err != nil {
 			return err
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			j.UpdateFriend(pOld, pNew)
-			return nil
+			dtNew, err = j.UpdateFriendDate(dtOld, dtNew)
+
+			return err
 		})
 		if err != nil {
 			return err
 		}
 
-		log.Info(" ✔ Friend updated")
-		log.Info("==> Friend Information\n")
+		log.Info(" ✔ Date updated")
+		log.Info("==> Date Information\n")
 
-		fmtr := formatter.PersonTextFormatter{}
+		fmtr := formatter.DateTextFormatter{}
 
-		o, _ := fmtr.FormatSingle(pNew)
+		o, _ := fmtr.FormatSingle(dtNew)
 		fmt.Println(o)
 
 		return nil

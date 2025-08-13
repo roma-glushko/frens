@@ -152,7 +152,7 @@ var AddCommand = &cli.Command{
 		jctx := jctx.FromCtx(ctx.Context)
 
 		err = journaldir.Update(jctx.Journal, func(j *journal.Journal) error {
-			j.AddLocation(&l)
+			j.AddLocation(l)
 
 			return nil
 		})

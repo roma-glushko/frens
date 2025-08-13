@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package date
 
 import (
 	"fmt"
-	"strings"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/log/formatter"
@@ -30,37 +29,22 @@ import (
 var ListCommand = &cli.Command{
 	Name:    "list",
 	Aliases: []string{"l", "ls"},
-	Usage:   "List all friends",
+	Usage:   "List all dates for all friends",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "search",
 			Aliases: []string{"q"},
-			Usage:   "Search by name or description",
+			Usage:   "Search by description",
 		},
 		&cli.StringSliceFlag{
-			Name:    "location",
-			Aliases: []string{"l", "loc", "in"},
-			Usage:   "List friends by location(s)",
+			Name:    "with",
+			Aliases: []string{"w"},
+			Usage:   "Filter by friend(s)",
 		},
 		&cli.StringSliceFlag{
 			Name:    "tag",
 			Aliases: []string{"t"},
 			Usage:   "Filter by tag(s)",
-		},
-		&cli.StringFlag{
-			Name:    "sort",
-			Aliases: []string{"s"},
-			Value:   "alpha",
-			Usage:   "Sort by one of alpha, activities, recency",
-			Action: func(c *cli.Context, s string) error {
-				return friend.ValidateEntitySortOption(s)
-			},
-		},
-		&cli.BoolFlag{
-			Name:    "reverse",
-			Aliases: []string{"r"},
-			Value:   false,
-			Usage:   "Reverse sort order",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -68,28 +52,23 @@ var ListCommand = &cli.Command{
 		jctx := jctx.FromCtx(ctx)
 		jr := jctx.Journal
 
-		sortOrder := friend.SortOrderDirect
-
-		if c.Bool("reverse") {
-			sortOrder = friend.SortOrderReverse
+		dates, err := jr.ListFriendDates(friend.ListDateQuery{
+			Keyword: c.String("search"),
+			Friends: c.StringSlice("with"),
+			Tags:    c.StringSlice("tag"),
+		})
+		if err != nil {
+			return err
 		}
 
-		friends := jr.ListFriends(friend.ListFriendQuery{
-			Keyword:   strings.TrimSpace(c.String("search")),
-			Locations: c.StringSlice("location"),
-			Tags:      c.StringSlice("tag"),
-			SortBy:    friend.SortOption(c.String("sort")),
-			SortOrder: sortOrder,
-		})
-
-		if len(friends) == 0 {
-			log.Info("No friends found for given query.")
+		if len(dates) == 0 {
+			log.Info("No dates found for given query.")
 			return nil
 		}
 
-		fmtr := formatter.PersonTextFormatter{}
+		fmtr := formatter.DateTextFormatter{}
 
-		o, _ := fmtr.FormatList(friends)
+		o, _ := fmtr.FormatList(dates)
 		fmt.Println(o)
 
 		return nil

@@ -50,7 +50,10 @@ var EditCommand = &cli.Command{
 		ctx := c.Context
 
 		if c.NArg() < 1 {
-			return cli.Exit("You must provide an note ID to edit.", 1)
+			return cli.Exit(
+				"You must provide an note ID to edit. Execute `frens note ls` to find out.",
+				1,
+			)
 		}
 
 		actID := c.Args().First()
@@ -94,7 +97,7 @@ var EditCommand = &cli.Command{
 		}
 
 		err = journaldir.Update(jr, func(j *journal.Journal) error {
-			actNew, err = j.UpdateEvent(*actOld, actNew)
+			actNew, err = j.UpdateEvent(actOld, actNew)
 			return err
 		})
 		if err != nil {

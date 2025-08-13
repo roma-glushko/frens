@@ -12,33 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package location
+package date
 
 import (
 	"fmt"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-
-	"github.com/roma-glushko/frens/internal/utils"
-
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
+	"github.com/roma-glushko/frens/internal/utils"
 	"github.com/urfave/cli/v2"
 )
 
 var DeleteCommand = &cli.Command{
 	Name:      "delete",
 	Aliases:   []string{"del", "rm", "d"},
-	Usage:     "Delete a location",
-	Args:      true,
-	ArgsUsage: `<LOCATION_NAME, LOCATION_NICKNAME, LOCATION_ID> [...]`,
-	Description: `Delete locations from your journal by their name, alias, or ID.
+	Usage:     `Delete a date from your friend`,
+	UsageText: `frens friend date delete [OPTIONS] [INFO]`,
+	Description: `Delete friend's date from your journal by date IDs.
 	Examples:
-		frens friend delete "Nashua"
-		frens friend d -f "Utica"
+		frens friend date delete 2zpWoEiUYn6vrSl9w03NAVkWxMn 2zpWoEiUYn6vrSl9w03NAVkWxMx
+		frens friend date d -f 2zpWoEiUYn6vrSl9w03NAVkWxMn 
 	`,
+	Args:      true,
+	ArgsUsage: `<DATE_ID> [, <DATE_ID>...]`,
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "force",
@@ -47,48 +46,47 @@ var DeleteCommand = &cli.Command{
 			Usage:   "Force delete without confirmation",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
-		if len(ctx.Args().Slice()) == 0 {
-			return cli.Exit("Please provide a location name, alias, or ID to delete.", 1)
+	Action: func(c *cli.Context) error {
+		if len(c.Args().Slice()) == 0 {
+			return cli.Exit("Please provide a date ID to delete.", 1)
 		}
 
-		locations := make([]friend.Location, 0, len(ctx.Args().Slice()))
+		dates := make([]friend.Date, 0, len(c.Args().Slice()))
 
-		jctx := jctx.FromCtx(ctx.Context)
+		jctx := jctx.FromCtx(c.Context)
 		jr := jctx.Journal
 
-		for _, lID := range ctx.Args().Slice() {
-			l, err := jr.GetLocation(lID)
+		for _, actID := range c.Args().Slice() {
+			dt, err := jr.GetFriendDate(actID)
 			if err != nil {
 				return err
 			}
 
-			locations = append(locations, l)
+			dates = append(dates, dt)
 		}
 
-		locWord := utils.P(len(locations), "location", "locations")
-		fmt.Printf("\n Found %d %s:\n\n", len(locations), locWord)
+		dtWord := utils.P(len(dates), "date", "dates")
+		fmt.Printf("🔍 Found %d %s:\n", len(dates), dtWord)
 
-		for _, l := range locations {
-			fmt.Printf(" • %s \n", l.String())
+		for _, act := range dates {
+			fmt.Printf("   • %s\n", act.ID)
 		}
 
 		// TODO: check if interactive mode
-		fmt.Println("\n You're about to permanently delete the " + locWord + ".")
-		if !ctx.Bool("force") && !tui.ConfirmAction(" Are you sure?") {
-			fmt.Println("\n ↩ Deletion canceled.")
+		fmt.Println("\n⚠️  You're about to permanently delete the " + dtWord + ".")
+		if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
+			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
 		}
 
 		err := journaldir.Update(jr, func(j *journal.Journal) error {
-			j.RemoveLocations(locations)
-			return nil
+			return j.RemoveFriendDates(dates)
 		})
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(locWord))
+		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(dtWord))
 
 		return nil
 	},

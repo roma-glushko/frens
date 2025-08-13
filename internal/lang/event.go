@@ -25,7 +25,8 @@ import (
 
 var (
 	FormatEventInfo = fmt.Sprintf(
-		"[DATE or RELATIVE DATE ::] DESCRIPTION [%s] [%s]",
+		"[DATE or RELATIVE DATE %s] DESCRIPTION [%s] [%s]",
+		Separator,
 		FormatTags,
 		FormatLocationMarkers,
 	)
@@ -48,7 +49,7 @@ func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 		return friend.Event{}, ErrNoInfo
 	}
 
-	parts := strings.SplitN(s, DescSeparator, 2)
+	parts := strings.SplitN(s, Separator, 2)
 
 	dateStr := ""
 	desc := parts[0]
@@ -82,13 +83,13 @@ func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 	}, nil
 }
 
-func RenderEvent(e *friend.Event) string {
+func RenderEvent(e friend.Event) string {
 	var sb strings.Builder
 
 	if !e.Date.IsZero() {
 		sb.WriteString(e.Date.Format("2006-01-02 15:04:05"))
 		sb.WriteString(" ")
-		sb.WriteString(DescSeparator)
+		sb.WriteString(Separator)
 		sb.WriteString(" ")
 	}
 
