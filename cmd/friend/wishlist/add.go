@@ -110,7 +110,7 @@ var AddCommand = &cli.Command{
 			info = strings.Join(ctx.Args().Slice()[1:], " ")
 		}
 
-		var w *friend.WishlistItem
+		var w friend.WishlistItem
 
 		if info != "" {
 			w, err = lang.ExtractWishlistItem(info)

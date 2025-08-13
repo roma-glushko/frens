@@ -48,14 +48,17 @@ func RemoveURLs(s string) string {
 	return urlRegex.ReplaceAllString(s, "")
 }
 
-func ExtractWishlistItem(s string) (*friend.WishlistItem, error) {
+func ExtractWishlistItem(s string) (friend.WishlistItem, error) {
 	if s == "" {
-		return nil, ErrNoInfo
+		return friend.WishlistItem{}, ErrNoInfo
 	}
 
 	props, err := ExtractProps[itemProps](s)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse wishlist item properties: %w", err)
+		return friend.WishlistItem{}, fmt.Errorf(
+			"failed to parse wishlist item properties: %w",
+			err,
+		)
 	}
 
 	tags := tag.Tags(ExtractTags(s)).ToNames()
@@ -74,13 +77,13 @@ func ExtractWishlistItem(s string) (*friend.WishlistItem, error) {
 	}
 
 	if len(urls) > 1 {
-		return nil, fmt.Errorf(
+		return friend.WishlistItem{}, fmt.Errorf(
 			"wishlist item cannot contain multiple URLs: %s",
 			strings.Join(urls, ", "),
 		)
 	}
 
-	return &friend.WishlistItem{
+	return friend.WishlistItem{
 		CreatedAt: time.Now(),
 		Price:     props.Price,
 		Desc:      desc,
@@ -89,11 +92,7 @@ func ExtractWishlistItem(s string) (*friend.WishlistItem, error) {
 	}, nil
 }
 
-func RenderWishlistItem(item *friend.WishlistItem) string {
-	if item == nil {
-		return ""
-	}
-
+func RenderWishlistItem(item friend.WishlistItem) string {
 	var sb strings.Builder
 
 	if item.Desc != "" {

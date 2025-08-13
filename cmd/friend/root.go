@@ -16,7 +16,6 @@ package friend
 
 import (
 	"github.com/roma-glushko/frens/cmd/friend/date"
-	"github.com/roma-glushko/frens/cmd/friend/wishlist"
 	"github.com/urfave/cli/v2"
 )
 
@@ -32,6 +31,7 @@ var Commands = &cli.Command{
 		ListCommand,
 		DeleteCommand,
 		date.Commands,
-		wishlist.Commands,
+		// TODO: uncomment when implemented
+		// wishlist.Commands,
 	},
 }
