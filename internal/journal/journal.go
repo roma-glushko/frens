@@ -203,6 +203,14 @@ func (j *Journal) ListFriends(q friend.ListFriendQuery) []friend.Person { //noli
 }
 
 func (j *Journal) UpdateFriend(o, n friend.Person) {
+	if n.ID == "" {
+		n.ID = o.ID
+	}
+
+	n.Activities = o.Activities
+	n.Notes = o.Notes
+	n.MostRecentActivity = o.MostRecentActivity
+
 	for i, f := range j.Friends {
 		if f.Name == o.Name {
 			j.Friends[i] = &n
@@ -290,6 +298,13 @@ func (j *Journal) GetLocation(q string) (friend.Location, error) {
 }
 
 func (j *Journal) UpdateLocation(o, n friend.Location) {
+	if n.ID == "" {
+		n.ID = o.ID
+	}
+
+	n.Activities = o.Activities
+	n.MostRecentActivity = o.MostRecentActivity
+
 	for i, l := range j.Locations {
 		if l.Name == o.Name {
 			j.Locations[i] = &n
