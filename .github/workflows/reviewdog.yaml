@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
       - name: Misspell
@@ -26,8 +26,8 @@ jobs:
   actionlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: reviewdog/action-actionlint@a5524e1c19e62881d79c1f1b9b6f09f16356e281 # v1.65.2
+      - uses: actions/checkout@v5
+      - uses: reviewdog/action-actionlint@50b75b9513baa71e6a1899a1ebaa9ac9851cf16c # v1.66.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
