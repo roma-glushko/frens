@@ -66,7 +66,7 @@ func (l LocationTextFormatter) FormatSingle(e any) (string, error) {
 }
 
 func (l LocationTextFormatter) FormatList(el any) (string, error) {
-	locations, ok := el.([]*friend.Location)
+	locations, ok := el.([]friend.Location)
 
 	if !ok {
 		return "", ErrInvalidEntity

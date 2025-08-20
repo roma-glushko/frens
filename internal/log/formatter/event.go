@@ -79,7 +79,7 @@ func (f EventTextFormatter) FormatSingle(entity any) (string, error) {
 }
 
 func (f EventTextFormatter) FormatList(el any) (string, error) {
-	events, ok := el.([]*friend.Event)
+	events, ok := el.([]friend.Event)
 
 	if !ok {
 		return "", ErrInvalidEntity
