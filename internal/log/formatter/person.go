@@ -100,7 +100,7 @@ func (p PersonTextFormatter) FormatSingle(e any) (string, error) {
 }
 
 func (p PersonTextFormatter) FormatList(el any) (string, error) {
-	persons, ok := el.([]*friend.Person)
+	persons, ok := el.([]friend.Person)
 
 	if !ok {
 		return "", ErrInvalidEntity
