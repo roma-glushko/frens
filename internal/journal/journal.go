@@ -17,7 +17,6 @@ package journal
 import (
 	"errors"
 	"fmt"
-	"github.com/roma-glushko/frens/internal/log"
 	"slices"
 	"sort"
 	"strings"
@@ -151,8 +150,6 @@ func (j *Journal) GetFriend(q string) (friend.Person, error) {
 
 func (j *Journal) ListFriends(q friend.ListFriendQuery) []friend.Person { //nolint:cyclop
 	fl := make([]friend.Person, 0, 10)
-
-	log.Debugf("Listing friends with query: %+v", q)
 
 	for _, f := range j.Friends {
 		if q.Keyword != "" &&
