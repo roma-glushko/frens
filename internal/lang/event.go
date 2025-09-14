@@ -75,11 +75,11 @@ func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 	desc = RemoveLocMarkers(desc)
 
 	return friend.Event{
-		Type:      t,
-		Date:      ts,
-		Desc:      desc,
-		Tags:      tags,
-		Locations: locations,
+		Type:        t,
+		Date:        ts,
+		Desc:        desc,
+		Tags:        tags,
+		LocationIDs: locations,
 	}, nil
 }
 
@@ -95,9 +95,9 @@ func RenderEvent(e friend.Event) string {
 
 	sb.WriteString(e.Desc)
 
-	if len(e.Locations) > 0 {
+	if len(e.LocationIDs) > 0 {
 		sb.WriteString(" ")
-		sb.WriteString(RenderLocMarkers(e.Locations))
+		sb.WriteString(RenderLocMarkers(e.LocationIDs))
 	}
 
 	if len(e.Tags) > 0 {

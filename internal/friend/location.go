@@ -40,7 +40,7 @@ type Location struct {
 	// Cached information
 	Notes              int       `toml:"notes,omitempty"`
 	Activities         int       `toml:"activities,omitempty"`
-	MostRecentActivity time.Time `toml:"most_recent_activity,omitzero"`
+	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero"`
 }
 
 var (
