@@ -112,13 +112,17 @@ func (s *TOMLFileStore) Load(ctx context.Context) (*journal.Journal, error) {
 		return nil, errors.Join(errs...)
 	}
 
-	return &journal.Journal{
+	j := &journal.Journal{
 		Tags:       entities.Tags,
 		Friends:    entities.Friends,
 		Locations:  entities.Locations,
 		Activities: events.Activities,
 		Notes:      events.Notes,
-	}, nil
+	}
+
+	j.Init()
+
+	return j, nil
 }
 
 func (s *TOMLFileStore) Save(ctx context.Context, j *journal.Journal) error {
