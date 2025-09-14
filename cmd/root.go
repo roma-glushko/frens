@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/roma-glushko/frens/internal/config"
 	"os"
 
 	"github.com/roma-glushko/frens/cmd/telegram"
@@ -92,7 +93,7 @@ func NewApp() cli.App {
 
 			InitLogging(debugLevel, quietLevel)
 
-			jDir, err := journaldir.Dir(ctx.String("journal"))
+			jDir, err := config.Dir(ctx.String("journal"))
 			if err != nil {
 				return fmt.Errorf("could not load journal directory from %s: %v", jDir, err)
 			}
