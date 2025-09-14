@@ -20,7 +20,6 @@ import (
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/roma-glushko/frens/internal/utils"
 	"github.com/urfave/cli/v2"
@@ -53,41 +52,42 @@ var DeleteCommand = &cli.Command{
 
 		dates := make([]friend.Date, 0, len(c.Args().Slice()))
 
-		jctx := jctx.FromCtx(c.Context)
-		jr := jctx.Journal
+		ctx := c.Context
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		for _, actID := range c.Args().Slice() {
-			dt, err := jr.GetFriendDate(actID)
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			for _, actID := range c.Args().Slice() {
+				dt, err := j.GetFriendDate(actID)
+				if err != nil {
+					return err
+				}
+
+				dates = append(dates, dt)
+			}
+
+			dtWord := utils.P(len(dates), "date", "dates")
+			fmt.Printf("🔍 Found %d %s:\n", len(dates), dtWord)
+
+			for _, act := range dates {
+				fmt.Printf("   • %s\n", act.ID)
+			}
+
+			// TODO: check if interactive mode
+			fmt.Println("\n⚠️  You're about to permanently delete the " + dtWord + ".")
+			if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
+				fmt.Println("\n↩️  Deletion canceled.")
+				return nil
+			}
+
+			err := j.RemoveFriendDates(dates)
 			if err != nil {
 				return err
 			}
 
-			dates = append(dates, dt)
-		}
+			fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(dtWord))
 
-		dtWord := utils.P(len(dates), "date", "dates")
-		fmt.Printf("🔍 Found %d %s:\n", len(dates), dtWord)
-
-		for _, act := range dates {
-			fmt.Printf("   • %s\n", act.ID)
-		}
-
-		// TODO: check if interactive mode
-		fmt.Println("\n⚠️  You're about to permanently delete the " + dtWord + ".")
-		if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
-			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
-		}
-
-		err := journaldir.Update(jr, func(j *journal.Journal) error {
-			return j.RemoveFriendDates(dates)
 		})
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(dtWord))
-
-		return nil
 	},
 }

@@ -50,7 +50,7 @@ type Person struct {
 	// Cached information
 	Activities         int       `toml:"activities,omitempty"`
 	Notes              int       `toml:"notes,omitempty"`
-	MostRecentActivity time.Time `toml:"most_recent_activity,omitzero"`
+	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero"`
 	// internal use only
 	Score int `toml:"-"`
 }

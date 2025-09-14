@@ -54,7 +54,7 @@ func (f EventTextFormatter) FormatSingle(entity any) (string, error) {
 
 	sb.WriteString(fmt.Sprintf(" %s [%s]\n", labelStyle.Render(date), e.ID))
 
-	if len(e.Tags) > 0 || len(e.Locations) > 0 {
+	if len(e.Tags) > 0 || len(e.LocationIDs) > 0 {
 		sb.WriteString(" • ")
 	}
 
@@ -63,13 +63,13 @@ func (f EventTextFormatter) FormatSingle(entity any) (string, error) {
 		sb.WriteString(" ")
 	}
 
-	if len(e.Locations) > 0 {
-		sb.WriteString(locationStyle.Render(lang.RenderLocMarkers(e.Locations)))
+	if len(e.LocationIDs) > 0 {
+		sb.WriteString(locationStyle.Render(lang.RenderLocMarkers(e.LocationIDs)))
 	}
 
-	if len(e.Friends) > 0 {
+	if len(e.FriendIDs) > 0 {
 		sb.WriteString("\n")
-		sb.WriteString(" + " + strings.Join(e.Friends, " "))
+		sb.WriteString(" + " + strings.Join(e.FriendIDs, " "))
 	}
 
 	sb.WriteString("\n\n")
@@ -96,9 +96,9 @@ func (f EventTextFormatter) FormatList(el any) (string, error) {
 			idStyle.Render(e.ID),
 			e.Date.Format("Mon Jan 2, 2006 15:04 MST"),
 			labelStyle.Render(CutStr(e.Desc, 80)),
-			friendStyle.Render(strings.Join(e.Friends, " ")),
+			friendStyle.Render(strings.Join(e.FriendIDs, " ")),
 			tagStyle.Render(lang.RenderTags(e.Tags)),
-			locationStyle.Render(lang.RenderLocMarkers(e.Locations)),
+			locationStyle.Render(lang.RenderLocMarkers(e.LocationIDs)),
 		)
 	}
 

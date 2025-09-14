@@ -26,7 +26,6 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -59,58 +58,57 @@ var EditCommand = &cli.Command{
 		desc := strings.TrimSpace(strings.Join(c.Args().Slice()[1:], " "))
 
 		jctx := jctx.FromCtx(ctx)
-		jr := jctx.Journal
+		s := jctx.Store
 
-		actOld, err := jr.GetEvent(friend.EventTypeActivity, actID)
-		if err != nil {
-			return cli.Exit("Activity not found: "+actID, 1)
-		}
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			actOld, err := j.GetEvent(friend.EventTypeActivity, actID)
+			if err != nil {
+				return cli.Exit("Activity not found: "+actID, 1)
+			}
 
-		inputForm := tui.NewEditorForm(tui.EditorOptions{
-			Title:      fmt.Sprintf("Edit activity log (%s):", actOld.ID),
-			SyntaxHint: lang.FormatEventInfo,
-		})
-		inputForm.Textarea.SetValue(lang.RenderEvent(actOld))
+			inputForm := tui.NewEditorForm(tui.EditorOptions{
+				Title:      fmt.Sprintf("Edit activity log (%s):", actOld.ID),
+				SyntaxHint: lang.FormatEventInfo,
+			})
+			inputForm.Textarea.SetValue(lang.RenderEvent(actOld))
 
-		// TODO: check if interactive mode is enabled
-		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
+			// TODO: check if interactive mode is enabled
+			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
-		if _, err := teaUI.Run(); err != nil {
-			log.Errorf("uh oh: %v", err)
-			return err
-		}
+			if _, err := teaUI.Run(); err != nil {
+				log.Errorf("uh oh: %v", err)
+				return err
+			}
 
-		infoTxt := inputForm.Textarea.Value()
+			infoTxt := inputForm.Textarea.Value()
 
-		if desc != "" {
-			infoTxt = desc
-		}
+			if desc != "" {
+				infoTxt = desc
+			}
 
-		actNew, err := lang.ExtractEvent(friend.EventTypeActivity, infoTxt)
-		if err != nil {
-			return cli.Exit("Failed to parse activity description: "+err.Error(), 1)
-		}
+			actNew, err := lang.ExtractEvent(friend.EventTypeActivity, infoTxt)
+			if err != nil {
+				return cli.Exit("Failed to parse activity description: "+err.Error(), 1)
+			}
 
-		if err := actNew.Validate(); err != nil {
-			return err
-		}
+			if err := actNew.Validate(); err != nil {
+				return err
+			}
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
 			actNew, err = j.UpdateEvent(actOld, actNew)
-			return err
+			if err != nil {
+				return fmt.Errorf("failed to update activity: %w", err)
+			}
+
+			log.Info(" ✔ Activity updated")
+			log.Info("==> Activity Information\n")
+
+			fmtr := formatter.EventTextFormatter{}
+
+			o, _ := fmtr.FormatSingle(actNew)
+			fmt.Println(o)
+
+			return nil
 		})
-		if err != nil {
-			return err
-		}
-
-		log.Info(" ✔ Activity updated")
-		log.Info("==> Activity Information\n")
-
-		fmtr := formatter.EventTextFormatter{}
-
-		o, _ := fmtr.FormatSingle(actNew)
-		fmt.Println(o)
-
-		return nil
 	},
 }

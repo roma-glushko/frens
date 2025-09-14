@@ -448,8 +448,8 @@ func (j *Journal) GuessFriends(q string) []*friend.Person { //nolint:cyclop
 
 		for _, act := range j.Activities {
 			for _, pair := range rankPairs {
-				if slices.Contains(act.Friends, pair.KnownPerson.Name) &&
-					slices.Contains(act.Friends, pair.AmbiguitiesPerson.Name) {
+				if slices.Contains(act.FriendIDs, pair.KnownPerson.Name) &&
+					slices.Contains(act.FriendIDs, pair.AmbiguitiesPerson.Name) {
 					pair.AmbiguitiesPerson.Score++
 				}
 			}
@@ -487,10 +487,10 @@ func (j *Journal) AddEvent(e friend.Event) (friend.Event, error) {
 		tag.Add(&e, tags)
 	}
 
-	e.Friends = make([]string, 0, len(guessedPersons))
+	e.FriendIDs = make([]string, 0, len(guessedPersons))
 
 	for _, p := range guessedPersons {
-		e.Friends = append(e.Friends, p.ID)
+		e.FriendIDs = append(e.FriendIDs, p.ID)
 
 		if e.Type == friend.EventTypeActivity {
 			p.MostRecentActivity = e.Date
@@ -537,6 +537,26 @@ func (j *Journal) GetEvent(t friend.EventType, q string) (friend.Event, error) {
 func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 	n.ID = o.ID
 
+	guessedPersons := j.GuessFriends(n.Desc)
+	tags := lang.ExtractTags(n.Desc)
+	_ = j.locMatcher().Match(n.Desc) // TODO: parse location
+
+	if len(tags) > 0 {
+		j.AddTags(tags)
+		tag.Add(&n, tags)
+	}
+
+	for _, p := range guessedPersons {
+		n.FriendIDs = append(n.FriendIDs, p.ID)
+
+		if n.Type == friend.EventTypeActivity {
+			p.MostRecentActivity = n.Date
+			p.Activities++
+		} else {
+			p.Notes++
+		}
+	}
+
 	if o.Type == friend.EventTypeActivity {
 		for i, act := range j.Activities {
 			if act.ID == o.ID {
@@ -558,8 +578,6 @@ func (j *Journal) UpdateEvent(o, n friend.Event) (friend.Event, error) {
 			}
 		}
 	}
-
-	// TODO: update friend & location references
 
 	// If the activity was not found, add it as a new one
 	return j.AddEvent(n)

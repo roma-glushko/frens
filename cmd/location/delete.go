@@ -23,7 +23,6 @@ import (
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -47,49 +46,47 @@ var DeleteCommand = &cli.Command{
 			Usage:   "Force delete without confirmation",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
-		if len(ctx.Args().Slice()) == 0 {
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
+
+		if c.NArg() == 0 {
 			return cli.Exit("Please provide a location name, alias, or ID to delete.", 1)
 		}
 
-		locations := make([]friend.Location, 0, len(ctx.Args().Slice()))
+		locations := make([]friend.Location, 0, c.NArg())
 
-		jctx := jctx.FromCtx(ctx.Context)
-		jr := jctx.Journal
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		for _, lID := range ctx.Args().Slice() {
-			l, err := jr.GetLocation(lID)
-			if err != nil {
-				return err
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			for _, lID := range c.Args().Slice() {
+				l, err := j.GetLocation(lID)
+				if err != nil {
+					return err
+				}
+
+				locations = append(locations, l)
 			}
 
-			locations = append(locations, l)
-		}
+			locWord := utils.P(len(locations), "location", "locations")
+			fmt.Printf("\n Found %d %s:\n\n", len(locations), locWord)
 
-		locWord := utils.P(len(locations), "location", "locations")
-		fmt.Printf("\n Found %d %s:\n\n", len(locations), locWord)
+			for _, l := range locations {
+				fmt.Printf(" • %s \n", l.String())
+			}
 
-		for _, l := range locations {
-			fmt.Printf(" • %s \n", l.String())
-		}
+			// TODO: check if interactive mode
+			fmt.Println("\n You're about to permanently delete the " + locWord + ".")
+			if !c.Bool("force") && !tui.ConfirmAction(" Are you sure?") {
+				fmt.Println("\n ↩ Deletion canceled.")
+				return nil
+			}
 
-		// TODO: check if interactive mode
-		fmt.Println("\n You're about to permanently delete the " + locWord + ".")
-		if !ctx.Bool("force") && !tui.ConfirmAction(" Are you sure?") {
-			fmt.Println("\n ↩ Deletion canceled.")
-			return nil
-		}
-
-		err := journaldir.Update(jr, func(j *journal.Journal) error {
 			j.RemoveLocations(locations)
+
+			fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(locWord))
+
 			return nil
 		})
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(locWord))
-
-		return nil
 	},
 }

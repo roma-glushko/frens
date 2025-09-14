@@ -12,25 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package toml
+package config
 
-import (
-	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/tag"
-)
-
-const (
-	FileNameFriends    = "friends.toml"
-	FileNameActivities = "activities.toml"
-)
-
-type FriendsFile struct {
-	Tags      []tag.Tag          `toml:"tags"`
-	Friends   []*friend.Person   `toml:"friends"`
-	Locations []*friend.Location `toml:"locations"`
-}
-
-type EventsFile struct {
-	Activities []*friend.Event `toml:"activities"`
-	Notes      []*friend.Event `toml:"notes"`
-}
+type Config struct{}
