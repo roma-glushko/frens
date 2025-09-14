@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/journal"
+
 	"github.com/roma-glushko/frens/internal/wishlist"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -73,97 +75,100 @@ var AddCommand = &cli.Command{
 			Usage:   "Add tags to the date (e.g., 'gift', 'tech', 'gaming')",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
+	Action: func(c *cli.Context) error {
 		var info string
 
-		if ctx.NArg() == 0 {
+		if c.NArg() == 0 {
 			return cli.Exit(
 				"You must provide a friend name, nickname, or ID to add a wishlist item.",
 				1,
 			)
 		}
 
-		jctx := jctx.FromCtx(ctx.Context)
-		jr := jctx.Journal
+		ctx := c.Context
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		pID := ctx.Args().First()
-		_, err := jr.GetFriend(pID)
-		if err != nil {
-			return err
-		}
-
-		if ctx.NArg() == 1 {
-			// TODO: also check if we are in the interactive mode
-			inputForm := tui.NewEditorForm(tui.EditorOptions{
-				Title:      "Add a new friend wishlist item information:",
-				SyntaxHint: lang.FormatWishlistItem,
-			})
-			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
-
-			if _, err := teaUI.Run(); err != nil {
-				log.Errorf("uh oh: %v", err)
-				return err
-			}
-
-			info = inputForm.Textarea.Value()
-		} else {
-			info = strings.Join(ctx.Args().Slice()[1:], " ")
-		}
-
-		var w friend.WishlistItem
-
-		if info != "" {
-			w, err = lang.ExtractWishlistItem(info)
-
-			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Errorf("failed to parse date info: %v", err)
-				return err
-			}
-		}
-
-		// apply CLI flags
-		desc := ctx.String("desc")
-		link := ctx.String("link")
-		tags := ctx.StringSlice("tag")
-
-		if desc != "" {
-			w.Desc = desc
-		}
-
-		if link != "" {
-			w.Link = link
-		}
-
-		if len(tags) > 0 {
-			w.Tags = tags
-		}
-
-		if err := w.Validate(); err != nil {
-			return err
-		}
-
-		urlMan := wishlist.NewURLManager()
-
-		if w.Link != "" {
-			pInfo, err := urlMan.Scrape(ctx.Context, w.Link)
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			pID := c.Args().First()
+			_, err := j.GetFriend(pID)
 			if err != nil {
-				return fmt.Errorf("failed to scrape product info: %v", err)
+				return err
 			}
 
-			fmt.Printf("%+v", pInfo)
-		}
+			if c.NArg() == 1 {
+				// TODO: also check if we are in the interactive mode
+				inputForm := tui.NewEditorForm(tui.EditorOptions{
+					Title:      "Add a new friend wishlist item information:",
+					SyntaxHint: lang.FormatWishlistItem,
+				})
+				teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
-		//err = journaldir.Update(jr, func(j *journal.Journal) error {
-		//	d, err = j.AddFriendDate(p.ID, d)
-		//
-		//	return err
-		//})
-		//if err != nil {
-		//	return err
-		//}
-		//
-		log.Info(" ✔ Wishlist item added")
+				if _, err := teaUI.Run(); err != nil {
+					log.Errorf("uh oh: %v", err)
+					return err
+				}
 
-		return nil
+				info = inputForm.Textarea.Value()
+			} else {
+				info = strings.Join(c.Args().Slice()[1:], " ")
+			}
+
+			var w friend.WishlistItem
+
+			if info != "" {
+				w, err = lang.ExtractWishlistItem(info)
+
+				if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+					log.Errorf("failed to parse date info: %v", err)
+					return err
+				}
+			}
+
+			// apply CLI flags
+			desc := c.String("desc")
+			link := c.String("link")
+			tags := c.StringSlice("tag")
+
+			if desc != "" {
+				w.Desc = desc
+			}
+
+			if link != "" {
+				w.Link = link
+			}
+
+			if len(tags) > 0 {
+				w.Tags = tags
+			}
+
+			if err := w.Validate(); err != nil {
+				return err
+			}
+
+			urlMan := wishlist.NewURLManager()
+
+			if w.Link != "" {
+				pInfo, err := urlMan.Scrape(ctx, w.Link)
+				if err != nil {
+					return fmt.Errorf("failed to scrape product info: %v", err)
+				}
+
+				fmt.Printf("%+v", pInfo)
+			}
+
+			//err = journaldir.Update(jr, func(j *journal.Journal) error {
+			//	d, err = j.AddFriendDate(p.ID, d)
+			//
+			//	return err
+			//})
+			//if err != nil {
+			//	return err
+			//}
+			//
+			log.Info(" ✔ Wishlist item added")
+
+			return nil
+		})
 	},
 }

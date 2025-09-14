@@ -27,7 +27,6 @@ import (
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -53,53 +52,50 @@ var DeleteCommand = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		if len(c.Args().Slice()) == 0 {
+		if c.NArg() == 0 {
 			return cli.Exit("Please provide a note ID to delete.", 1)
 		}
 
-		events := make([]friend.Event, 0, len(c.Args().Slice()))
+		events := make([]friend.Event, 0, c.NArg())
 
-		jctx := jctx.FromCtx(c.Context)
-		jr := jctx.Journal
+		ctx := c.Context
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		for _, actID := range c.Args().Slice() {
-			act, err := jr.GetEvent(friend.EventTypeNote, actID)
-			if err != nil {
-				if errors.Is(err, journal.ErrEventNotFound) {
-					return cli.Exit("Note not found: "+actID, 1)
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			for _, actID := range c.Args().Slice() {
+				act, err := j.GetEvent(friend.EventTypeNote, actID)
+				if err != nil {
+					if errors.Is(err, journal.ErrEventNotFound) {
+						return cli.Exit("Note not found: "+actID, 1)
+					}
+
+					log.Error("Failed to get note", "err", err, "note_id", actID)
+					return err
 				}
 
-				log.Error("Failed to get note", "err", err, "note_id", actID)
-				return err
+				events = append(events, act)
 			}
 
-			events = append(events, act)
-		}
+			actWord := utils.P(len(events), "note", "notes")
+			fmt.Printf("\n Found %d %s:\n\n", len(events), actWord)
 
-		actWord := utils.P(len(events), "note", "notes")
-		fmt.Printf("\n Found %d %s:\n\n", len(events), actWord)
+			for _, act := range events {
+				fmt.Printf(" • [%s] %s\n", act.ID, formatter.CutStr(act.Desc, 80))
+			}
 
-		for _, act := range events {
-			fmt.Printf(" • [%s] %s\n", act.ID, formatter.CutStr(act.Desc, 80))
-		}
+			// TODO: check if interactive mode
+			fmt.Println("\n You're about to permanently delete the " + actWord + ".")
+			if !c.Bool("force") && !tui.ConfirmAction(" Are you sure?") {
+				fmt.Println("\n ↩ Deletion canceled.")
+				return nil
+			}
 
-		// TODO: check if interactive mode
-		fmt.Println("\n You're about to permanently delete the " + actWord + ".")
-		if !c.Bool("force") && !tui.ConfirmAction(" Are you sure?") {
-			fmt.Println("\n ↩ Deletion canceled.")
-			return nil
-		}
-
-		err := journaldir.Update(jr, func(j *journal.Journal) error {
 			j.RemoveEvents(friend.EventTypeNote, events)
+
+			fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(actWord))
+
 			return nil
 		})
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(actWord))
-
-		return nil
 	},
 }

@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/journal"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/log/formatter"
 
@@ -73,7 +75,7 @@ var ListCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
 		jctx := jctx.FromCtx(ctx)
-		jr := jctx.Journal
+		s := jctx.Store
 
 		orderBy := friend.SortOrderDirect
 
@@ -81,29 +83,31 @@ var ListCommand = &cli.Command{
 			orderBy = friend.SortOrderReverse
 		}
 
-		activity, err := jr.ListEvents(friend.ListEventQuery{
-			Type:      friend.EventTypeActivity,
-			Keyword:   strings.TrimSpace(c.String("search")),
-			Tags:      c.StringSlice("tag"),
-			Since:     lang.ExtractDate(c.String("from")),
-			Until:     lang.ExtractDate(c.String("to")),
-			SortBy:    friend.SortOption(c.String("sort")),
-			SortOrder: orderBy,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to list activities: %w", err)
-		}
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			activity, err := j.ListEvents(friend.ListEventQuery{
+				Type:      friend.EventTypeActivity,
+				Keyword:   strings.TrimSpace(c.String("search")),
+				Tags:      c.StringSlice("tag"),
+				Since:     lang.ExtractDate(c.String("from")),
+				Until:     lang.ExtractDate(c.String("to")),
+				SortBy:    friend.SortOption(c.String("sort")),
+				SortOrder: orderBy,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to list activities: %w", err)
+			}
 
-		if len(activity) == 0 {
-			log.Info("No activities found for given query.")
+			if len(activity) == 0 {
+				log.Info("No activities found for given query.")
+				return nil
+			}
+
+			fmtr := formatter.EventTextFormatter{}
+
+			o, _ := fmtr.FormatList(activity)
+			fmt.Println(o)
+
 			return nil
-		}
-
-		fmtr := formatter.EventTextFormatter{}
-
-		o, _ := fmtr.FormatList(activity)
-		fmt.Println(o)
-
-		return nil
+		})
 	},
 }

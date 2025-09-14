@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/journal"
+
 	"github.com/roma-glushko/frens/internal/log"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
@@ -74,7 +76,7 @@ var ListCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
 		jctx := jctx.FromCtx(ctx)
-		jr := jctx.Journal
+		s := jctx.Store
 
 		sortOrder := friend.SortOrderDirect
 
@@ -82,29 +84,31 @@ var ListCommand = &cli.Command{
 			sortOrder = friend.SortOrderReverse
 		}
 
-		notes, err := jr.ListEvents(friend.ListEventQuery{
-			Type:      friend.EventTypeNote,
-			Keyword:   strings.TrimSpace(c.String("search")),
-			Tags:      c.StringSlice("tag"),
-			Since:     lang.ExtractDate(c.String("from")),
-			Until:     lang.ExtractDate(c.String("to")),
-			SortBy:    friend.SortOption(c.String("sort")),
-			SortOrder: sortOrder,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to list notes: %w", err)
-		}
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			notes, err := j.ListEvents(friend.ListEventQuery{
+				Type:      friend.EventTypeNote,
+				Keyword:   strings.TrimSpace(c.String("search")),
+				Tags:      c.StringSlice("tag"),
+				Since:     lang.ExtractDate(c.String("from")),
+				Until:     lang.ExtractDate(c.String("to")),
+				SortBy:    friend.SortOption(c.String("sort")),
+				SortOrder: sortOrder,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to list notes: %w", err)
+			}
 
-		if len(notes) == 0 {
-			log.Info("No notes found")
+			if len(notes) == 0 {
+				log.Info("No notes found")
+				return nil
+			}
+
+			fmtr := formatter.EventTextFormatter{}
+
+			o, _ := fmtr.FormatList(notes)
+			fmt.Println(o)
+
 			return nil
-		}
-
-		fmtr := formatter.EventTextFormatter{}
-
-		o, _ := fmtr.FormatList(notes)
-		fmt.Println(o)
-
-		return nil
+		})
 	},
 }

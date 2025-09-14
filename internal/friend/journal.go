@@ -12,25 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package toml
+package friend
 
-import (
-	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/tag"
-)
+import "github.com/roma-glushko/frens/internal/tag"
 
-const (
-	FileNameFriends    = "friends.toml"
-	FileNameActivities = "activities.toml"
-)
-
-type FriendsFile struct {
-	Tags      []tag.Tag          `toml:"tags"`
-	Friends   []*friend.Person   `toml:"friends"`
-	Locations []*friend.Location `toml:"locations"`
+type Journal struct {
+	dirty      bool
+	Tags       tag.Tags
+	Friends    []*Person
+	Locations  Locations
+	Activities []*Event
+	Notes      []*Event
 }
 
-type EventsFile struct {
-	Activities []*friend.Event `toml:"activities"`
-	Notes      []*friend.Event `toml:"notes"`
+func (j *Journal) IsDirty() bool {
+	return j.dirty
+}
+
+func (j *Journal) SetDirty(d bool) {
+	j.dirty = d
+}
+
+func (j *Journal) AddFriend(p Person) {
+	j.Friends = append(j.Friends, &p)
+	j.SetDirty(true)
 }

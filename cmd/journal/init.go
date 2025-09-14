@@ -20,7 +20,6 @@ import (
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/tui"
 
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/urfave/cli/v2"
 )
 
@@ -29,11 +28,14 @@ var InitCommand = &cli.Command{
 	Aliases: []string{"i"},
 	Usage:   "Init a new journal",
 	Flags:   []cli.Flag{},
-	Action: func(ctx *cli.Context) error {
-		jCtx := jctx.FromCtx(ctx.Context)
-		jDir := jCtx.JournalDir
+	Action: func(c *cli.Context) error {
+		ctx := c.Context
+		jCtx := jctx.FromCtx(ctx)
 
-		if journaldir.Exists(jDir) {
+		jDir := jCtx.JournalDir
+		s := jCtx.Store
+
+		if s.Exist(ctx) {
 			// TODO: check if interactive mode is enabled
 			fmt.Println("A journal already exists at", jDir)
 			if tui.ConfirmAction("\n⚠️  Do you want to overwrite the existing journal under?") {
@@ -44,7 +46,7 @@ var InitCommand = &cli.Command{
 			}
 		}
 
-		if err := journaldir.Init(jDir); err != nil {
+		if err := s.Init(ctx); err != nil {
 			return fmt.Errorf("failed to initialize the journal at %s: %w", jDir, err)
 		}
 

@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/journal"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/log/formatter"
 
@@ -65,7 +67,7 @@ var ListCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
 		jctx := jctx.FromCtx(ctx)
-		jr := jctx.Journal
+		s := jctx.Store
 
 		sortOrder := friend.SortOrderDirect
 
@@ -73,24 +75,26 @@ var ListCommand = &cli.Command{
 			sortOrder = friend.SortOrderReverse
 		}
 
-		locations := jr.ListLocations(friend.ListLocationQuery{
-			Keyword:   strings.TrimSpace(c.String("search")),
-			Countries: c.StringSlice("country"),
-			Tags:      c.StringSlice("tag"),
-			SortBy:    friend.SortOption(c.String("sort")),
-			SortOrder: sortOrder,
-		})
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			locations := j.ListLocations(friend.ListLocationQuery{
+				Keyword:   strings.TrimSpace(c.String("search")),
+				Countries: c.StringSlice("country"),
+				Tags:      c.StringSlice("tag"),
+				SortBy:    friend.SortOption(c.String("sort")),
+				SortOrder: sortOrder,
+			})
 
-		if len(locations) == 0 {
-			fmt.Println("No locations found")
+			if len(locations) == 0 {
+				fmt.Println("No locations found")
+				return nil
+			}
+
+			fmtr := formatter.LocationTextFormatter{}
+
+			o, _ := fmtr.FormatList(locations)
+			fmt.Println(o)
+
 			return nil
-		}
-
-		fmtr := formatter.LocationTextFormatter{}
-
-		o, _ := fmtr.FormatList(locations)
-		fmt.Println(o)
-
-		return nil
+		})
 	},
 }

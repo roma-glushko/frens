@@ -26,7 +26,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -85,26 +84,25 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		jctx := jctx.FromCtx(c.Context)
-		jr := jctx.Journal
+		ctx := c.Context
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
+		return s.Tx(ctx, func(j *journal.Journal) error {
 			e, err = j.AddEvent(e)
+			if err != nil {
+				return fmt.Errorf("failed to add note: %w", err)
+			}
 
-			return err
+			log.Infof(" ✔ Note added")
+			log.Info("==> Note Information\n")
+
+			fmtr := formatter.EventTextFormatter{}
+
+			o, _ := fmtr.FormatSingle(e)
+			fmt.Println(o)
+
+			return nil
 		})
-		if err != nil {
-			return err
-		}
-
-		log.Infof(" ✔ Note added")
-		log.Info("==> Note Information\n")
-
-		fmtr := formatter.EventTextFormatter{}
-
-		o, _ := fmtr.FormatSingle(e)
-		fmt.Println(o)
-
-		return nil
 	},
 }
