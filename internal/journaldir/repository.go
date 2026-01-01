@@ -15,112 +15,31 @@
 package journaldir
 
 import (
-	"fmt"
-	"sync"
-
 	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/journaldir/toml"
 )
 
 // Repository provides access to journal data with proper transaction handling.
-// It encapsulates the loading, saving, and locking logic for journal operations.
-type Repository struct {
-	dir     string
-	journal *journal.Journal
-	mu      sync.RWMutex
+type Repository interface {
+	Dir() string
+	IsLoaded() bool
+	Load() (*journal.Journal, error)
+	Journal() *journal.Journal
+	Update(fn func(*journal.Journal) error) error
+	Reload() error
 }
 
 // NewRepository creates a new Repository for the given journal directory.
-// It does not load the journal immediately - call Load() or use Update() to load data.
-func NewRepository(dir string) *Repository {
-	return &Repository{
-		dir: dir,
-	}
+func NewRepository(dir string) Repository {
+	return toml.NewRepository(dir)
 }
 
-// Dir returns the journal directory path.
-func (r *Repository) Dir() string {
-	return r.dir
+// Exists checks if a journal exists at the given path.
+func Exists(path string) bool {
+	return toml.Exists(path)
 }
 
-// IsLoaded returns true if the journal has been loaded into memory.
-func (r *Repository) IsLoaded() bool {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.journal != nil
-}
-
-// Load loads the journal from disk if not already loaded.
-// Returns the cached journal if already loaded.
-func (r *Repository) Load() (*journal.Journal, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if r.journal != nil {
-		return r.journal, nil
-	}
-
-	jr, err := load(r.dir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load journal: %w", err)
-	}
-
-	r.journal = jr
-	return r.journal, nil
-}
-
-// Journal returns the loaded journal for read operations.
-// Returns nil if the journal has not been loaded yet.
-// For write operations, use Update() instead.
-func (r *Repository) Journal() *journal.Journal {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.journal
-}
-
-// Update executes a function that modifies the journal and saves changes if dirty.
-// This method provides transaction-like semantics: the journal is locked during
-// the update, and changes are persisted only if the journal is marked dirty.
-func (r *Repository) Update(fn func(*journal.Journal) error) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	// Load if not yet loaded
-	if r.journal == nil {
-		jr, err := load(r.dir)
-		if err != nil {
-			return fmt.Errorf("failed to load journal: %w", err)
-		}
-		r.journal = jr
-	}
-
-	// Execute the update function
-	if err := fn(r.journal); err != nil {
-		return err
-	}
-
-	// Save if dirty
-	if !r.journal.IsDirty() {
-		return nil
-	}
-
-	if err := save(r.journal); err != nil {
-		return fmt.Errorf("failed to save journal: %w", err)
-	}
-
-	r.journal.SetDirty(false)
-	return nil
-}
-
-// Reload forces a reload of the journal from disk, discarding any unsaved changes.
-func (r *Repository) Reload() error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	jr, err := load(r.dir)
-	if err != nil {
-		return fmt.Errorf("failed to reload journal: %w", err)
-	}
-
-	r.journal = jr
-	return nil
+// Init initializes a new journal at the given path.
+func Init(path string) error {
+	return toml.Init(path)
 }

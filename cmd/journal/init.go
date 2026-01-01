@@ -18,9 +18,9 @@ import (
 	"fmt"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
 
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/urfave/cli/v2"
 )
 

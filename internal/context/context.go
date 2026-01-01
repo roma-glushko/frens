@@ -22,7 +22,7 @@ import (
 
 type AppContext struct {
 	JournalDir string
-	Repository *journaldir.Repository
+	Repository journaldir.Repository
 }
 
 type ctxKey struct{}
