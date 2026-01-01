@@ -20,7 +20,6 @@ import (
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/roma-glushko/frens/internal/utils"
 	"github.com/urfave/cli/v2"
@@ -53,8 +52,8 @@ var DeleteCommand = &cli.Command{
 
 		dates := make([]friend.Date, 0, len(c.Args().Slice()))
 
-		jctx := jctx.FromCtx(c.Context)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(c.Context)
+		jr := appCtx.Repository.Journal()
 
 		for _, actID := range c.Args().Slice() {
 			dt, err := jr.GetFriendDate(actID)
@@ -79,9 +78,10 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err := journaldir.Update(jr, func(j *journal.Journal) error {
+		err := appCtx.Repository.Update(func(j *journal.Journal) error {
 			return j.RemoveFriendDates(dates)
 		})
+
 		if err != nil {
 			return err
 		}

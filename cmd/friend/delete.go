@@ -16,7 +16,6 @@ package friend
 
 import (
 	"fmt"
-
 	"github.com/charmbracelet/lipgloss"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
@@ -25,7 +24,6 @@ import (
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -64,8 +62,8 @@ var DeleteCommand = &cli.Command{
 
 		friends := make([]friend.Person, 0, len(c.Args().Slice()))
 
-		jctx := jctx.FromCtx(ctx)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(ctx)
+		jr := appCtx.Repository.Journal()
 
 		for _, fID := range c.Args().Slice() {
 			f, err := jr.GetFriend(fID)
@@ -90,10 +88,11 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err := journaldir.Update(jr, func(j *journal.Journal) error {
+		err := appCtx.Repository.Update(func(j *journal.Journal) error {
 			j.RemoveFriends(friends)
 			return nil
 		})
+
 		if err != nil {
 			return err
 		}

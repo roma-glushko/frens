@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/roma-glushko/frens/internal/journal"
 )
 
 type Files interface {
@@ -105,7 +104,7 @@ func Exists(journalDir string) bool {
 	return false
 }
 
-func Load(journalDir string) (*journal.Journal, error) {
+func Load(journalDir string) (*Data, error) {
 	var errs []error
 
 	entities, err := loadFile[FriendsFile](filepath.Join(journalDir, FileNameFriends))
@@ -122,7 +121,7 @@ func Load(journalDir string) (*journal.Journal, error) {
 		return nil, errors.Join(errs...)
 	}
 
-	return &journal.Journal{
+	return &Data{
 		DirPath:    journalDir,
 		Tags:       entities.Tags,
 		Friends:    entities.Friends,
@@ -132,25 +131,25 @@ func Load(journalDir string) (*journal.Journal, error) {
 	}, nil
 }
 
-func Save(l *journal.Journal) error {
+func Save(d *Data) error {
 	var errs []error
 
 	entities := FriendsFile{
-		Tags:      l.Tags,
-		Friends:   l.Friends,
-		Locations: l.Locations,
+		Tags:      d.Tags,
+		Friends:   d.Friends,
+		Locations: d.Locations,
 	}
 
-	if err := saveFile(filepath.Join(l.DirPath, FileNameFriends), entities); err != nil {
+	if err := saveFile(filepath.Join(d.DirPath, FileNameFriends), entities); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create friends file: %w", err))
 	}
 
 	events := EventsFile{
-		Notes:      l.Notes,
-		Activities: l.Activities,
+		Notes:      d.Notes,
+		Activities: d.Activities,
 	}
 
-	if err := saveFile(filepath.Join(l.DirPath, FileNameActivities), events); err != nil {
+	if err := saveFile(filepath.Join(d.DirPath, FileNameActivities), events); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create events file: %w", err))
 	}
 

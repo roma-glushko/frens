@@ -23,7 +23,6 @@ import (
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -54,8 +53,8 @@ var DeleteCommand = &cli.Command{
 
 		locations := make([]friend.Location, 0, len(ctx.Args().Slice()))
 
-		jctx := jctx.FromCtx(ctx.Context)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(ctx.Context)
+		jr := appCtx.Repository.Journal()
 
 		for _, lID := range ctx.Args().Slice() {
 			l, err := jr.GetLocation(lID)
@@ -80,10 +79,11 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err := journaldir.Update(jr, func(j *journal.Journal) error {
+		err := appCtx.Repository.Update(func(j *journal.Journal) error {
 			j.RemoveLocations(locations)
 			return nil
 		})
+
 		if err != nil {
 			return err
 		}

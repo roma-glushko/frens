@@ -99,16 +99,19 @@ func NewApp() cli.App {
 
 			log.Debugf(" Using journal directory: %s", jDir)
 
-			jCtx := jctx.AppContext{
-				JournalDir: jDir,
-			}
+			// Create repository - it will lazy-load the journal when first accessed
+			repo := journaldir.NewRepository(jDir)
 
+			// Pre-load the journal if it exists
 			if journaldir.Exists(jDir) {
-				// load only if the journal directory exists (it may not if this is the first run or a new journal path)
-				jCtx.Journal, err = journaldir.Load(jDir)
-				if err != nil {
+				if _, err := repo.Load(); err != nil {
 					return fmt.Errorf("failed to load journal from %s: %w", jDir, err)
 				}
+			}
+
+			jCtx := jctx.AppContext{
+				JournalDir: jDir,
+				Repository: repo,
 			}
 
 			ctx.Context = jctx.WithCtx(ctx.Context, &jCtx)

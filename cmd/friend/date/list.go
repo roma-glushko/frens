@@ -49,8 +49,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(ctx)
+		jr := appCtx.Repository.Journal()
 
 		dates, err := jr.ListFriendDates(friend.ListDateQuery{
 			Keyword: c.String("search"),

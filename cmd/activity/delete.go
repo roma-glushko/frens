@@ -23,7 +23,6 @@ import (
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -55,8 +54,8 @@ var DeleteCommand = &cli.Command{
 
 		activities := make([]friend.Event, 0, len(c.Args().Slice()))
 
-		jctx := jctx.FromCtx(c.Context)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(c.Context)
+		jr := appCtx.Repository.Journal()
 
 		for _, actID := range c.Args().Slice() {
 			act, err := jr.GetEvent(friend.EventTypeActivity, actID)
@@ -81,7 +80,7 @@ var DeleteCommand = &cli.Command{
 			return nil
 		}
 
-		err := journaldir.Update(jr, func(j *journal.Journal) error {
+		err := appCtx.Repository.Update(func(j *journal.Journal) error {
 			j.RemoveEvents(friend.EventTypeActivity, activities)
 			return nil
 		})

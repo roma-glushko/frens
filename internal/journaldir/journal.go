@@ -20,9 +20,8 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/roma-glushko/frens/internal/journaldir/toml"
-
 	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/journaldir/toml"
 )
 
 // Init loads the journal from the specific path or `~/.config/frens/` is used by default
@@ -49,8 +48,8 @@ func Exists(path string) bool {
 	return toml.Exists(path)
 }
 
-// Load loads the journal from the specific path or `~/.config/frens/` is used by default
-func Load(path string) (*journal.Journal, error) {
+// load loads the journal from the specific path or `~/.config/frens/` is used by default
+func load(path string) (*journal.Journal, error) {
 	_, err := os.Stat(path)
 	if err != nil && errors.Is(err, fs.ErrNotExist) {
 		return nil, fmt.Errorf(
@@ -64,34 +63,32 @@ func Load(path string) (*journal.Journal, error) {
 		return nil, fmt.Errorf("failed to load journal directory: %w", err)
 	}
 
-	data.Init()
+	// Convert toml.Data to journal.Journal
+	jr := &journal.Journal{
+		DirPath:    data.DirPath,
+		Tags:       data.Tags,
+		Friends:    data.Friends,
+		Locations:  data.Locations,
+		Activities: data.Activities,
+		Notes:      data.Notes,
+	}
 
-	return data, nil
+	jr.Init()
+
+	return jr, nil
 }
 
-// Save saves the life files from the specific path or `~/.config/frens/` is used by default
-func Save(data *journal.Journal) error {
+// save saves the life files from the specific path or `~/.config/frens/` is used by default
+func save(jr *journal.Journal) error {
+	// Convert journal.Journal to toml.Data for saving
+	data := &toml.Data{
+		DirPath:    jr.DirPath,
+		Tags:       jr.Tags,
+		Friends:    jr.Friends,
+		Locations:  jr.Locations,
+		Activities: jr.Activities,
+		Notes:      jr.Notes,
+	}
+
 	return toml.Save(data)
-}
-
-type UpdateJournalFunc = func(data *journal.Journal) error
-
-func Update(jr *journal.Journal, updater UpdateJournalFunc) error {
-	err := updater(jr)
-	if err != nil {
-		return err
-	}
-
-	if !jr.IsDirty() {
-		return nil
-	}
-
-	err = Save(jr)
-	if err != nil {
-		return fmt.Errorf("failed to save journal: %w", err)
-	}
-
-	jr.SetDirty(false)
-
-	return nil
 }

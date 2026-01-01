@@ -25,7 +25,6 @@ import (
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/urfave/cli/v2"
@@ -76,8 +75,8 @@ var AddCommand = &cli.Command{
 			return cli.Exit("You must provide a friend name, nickname, or ID to add a date.", 1)
 		}
 
-		jctx := jctx.FromCtx(ctx.Context)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(ctx.Context)
+		jr := appCtx.Repository.Journal()
 
 		pID := ctx.Args().First()
 		p, err := jr.GetFriend(pID)
@@ -140,7 +139,7 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
+		err = appCtx.Repository.Update(func(j *journal.Journal) error {
 			d, err = j.AddFriendDate(p.ID, d)
 
 			return err

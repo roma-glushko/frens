@@ -24,12 +24,26 @@ const (
 	FileNameActivities = "activities.toml"
 )
 
+// Data represents the persisted journal data.
+// This is the pure data structure that storage operates on,
+// separate from the Journal service which adds behavior (matching, dirty tracking, etc).
+type Data struct {
+	DirPath    string
+	Tags       tag.Tags
+	Friends    []*friend.Person
+	Locations  []*friend.Location
+	Activities []*friend.Event
+	Notes      []*friend.Event
+}
+
+// FriendsFile represents the structure of friends.toml
 type FriendsFile struct {
 	Tags      []tag.Tag          `toml:"tags"`
 	Friends   []*friend.Person   `toml:"friends"`
 	Locations []*friend.Location `toml:"locations"`
 }
 
+// EventsFile represents the structure of activities.toml
 type EventsFile struct {
 	Activities []*friend.Event `toml:"activities"`
 	Notes      []*friend.Event `toml:"notes"`

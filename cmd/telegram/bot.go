@@ -24,7 +24,6 @@ import (
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/version"
 	"gopkg.in/telebot.v4/middleware"
@@ -81,8 +80,8 @@ var BotCommand = &cli.Command{
 		}
 
 		startedAt := time.Now()
-		jctx := jctx.FromCtx(ctx)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(ctx)
+		jr := appCtx.Repository.Journal()
 
 		if len(userList) > 0 {
 			bot.Use(middleware.Whitelist(userList...))
@@ -282,7 +281,7 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("failed to parse friend info: %v", err))
 			}
 
-			err = journaldir.Update(jr, func(l *journal.Journal) error {
+			err = appCtx.Repository.Update(func(l *journal.Journal) error {
 				l.AddFriend(f)
 				return nil
 			})
@@ -324,7 +323,7 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("failed to parse friend info: %v", err))
 			}
 
-			err = journaldir.Update(jr, func(j *journal.Journal) error {
+			err = appCtx.Repository.Update(func(j *journal.Journal) error {
 				j.AddLocation(l)
 				return nil
 			})
@@ -366,7 +365,7 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("failed to parse note info: %v", err))
 			}
 
-			err = journaldir.Update(jr, func(j *journal.Journal) error {
+			err = appCtx.Repository.Update(func(j *journal.Journal) error {
 				e, err = j.AddEvent(e)
 				return err
 			})
@@ -403,10 +402,11 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("failed to parse activity info: %v", err))
 			}
 
-			err = journaldir.Update(jr, func(j *journal.Journal) error {
+			err = appCtx.Repository.Update(func(j *journal.Journal) error {
 				e, err = j.AddEvent(e)
 				return err
 			})
+
 			if err != nil {
 				return c.Send(fmt.Sprintf("failed to add activity: %v", err))
 			}

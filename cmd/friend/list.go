@@ -65,8 +65,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(ctx)
+		jr := appCtx.Repository.Journal()
 
 		sortOrder := friend.SortOrderDirect
 

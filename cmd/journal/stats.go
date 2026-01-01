@@ -29,7 +29,7 @@ var StatsCommand = &cli.Command{
 		ctx := c.Context
 		jctx := jctx.FromCtx(ctx)
 
-		stats := jctx.Journal.Stats()
+		stats := jctx.Repository.Journal().Stats()
 
 		fmt.Println("Journal Statistics:")
 		fmt.Printf("  • Friends: %d\n", stats.Friends)

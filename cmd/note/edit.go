@@ -26,7 +26,6 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -59,8 +58,8 @@ var EditCommand = &cli.Command{
 		actID := c.Args().First()
 		desc := strings.TrimSpace(strings.Join(c.Args().Slice()[1:], " "))
 
-		jctx := jctx.FromCtx(ctx)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(ctx)
+		jr := appCtx.Repository.Journal()
 
 		actOld, err := jr.GetEvent(friend.EventTypeNote, actID)
 		if err != nil {
@@ -96,7 +95,7 @@ var EditCommand = &cli.Command{
 			return err
 		}
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
+		err = appCtx.Repository.Update(func(j *journal.Journal) error {
 			actNew, err = j.UpdateEvent(actOld, actNew)
 			return err
 		})

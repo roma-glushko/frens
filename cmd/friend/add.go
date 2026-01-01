@@ -30,7 +30,6 @@ import (
 	"github.com/roma-glushko/frens/internal/tui"
 
 	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/urfave/cli/v2"
 )
 
@@ -151,11 +150,10 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		jctx := jctx.FromCtx(ctx.Context)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(ctx.Context)
 
-		err = journaldir.Update(jr, func(l *journal.Journal) error {
-			l.AddFriend(f)
+		err = appCtx.Repository.Update(func(j *journal.Journal) error {
+			j.AddFriend(f)
 			return nil
 		})
 		if err != nil {

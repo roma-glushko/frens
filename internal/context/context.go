@@ -17,12 +17,12 @@ package context
 import (
 	"context"
 
-	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/journaldir"
 )
 
 type AppContext struct {
 	JournalDir string
-	Journal    *journal.Journal
+	Repository *journaldir.Repository
 }
 
 type ctxKey struct{}

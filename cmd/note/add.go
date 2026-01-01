@@ -26,7 +26,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/journaldir"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -85,14 +84,14 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		jctx := jctx.FromCtx(c.Context)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(c.Context)
 
-		err = journaldir.Update(jr, func(j *journal.Journal) error {
+		err = appCtx.Repository.Update(func(j *journal.Journal) error {
 			e, err = j.AddEvent(e)
 
 			return err
 		})
+
 		if err != nil {
 			return err
 		}

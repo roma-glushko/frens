@@ -83,8 +83,8 @@ var AddCommand = &cli.Command{
 			)
 		}
 
-		jctx := jctx.FromCtx(ctx.Context)
-		jr := jctx.Journal
+		appCtx := jctx.FromCtx(ctx.Context)
+		jr := appCtx.Repository.Journal()
 
 		pID := ctx.Args().First()
 		_, err := jr.GetFriend(pID)
