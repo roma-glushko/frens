@@ -28,6 +28,15 @@ type WishlistItem struct {
 	Price     string    `toml:"price,omitempty"`
 	Tags      []string  `toml:"tags,omitempty"`
 	Location  []string  `toml:"locations,omitempty"`
+	Person    string    `toml:"-"`
+}
+
+func (w *WishlistItem) SetTags(tags []string) {
+	w.Tags = tags
+}
+
+func (w *WishlistItem) GetTags() []string {
+	return w.Tags
 }
 
 func (i *WishlistItem) Validate() error {

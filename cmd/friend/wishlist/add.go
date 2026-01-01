@@ -27,10 +27,10 @@ import (
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
-	//"github.com/roma-glushko/frens/internal/journal"
-	//"github.com/roma-glushko/frens/internal/journaldir"
+	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/log/formatter"
 	"github.com/urfave/cli/v2"
 )
 
@@ -87,7 +87,7 @@ var AddCommand = &cli.Command{
 		jr := appCtx.Repository.Journal()
 
 		pID := ctx.Args().First()
-		_, err := jr.GetFriend(pID)
+		p, err := jr.GetFriend(pID)
 		if err != nil {
 			return err
 		}
@@ -147,22 +147,34 @@ var AddCommand = &cli.Command{
 		if w.Link != "" {
 			pInfo, err := urlMan.Scrape(ctx.Context, w.Link)
 			if err != nil {
-				return fmt.Errorf("failed to scrape product info: %v", err)
+				log.Debugf("failed to scrape product info: %v", err)
+			} else if pInfo != nil {
+				// Use scraped info to enrich the item
+				if w.Desc == "" && pInfo.Name != "" {
+					w.Desc = pInfo.Name
+				}
+				if w.Price == "" && pInfo.PriceAmount != "" {
+					w.Price = pInfo.PriceAmount + pInfo.PriceCurrency
+				}
 			}
-
-			fmt.Printf("%+v", pInfo)
 		}
 
-		//err = journaldir.Update(jr, func(j *journal.Journal) error {
-		//	d, err = j.AddFriendDate(p.ID, d)
-		//
-		//	return err
-		//})
-		//if err != nil {
-		//	return err
-		//}
-		//
-		log.Info(" ✔ Wishlist item added")
+		err = appCtx.Repository.Update(func(j *journal.Journal) error {
+			w, err = j.AddFriendWishlistItem(p.ID, w)
+
+			return err
+		})
+		if err != nil {
+			return err
+		}
+
+		log.Info(" Wishlist item added")
+		log.Info("==> Wishlist Item Information\n")
+
+		fmtr := formatter.WishlistItemTextFormatter{}
+
+		o, _ := fmtr.FormatSingle(&w)
+		fmt.Println(o)
 
 		return nil
 	},

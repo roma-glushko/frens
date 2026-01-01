@@ -774,6 +774,126 @@ func (j *Journal) RemoveFriendDates(toRemove []friend.Date) error {
 	return nil
 }
 
+// Wishlist methods
+
+func (j *Journal) AddFriendWishlistItem(fID string, w friend.WishlistItem) (friend.WishlistItem, error) {
+	f, err := j.GetFriend(fID)
+	if err != nil {
+		return friend.WishlistItem{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
+	}
+
+	if w.ID == "" {
+		w.ID = ksuid.New().String()
+	}
+
+	f.Wishlist = append(f.Wishlist, &w)
+
+	j.SetDirty(true)
+
+	return w, nil
+}
+
+func (j *Journal) UpdateFriendWishlistItem(o, n friend.WishlistItem) (friend.WishlistItem, error) {
+	n.ID = o.ID
+	n.CreatedAt = o.CreatedAt
+
+	for _, f := range j.Friends {
+		for i, w := range f.Wishlist {
+			if w.ID == o.ID {
+				f.Wishlist[i] = &n
+
+				j.SetDirty(true)
+
+				return n, nil
+			}
+		}
+	}
+
+	return friend.WishlistItem{}, fmt.Errorf("wishlist item with ID %s not found", o.ID)
+}
+
+func (j *Journal) GetFriendWishlistItem(wID string) (friend.WishlistItem, error) {
+	for _, f := range j.Friends {
+		for _, w := range f.Wishlist {
+			if w.ID == wID {
+				w.Person = f.ID
+
+				return *w, nil
+			}
+		}
+	}
+
+	return friend.WishlistItem{}, fmt.Errorf("wishlist item with ID %s not found", wID)
+}
+
+func (j *Journal) ListFriendWishlistItems(q friend.ListWishlistQuery) ([]friend.WishlistItem, error) {
+	items := make([]friend.WishlistItem, 0, 10)
+
+	frs := j.Friends
+
+	if len(q.Friends) > 0 {
+		frs = make([]*friend.Person, 0, len(q.Friends))
+
+		for _, fID := range q.Friends {
+			f, err := j.GetFriend(fID)
+			if err != nil {
+				return items, fmt.Errorf("failed to get friend %s: %w", fID, err)
+			}
+
+			frs = append(frs, &f)
+		}
+	}
+
+	for _, f := range frs {
+		for _, w := range f.Wishlist {
+			if q.Keyword != "" &&
+				!strings.Contains(strings.ToLower(w.Desc), strings.ToLower(q.Keyword)) &&
+				!strings.Contains(strings.ToLower(w.Link), strings.ToLower(q.Keyword)) {
+				continue
+			}
+
+			if len(q.Tags) > 0 && !tag.HasTags(w, q.Tags) {
+				continue
+			}
+
+			w.Person = f.ID
+
+			items = append(items, *w)
+		}
+	}
+
+	return items, nil
+}
+
+func (j *Journal) RemoveFriendWishlistItems(toRemove []friend.WishlistItem) error {
+	for _, wID := range toRemove {
+		found := false
+
+		for _, f := range j.Friends {
+			for i, w := range f.Wishlist {
+				if w.ID == wID.ID {
+					f.Wishlist = append(f.Wishlist[:i], f.Wishlist[i+1:]...)
+					found = true
+
+					j.SetDirty(true)
+
+					break
+				}
+			}
+
+			if found {
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("wishlist item with ID %s not found", wID.ID)
+		}
+	}
+
+	return nil
+}
+
 func (j *Journal) Stats() Stats {
 	return Stats{
 		Friends:    len(j.Friends),

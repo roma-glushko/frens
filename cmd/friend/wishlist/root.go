@@ -26,5 +26,8 @@ var Commands = &cli.Command{
 	Description: "Manage your friend's wishlist.",
 	Subcommands: []*cli.Command{
 		AddCommand,
+		ListCommand,
+		EditCommand,
+		DeleteCommand,
 	},
 }
