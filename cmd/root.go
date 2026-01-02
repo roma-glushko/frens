@@ -48,6 +48,7 @@ func InitLogging(verbose bool, quiet bool) {
 
 	if verbose && quiet {
 		level = log.LogLevelStandard
+
 		log.Warn("cannot set both verbose and quiet modes at the same time, ignoring both flags")
 	}
 
