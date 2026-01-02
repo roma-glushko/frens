@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package friend
+package wishlist
 
 import (
 	"errors"
@@ -34,56 +34,58 @@ import (
 var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
-	Usage:     "Update main friend information",
+	Usage:     "Update a wishlist item",
 	Args:      true,
-	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID>`,
+	ArgsUsage: `<WISHLIST_ITEM_ID>`,
 	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "id",
-			Usage: "Set friend's unique identifier (used for linking with other data, editing, etc.)",
-		},
-		&cli.StringFlag{
-			Name:    "name",
-			Aliases: []string{"n"},
-			Usage:   "Set friend's name",
-		},
 		&cli.StringFlag{
 			Name:    "desc",
 			Aliases: []string{"d"},
-			Usage:   "Set description of the friend",
+			Usage:   "Description of the wishlist item",
+		},
+		&cli.StringFlag{
+			Name:    "link",
+			Aliases: []string{"l"},
+			Usage:   "Link to the wishlist item",
+		},
+		&cli.StringFlag{
+			Name:    "price",
+			Aliases: []string{"p"},
+			Usage:   "Price of the wishlist item",
 		},
 		&cli.StringSliceFlag{
-			Name:    "nickname",
-			Aliases: []string{"a", "aka", "alias", "nick"},
-			Usage:   "Set friend's nicknames (override existing ones)",
+			Name:    "tag",
+			Aliases: []string{"t"},
+			Usage:   "Set tags for the wishlist item",
 		},
 	},
 	Action: func(c *cli.Context) error {
 		if c.NArg() < 1 {
 			return cli.Exit(
-				"You must provide a friend name, nickname, or ID to edit. Execute `frens friend ls` to find out.",
+				"You must provide a wishlist item ID. Execute `frens friend wishlist ls` to find out.",
 				1,
 			)
 		}
 
-		pID := strings.Join(c.Args().Slice(), " ")
+		wID := strings.Join(c.Args().Slice(), " ")
 
 		ctx := c.Context
-		appCtx := jctx.FromCtx(c.Context)
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
-			pOld, err := j.GetFriend(pID)
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			wOld, err := j.GetFriendWishlistItem(wID)
 			if err != nil {
 				return err
 			}
 
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
-				Title:      "Edit " + pOld.Name + " information:",
-				SyntaxHint: lang.FormatPersonInfo,
+				Title:      "Edit wishlist item (" + wOld.ID + "):",
+				SyntaxHint: lang.FormatWishlistItem,
 			})
-			inputForm.Textarea.SetValue(lang.RenderPerson(pOld))
 
-			// TODO: check if interactive mode is enabled
+			inputForm.Textarea.SetValue(lang.RenderWishlistItem(wOld))
+
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
 			if _, err := teaUI.Run(); err != nil {
@@ -94,53 +96,52 @@ var EditCommand = &cli.Command{
 			infoTxt := inputForm.Textarea.Value()
 
 			if infoTxt == "" {
-				return errors.New("no friend info provided")
+				return errors.New("no wishlist item info provided")
 			}
 
-			pNew, err := lang.ExtractPerson(infoTxt)
+			wNew, err := lang.ExtractWishlistItem(infoTxt)
 
-			id := c.String("id")
-			name := c.String("name")
 			desc := c.String("desc")
-			nicknames := c.StringSlice("nickname")
-
-			if pNew.ID == "" {
-				pNew.ID = pOld.ID
-			}
-
-			if id != "" {
-				pNew.ID = id
-			}
-
-			if name != "" {
-				pNew.Name = name
-			}
+			link := c.String("link")
+			price := c.String("price")
+			tags := c.StringSlice("tag")
 
 			if desc != "" {
-				pNew.Desc = desc
+				wNew.Desc = desc
 			}
 
-			if len(nicknames) > 0 {
-				pNew.Nicknames = nicknames
+			if link != "" {
+				wNew.Link = link
+			}
+
+			if price != "" {
+				wNew.Price = price
+			}
+
+			if len(tags) > 0 {
+				wNew.Tags = tags
 			}
 
 			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Errorf(" ✖ failed to parse friend info: %v", err)
+				log.Errorf(" failed to parse wishlist item info: %v", err)
 				return err
 			}
 
-			if err := pNew.Validate(); err != nil {
+			if err := wNew.Validate(); err != nil {
 				return err
 			}
 
-			j.UpdateFriend(pOld, pNew)
+			wNew, err = j.UpdateFriendWishlistItem(wOld, wNew)
+			if err != nil {
+				return err
+			}
 
-			log.Info(" ✔ Friend updated")
-			log.Info("==> Friend Information\n")
+			log.Info(" Wishlist item updated")
+			log.Info("==> Wishlist Item Information\n")
 
-			fmtr := formatter.PersonTextFormatter{}
+			fmtr := formatter.WishlistItemTextFormatter{}
 
-			o, _ := fmtr.FormatSingle(pNew)
+			o, _ := fmtr.FormatSingle(&wNew)
 			fmt.Println(o)
 
 			return nil

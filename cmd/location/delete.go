@@ -55,10 +55,9 @@ var DeleteCommand = &cli.Command{
 
 		locations := make([]friend.Location, 0, c.NArg())
 
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
 
-		return s.Tx(ctx, func(j *journal.Journal) error {
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			for _, lID := range c.Args().Slice() {
 				l, err := j.GetLocation(lID)
 				if err != nil {

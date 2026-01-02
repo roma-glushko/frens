@@ -57,10 +57,9 @@ var EditCommand = &cli.Command{
 		actID := c.Args().First()
 		desc := strings.TrimSpace(strings.Join(c.Args().Slice()[1:], " "))
 
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
 
-		return s.Tx(ctx, func(j *journal.Journal) error {
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			actOld, err := j.GetEvent(friend.EventTypeActivity, actID)
 			if err != nil {
 				return cli.Exit("Activity not found: "+actID, 1)

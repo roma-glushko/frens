@@ -81,8 +81,8 @@ var BotCommand = &cli.Command{
 		}
 
 		startedAt := time.Now()
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		if len(userList) > 0 {
 			bot.Use(middleware.Whitelist(userList...))

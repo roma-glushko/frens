@@ -59,10 +59,9 @@ var DeleteCommand = &cli.Command{
 		events := make([]friend.Event, 0, c.NArg())
 
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
 
-		return s.Tx(ctx, func(j *journal.Journal) error {
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			for _, actID := range c.Args().Slice() {
 				act, err := j.GetEvent(friend.EventTypeNote, actID)
 				if err != nil {

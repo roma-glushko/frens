@@ -69,10 +69,9 @@ var EditCommand = &cli.Command{
 		dtID := strings.Join(c.Args().Slice(), " ")
 
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
 
-		return s.Tx(ctx, func(j *journal.Journal) error {
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			dtOld, err := j.GetFriendDate(dtID)
 			if err != nil {
 				return err

@@ -63,10 +63,9 @@ var DeleteCommand = &cli.Command{
 
 		friends := make([]friend.Person, 0, c.NArg())
 
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
 
-		return s.Tx(ctx, func(j *journal.Journal) error {
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			for _, fID := range c.Args().Slice() {
 				f, err := j.GetFriend(fID)
 				if err != nil {

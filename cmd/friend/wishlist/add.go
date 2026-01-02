@@ -19,20 +19,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/journal"
-
-	"github.com/roma-glushko/frens/internal/wishlist"
-
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/roma-glushko/frens/internal/tui"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
-
 	"github.com/roma-glushko/frens/internal/friend"
-	//"github.com/roma-glushko/frens/internal/journal"
-	//"github.com/roma-glushko/frens/internal/journaldir"
+	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/log/formatter"
+	"github.com/roma-glushko/frens/internal/tui"
+	"github.com/roma-glushko/frens/internal/wishlist"
 	"github.com/urfave/cli/v2"
 )
 
@@ -45,7 +40,7 @@ var AddCommand = &cli.Command{
 	ArgsUsage: `<INFO>
 		If no arguments are provided, a textarea will be shown to fill in the details interactively.
 		Otherwise, the information will be parsed from the command options.
-		
+
 		<INFO> format:
 			` + lang.FormatWishlistItem + `
 
@@ -86,12 +81,11 @@ var AddCommand = &cli.Command{
 		}
 
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
 
-		return s.Tx(ctx, func(j *journal.Journal) error {
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			pID := c.Args().First()
-			_, err := j.GetFriend(pID)
+			p, err := j.GetFriend(pID)
 			if err != nil {
 				return err
 			}
@@ -151,22 +145,30 @@ var AddCommand = &cli.Command{
 			if w.Link != "" {
 				pInfo, err := urlMan.Scrape(ctx, w.Link)
 				if err != nil {
-					return fmt.Errorf("failed to scrape product info: %v", err)
+					log.Debugf("failed to scrape product info: %v", err)
+				} else if pInfo != nil {
+					// Use scraped info to enrich the item
+					if w.Desc == "" && pInfo.Name != "" {
+						w.Desc = pInfo.Name
+					}
+					if w.Price == "" && pInfo.PriceAmount != "" {
+						w.Price = pInfo.PriceAmount + pInfo.PriceCurrency
+					}
 				}
-
-				fmt.Printf("%+v", pInfo)
 			}
 
-			//err = journaldir.Update(jr, func(j *journal.Journal) error {
-			//	d, err = j.AddFriendDate(p.ID, d)
-			//
-			//	return err
-			//})
-			//if err != nil {
-			//	return err
-			//}
-			//
-			log.Info(" ✔ Wishlist item added")
+			w, err = j.AddFriendWishlistItem(p.ID, w)
+			if err != nil {
+				return err
+			}
+
+			log.Info(" Wishlist item added")
+			log.Info("==> Wishlist Item Information\n")
+
+			fmtr := formatter.WishlistItemTextFormatter{}
+
+			o, _ := fmtr.FormatSingle(&w)
+			fmt.Println(o)
 
 			return nil
 		})

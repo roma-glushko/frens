@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package date
+package wishlist
 
 import (
 	"fmt"
@@ -28,15 +28,15 @@ import (
 var DeleteCommand = &cli.Command{
 	Name:      "delete",
 	Aliases:   []string{"del", "rm", "d"},
-	Usage:     `Delete a date from your friend`,
-	UsageText: `frens friend date delete [OPTIONS] [INFO]`,
-	Description: `Delete friend's date from your journal by date IDs.
+	Usage:     `Delete a wishlist item from your friend`,
+	UsageText: `frens friend wishlist delete [OPTIONS] <WISHLIST_ITEM_ID> [, <WISHLIST_ITEM_ID>...]`,
+	Description: `Delete friend's wishlist items from your journal by item IDs.
 	Examples:
-		frens friend date delete 2zpWoEiUYn6vrSl9w03NAVkWxMn 2zpWoEiUYn6vrSl9w03NAVkWxMx
-		frens friend date d -f 2zpWoEiUYn6vrSl9w03NAVkWxMn 
+		frens friend wishlist delete 2zpWoEiUYn6vrSl9w03NAVkWxMn
+		frens friend wishlist d -f 2zpWoEiUYn6vrSl9w03NAVkWxMn
 	`,
 	Args:      true,
-	ArgsUsage: `<DATE_ID> [, <DATE_ID>...]`,
+	ArgsUsage: `<WISHLIST_ITEM_ID> [, <WISHLIST_ITEM_ID>...]`,
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "force",
@@ -47,44 +47,47 @@ var DeleteCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		if len(c.Args().Slice()) == 0 {
-			return cli.Exit("Please provide a date ID to delete.", 1)
+			return cli.Exit("Please provide a wishlist item ID to delete.", 1)
 		}
 
-		dates := make([]friend.Date, 0, len(c.Args().Slice()))
-
 		ctx := c.Context
-		appCtx := jctx.FromCtx(ctx)
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
-			for _, actID := range c.Args().Slice() {
-				dt, err := j.GetFriendDate(actID)
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			items := make([]friend.WishlistItem, 0, len(c.Args().Slice()))
+
+			for _, wID := range c.Args().Slice() {
+				w, err := j.GetFriendWishlistItem(wID)
 				if err != nil {
 					return err
 				}
 
-				dates = append(dates, dt)
+				items = append(items, w)
 			}
 
-			dtWord := utils.P(len(dates), "date", "dates")
-			fmt.Printf("🔍 Found %d %s:\n", len(dates), dtWord)
+			itemWord := utils.P(len(items), "item", "items")
+			fmt.Printf("Found %d wishlist %s:\n", len(items), itemWord)
 
-			for _, act := range dates {
-				fmt.Printf("   • %s\n", act.ID)
+			for _, item := range items {
+				desc := item.Desc
+				if desc == "" {
+					desc = item.Link
+				}
+				fmt.Printf("   %s: %s\n", item.ID, desc)
 			}
 
-			// TODO: check if interactive mode
-			fmt.Println("\n⚠️  You're about to permanently delete the " + dtWord + ".")
+			fmt.Println("\n  You're about to permanently delete the wishlist " + itemWord + ".")
 			if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
-				fmt.Println("\n↩️  Deletion canceled.")
+				fmt.Println("\n  Deletion canceled.")
 				return nil
 			}
 
-			err := j.RemoveFriendDates(dates)
-			if err != nil {
+			if err := j.RemoveFriendWishlistItems(items); err != nil {
 				return err
 			}
 
-			fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(dtWord))
+			fmt.Printf("\n  Wishlist %s deleted.\n", itemWord)
 
 			return nil
 		})

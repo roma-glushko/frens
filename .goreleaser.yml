@@ -196,7 +196,7 @@ homebrew_casks:
     #
     # Default: the cask name.
     # Templates: allowed.
-    binary: frens
+    binaries: [frens]
 
     # This information will be used to build the URL section of your Cask.
     #

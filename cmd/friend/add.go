@@ -151,10 +151,9 @@ var AddCommand = &cli.Command{
 		}
 
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
 
-		err = s.Tx(ctx, func(j *journal.Journal) error {
+		err = appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			j.AddFriend(f)
 			return nil
 		})

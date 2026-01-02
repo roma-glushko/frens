@@ -29,10 +29,9 @@ var StatsCommand = &cli.Command{
 	Usage: "Show journal statistics",
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
 
-		return s.Tx(ctx, func(j *journal.Journal) error {
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			stats := j.Stats()
 
 			fmt.Println("Journal Statistics:")

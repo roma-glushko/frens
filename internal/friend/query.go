@@ -117,3 +117,9 @@ type ListDateQuery struct {
 	Friends []string
 	Tags    []string
 }
+
+type ListWishlistQuery struct {
+	Keyword string
+	Friends []string
+	Tags    []string
+}

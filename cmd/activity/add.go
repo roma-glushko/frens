@@ -95,10 +95,9 @@ var AddCommand = &cli.Command{
 		}
 
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
 
-		return s.Tx(ctx, func(j *journal.Journal) error {
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			e, err = j.AddEvent(e)
 			if err != nil {
 				return fmt.Errorf("failed to add a new event: %v", err)

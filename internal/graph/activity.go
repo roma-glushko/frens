@@ -16,6 +16,7 @@ package graph
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -126,20 +127,23 @@ func (g *ActivityGraph) Output() []string { //nolint:cyclop
 			totalCount = ScaledSize
 		}
 
-		bar := month + " |"
+		var barBuf strings.Builder
+
+		barBuf.WriteString(month + " |")
+
 		for j := 0; j < filteredCount; j++ {
-			bar += Paint("█", g.color(j))
+			barBuf.WriteString(Paint("█", g.color(j)))
 		}
 
 		for j := filteredCount; j < totalCount; j++ {
-			bar += Paint("∙", g.color(j))
+			barBuf.WriteString(Paint("∙", g.color(j)))
 		}
 
 		if totalCount > 0 {
-			bar += Paint("|", g.color(totalCount))
+			barBuf.WriteString(Paint("|", g.color(totalCount)))
 		}
 
-		result = append(result, bar)
+		result = append(result, barBuf.String())
 	}
 
 	return result

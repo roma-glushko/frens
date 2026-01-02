@@ -48,6 +48,7 @@ func InitLogging(verbose bool, quiet bool) {
 
 	if verbose && quiet {
 		level = log.LogLevelStandard
+
 		log.Warn("cannot set both verbose and quiet modes at the same time, ignoring both flags")
 	}
 
@@ -101,12 +102,12 @@ func NewApp() cli.App {
 
 			log.Debugf(" Using journal directory: %s", jDir)
 
-			jCtx := jctx.AppContext{
+			appCtx := jctx.AppContext{
 				JournalDir: jDir,
 				Store:      file.NewTOMLFileStore(jDir),
 			}
 
-			c.Context = jctx.WithCtx(ctx, &jCtx)
+			c.Context = jctx.WithCtx(ctx, &appCtx)
 
 			return nil
 		},
