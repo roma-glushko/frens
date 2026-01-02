@@ -16,6 +16,7 @@ package friend
 
 import (
 	"fmt"
+
 	"github.com/charmbracelet/lipgloss"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
@@ -56,49 +57,45 @@ var DeleteCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
 
-		if len(c.Args().Slice()) == 0 {
+		if c.NArg() == 0 {
 			return cli.Exit("Please provide a friend name, nickname, or ID to delete.", 1)
 		}
 
-		friends := make([]friend.Person, 0, len(c.Args().Slice()))
+		friends := make([]friend.Person, 0, c.NArg())
 
 		appCtx := jctx.FromCtx(ctx)
-		jr := appCtx.Repository.Journal()
 
-		for _, fID := range c.Args().Slice() {
-			f, err := jr.GetFriend(fID)
-			if err != nil {
-				return err
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
+			for _, fID := range c.Args().Slice() {
+				f, err := j.GetFriend(fID)
+				if err != nil {
+					return err
+				}
+
+				friends = append(friends, f)
 			}
 
-			friends = append(friends, f)
-		}
+			frenWord := utils.P(len(friends), "friend", "friends")
+			fmt.Printf("\n Found %d %s:\n\n", len(friends), frenWord)
 
-		frenWord := utils.P(len(friends), "friend", "friends")
-		fmt.Printf("\n Found %d %s:\n\n", len(friends), frenWord)
+			for _, f := range friends {
+				fmt.Printf(" • %s [%s]\n", labelStyle.Render(f.String()), f.ID)
+			}
 
-		for _, f := range friends {
-			fmt.Printf(" • %s [%s]\n", labelStyle.Render(f.String()), f.ID)
-		}
+			// TODO: check if interactive mode
+			fmt.Println(
+				warnStyle.Render("\n You're about to permanently delete the " + frenWord + "."),
+			)
+			if !c.Bool("force") && !tui.ConfirmAction(warnStyle.Render(" Are you sure?")) {
+				fmt.Println("\n ↩ Deletion canceled.")
+				return nil
+			}
 
-		// TODO: check if interactive mode
-		fmt.Println(warnStyle.Render("\n You're about to permanently delete the " + frenWord + "."))
-		if !c.Bool("force") && !tui.ConfirmAction(warnStyle.Render(" Are you sure?")) {
-			fmt.Println("\n ↩ Deletion canceled.")
-			return nil
-		}
-
-		err := appCtx.Repository.Update(func(j *journal.Journal) error {
 			j.RemoveFriends(friends)
+
+			fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(frenWord))
+
 			return nil
 		})
-
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(frenWord))
-
-		return nil
 	},
 }

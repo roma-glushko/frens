@@ -19,18 +19,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/wishlist"
-
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/roma-glushko/frens/internal/tui"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
-
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/log/formatter"
+	"github.com/roma-glushko/frens/internal/tui"
+	"github.com/roma-glushko/frens/internal/wishlist"
 	"github.com/urfave/cli/v2"
 )
 
@@ -43,7 +40,7 @@ var AddCommand = &cli.Command{
 	ArgsUsage: `<INFO>
 		If no arguments are provided, a textarea will be shown to fill in the details interactively.
 		Otherwise, the information will be parsed from the command options.
-		
+
 		<INFO> format:
 			` + lang.FormatWishlistItem + `
 
@@ -73,109 +70,107 @@ var AddCommand = &cli.Command{
 			Usage:   "Add tags to the date (e.g., 'gift', 'tech', 'gaming')",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
+	Action: func(c *cli.Context) error {
 		var info string
 
-		if ctx.NArg() == 0 {
+		if c.NArg() == 0 {
 			return cli.Exit(
 				"You must provide a friend name, nickname, or ID to add a wishlist item.",
 				1,
 			)
 		}
 
-		appCtx := jctx.FromCtx(ctx.Context)
-		jr := appCtx.Repository.Journal()
+		ctx := c.Context
+		appCtx := jctx.FromCtx(ctx)
 
-		pID := ctx.Args().First()
-		p, err := jr.GetFriend(pID)
-		if err != nil {
-			return err
-		}
-
-		if ctx.NArg() == 1 {
-			// TODO: also check if we are in the interactive mode
-			inputForm := tui.NewEditorForm(tui.EditorOptions{
-				Title:      "Add a new friend wishlist item information:",
-				SyntaxHint: lang.FormatWishlistItem,
-			})
-			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
-
-			if _, err := teaUI.Run(); err != nil {
-				log.Errorf("uh oh: %v", err)
-				return err
-			}
-
-			info = inputForm.Textarea.Value()
-		} else {
-			info = strings.Join(ctx.Args().Slice()[1:], " ")
-		}
-
-		var w friend.WishlistItem
-
-		if info != "" {
-			w, err = lang.ExtractWishlistItem(info)
-
-			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Errorf("failed to parse date info: %v", err)
-				return err
-			}
-		}
-
-		// apply CLI flags
-		desc := ctx.String("desc")
-		link := ctx.String("link")
-		tags := ctx.StringSlice("tag")
-
-		if desc != "" {
-			w.Desc = desc
-		}
-
-		if link != "" {
-			w.Link = link
-		}
-
-		if len(tags) > 0 {
-			w.Tags = tags
-		}
-
-		if err := w.Validate(); err != nil {
-			return err
-		}
-
-		urlMan := wishlist.NewURLManager()
-
-		if w.Link != "" {
-			pInfo, err := urlMan.Scrape(ctx.Context, w.Link)
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
+			pID := c.Args().First()
+			p, err := j.GetFriend(pID)
 			if err != nil {
-				log.Debugf("failed to scrape product info: %v", err)
-			} else if pInfo != nil {
-				// Use scraped info to enrich the item
-				if w.Desc == "" && pInfo.Name != "" {
-					w.Desc = pInfo.Name
+				return err
+			}
+
+			if c.NArg() == 1 {
+				// TODO: also check if we are in the interactive mode
+				inputForm := tui.NewEditorForm(tui.EditorOptions{
+					Title:      "Add a new friend wishlist item information:",
+					SyntaxHint: lang.FormatWishlistItem,
+				})
+				teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
+
+				if _, err := teaUI.Run(); err != nil {
+					log.Errorf("uh oh: %v", err)
+					return err
 				}
-				if w.Price == "" && pInfo.PriceAmount != "" {
-					w.Price = pInfo.PriceAmount + pInfo.PriceCurrency
+
+				info = inputForm.Textarea.Value()
+			} else {
+				info = strings.Join(c.Args().Slice()[1:], " ")
+			}
+
+			var w friend.WishlistItem
+
+			if info != "" {
+				w, err = lang.ExtractWishlistItem(info)
+
+				if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+					log.Errorf("failed to parse date info: %v", err)
+					return err
 				}
 			}
-		}
 
-		err = appCtx.Repository.Update(func(j *journal.Journal) error {
+			// apply CLI flags
+			desc := c.String("desc")
+			link := c.String("link")
+			tags := c.StringSlice("tag")
+
+			if desc != "" {
+				w.Desc = desc
+			}
+
+			if link != "" {
+				w.Link = link
+			}
+
+			if len(tags) > 0 {
+				w.Tags = tags
+			}
+
+			if err := w.Validate(); err != nil {
+				return err
+			}
+
+			urlMan := wishlist.NewURLManager()
+
+			if w.Link != "" {
+				pInfo, err := urlMan.Scrape(ctx, w.Link)
+				if err != nil {
+					log.Debugf("failed to scrape product info: %v", err)
+				} else if pInfo != nil {
+					// Use scraped info to enrich the item
+					if w.Desc == "" && pInfo.Name != "" {
+						w.Desc = pInfo.Name
+					}
+					if w.Price == "" && pInfo.PriceAmount != "" {
+						w.Price = pInfo.PriceAmount + pInfo.PriceCurrency
+					}
+				}
+			}
+
 			w, err = j.AddFriendWishlistItem(p.ID, w)
+			if err != nil {
+				return err
+			}
 
-			return err
+			log.Info(" Wishlist item added")
+			log.Info("==> Wishlist Item Information\n")
+
+			fmtr := formatter.WishlistItemTextFormatter{}
+
+			o, _ := fmtr.FormatSingle(&w)
+			fmt.Println(o)
+
+			return nil
 		})
-		if err != nil {
-			return err
-		}
-
-		log.Info(" Wishlist item added")
-		log.Info("==> Wishlist Item Information\n")
-
-		fmtr := formatter.WishlistItemTextFormatter{}
-
-		o, _ := fmtr.FormatSingle(&w)
-		fmt.Println(o)
-
-		return nil
 	},
 }

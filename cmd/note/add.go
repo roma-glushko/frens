@@ -84,26 +84,24 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		appCtx := jctx.FromCtx(c.Context)
+		ctx := c.Context
+		appCtx := jctx.FromCtx(ctx)
 
-		err = appCtx.Repository.Update(func(j *journal.Journal) error {
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			e, err = j.AddEvent(e)
+			if err != nil {
+				return fmt.Errorf("failed to add note: %w", err)
+			}
 
-			return err
+			log.Infof(" ✔ Note added")
+			log.Info("==> Note Information\n")
+
+			fmtr := formatter.EventTextFormatter{}
+
+			o, _ := fmtr.FormatSingle(e)
+			fmt.Println(o)
+
+			return nil
 		})
-
-		if err != nil {
-			return err
-		}
-
-		log.Infof(" ✔ Note added")
-		log.Info("==> Note Information\n")
-
-		fmtr := formatter.EventTextFormatter{}
-
-		o, _ := fmtr.FormatSingle(e)
-		fmt.Println(o)
-
-		return nil
 	},
 }

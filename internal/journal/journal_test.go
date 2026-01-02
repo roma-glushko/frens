@@ -51,7 +51,7 @@ func TestJournal_AddEvent(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotEmpty(t, event.ID)
-	require.Contains(t, event.Friends, frID)
+	require.Contains(t, event.FriendIDs, frID)
 	// require.Contains(t, event.Locations, locID)
 
 	f, err := jr.GetFriend(frID)

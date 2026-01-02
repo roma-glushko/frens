@@ -50,47 +50,46 @@ var DeleteCommand = &cli.Command{
 			return cli.Exit("Please provide a wishlist item ID to delete.", 1)
 		}
 
-		items := make([]friend.WishlistItem, 0, len(c.Args().Slice()))
+		ctx := c.Context
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		appCtx := jctx.FromCtx(c.Context)
-		jr := appCtx.Repository.Journal()
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			items := make([]friend.WishlistItem, 0, len(c.Args().Slice()))
 
-		for _, wID := range c.Args().Slice() {
-			w, err := jr.GetFriendWishlistItem(wID)
-			if err != nil {
+			for _, wID := range c.Args().Slice() {
+				w, err := j.GetFriendWishlistItem(wID)
+				if err != nil {
+					return err
+				}
+
+				items = append(items, w)
+			}
+
+			itemWord := utils.P(len(items), "item", "items")
+			fmt.Printf("Found %d wishlist %s:\n", len(items), itemWord)
+
+			for _, item := range items {
+				desc := item.Desc
+				if desc == "" {
+					desc = item.Link
+				}
+				fmt.Printf("   %s: %s\n", item.ID, desc)
+			}
+
+			fmt.Println("\n  You're about to permanently delete the wishlist " + itemWord + ".")
+			if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
+				fmt.Println("\n  Deletion canceled.")
+				return nil
+			}
+
+			if err := j.RemoveFriendWishlistItems(items); err != nil {
 				return err
 			}
 
-			items = append(items, w)
-		}
+			fmt.Printf("\n  Wishlist %s deleted.\n", itemWord)
 
-		itemWord := utils.P(len(items), "item", "items")
-		fmt.Printf("Found %d wishlist %s:\n", len(items), itemWord)
-
-		for _, item := range items {
-			desc := item.Desc
-			if desc == "" {
-				desc = item.Link
-			}
-			fmt.Printf("   %s: %s\n", item.ID, desc)
-		}
-
-		fmt.Println("\n  You're about to permanently delete the wishlist " + itemWord + ".")
-		if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
-			fmt.Println("\n  Deletion canceled.")
 			return nil
-		}
-
-		err := appCtx.Repository.Update(func(j *journal.Journal) error {
-			return j.RemoveFriendWishlistItems(items)
 		})
-
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n  Wishlist %s deleted.\n", itemWord)
-
-		return nil
 	},
 }

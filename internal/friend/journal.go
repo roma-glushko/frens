@@ -12,31 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package context
+package friend
 
-import (
-	"context"
+import "github.com/roma-glushko/frens/internal/tag"
 
-	"github.com/roma-glushko/frens/internal/store"
-)
-
-type AppContext struct {
-	JournalDir string
-	Store      store.Store
+type Journal struct {
+	dirty      bool
+	Tags       tag.Tags
+	Friends    []*Person
+	Locations  Locations
+	Activities []*Event
+	Notes      []*Event
 }
 
-type ctxKey struct{}
-
-func WithCtx(ctx context.Context, j *AppContext) context.Context {
-	return context.WithValue(ctx, ctxKey{}, j)
+func (j *Journal) IsDirty() bool {
+	return j.dirty
 }
 
-func FromCtx(ctx context.Context) *AppContext {
-	if val := ctx.Value(ctxKey{}); val != nil {
-		if jCtx, ok := val.(*AppContext); ok && jCtx != nil {
-			return jCtx
-		}
-	}
+func (j *Journal) SetDirty(d bool) {
+	j.dirty = d
+}
 
-	return nil
+func (j *Journal) AddFriend(p Person) {
+	j.Friends = append(j.Friends, &p)
+	j.SetDirty(true)
 }

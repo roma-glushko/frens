@@ -58,95 +58,92 @@ var EditCommand = &cli.Command{
 			Usage:   "Add tags to the date (e.g., 'birthday', 'anniversary')",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
-		if ctx.NArg() < 1 {
+	Action: func(c *cli.Context) error {
+		if c.NArg() < 1 {
 			return cli.Exit(
 				"You must provide a date ID. Execute `frens friend dt ls` to find out.",
 				1,
 			)
 		}
 
-		dtID := strings.Join(ctx.Args().Slice(), " ")
+		dtID := strings.Join(c.Args().Slice(), " ")
 
-		appCtx := jctx.FromCtx(ctx.Context)
-		jr := appCtx.Repository.Journal()
+		ctx := c.Context
+		appCtx := jctx.FromCtx(ctx)
 
-		dtOld, err := jr.GetFriendDate(dtID)
-		if err != nil {
-			return err
-		}
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
+			dtOld, err := j.GetFriendDate(dtID)
+			if err != nil {
+				return err
+			}
 
-		inputForm := tui.NewEditorForm(tui.EditorOptions{
-			Title:      "Edit " + dtOld.ID + " information:",
-			SyntaxHint: lang.FormatDateInfo,
-		})
+			inputForm := tui.NewEditorForm(tui.EditorOptions{
+				Title:      "Edit " + dtOld.ID + " information:",
+				SyntaxHint: lang.FormatDateInfo,
+			})
 
-		dateInfo := lang.RenderDateInfo(dtOld)
-		inputForm.Textarea.SetValue(dateInfo)
+			dateInfo := lang.RenderDateInfo(dtOld)
+			inputForm.Textarea.SetValue(dateInfo)
 
-		// TODO: check if interactive mode is enabled
-		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
+			// TODO: check if interactive mode is enabled
+			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
-		if _, err := teaUI.Run(); err != nil {
-			log.Errorf("uh oh: %v", err)
-			return err
-		}
+			if _, err := teaUI.Run(); err != nil {
+				log.Errorf("uh oh: %v", err)
+				return err
+			}
 
-		infoTxt := inputForm.Textarea.Value()
+			infoTxt := inputForm.Textarea.Value()
 
-		if infoTxt == "" {
-			return errors.New("no date info provided")
-		}
+			if infoTxt == "" {
+				return errors.New("no date info provided")
+			}
 
-		dtNew, err := lang.ExtractDateInfo(infoTxt)
+			dtNew, err := lang.ExtractDateInfo(infoTxt)
 
-		date := ctx.String("date")
-		desc := ctx.String("desc")
-		cal := ctx.String("calendar")
-		tags := ctx.StringSlice("tag")
+			date := c.String("date")
+			desc := c.String("desc")
+			cal := c.String("calendar")
+			tags := c.StringSlice("tag")
 
-		if date != "" {
-			dtNew.DateExpr = date
-		}
+			if date != "" {
+				dtNew.DateExpr = date
+			}
 
-		if desc != "" {
-			dtNew.Desc = desc
-		}
+			if desc != "" {
+				dtNew.Desc = desc
+			}
 
-		if cal != "" {
-			dtNew.Calendar = cal
-		}
+			if cal != "" {
+				dtNew.Calendar = cal
+			}
 
-		if len(tags) > 0 {
-			dtNew.Tags = tags
-		}
+			if len(tags) > 0 {
+				dtNew.Tags = tags
+			}
 
-		if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-			log.Errorf(" ✖ failed to parse friend info: %v", err)
-			return err
-		}
+			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+				log.Errorf(" ✖ failed to parse friend info: %v", err)
+				return err
+			}
+			if err := dtNew.Validate(); err != nil {
+				return err
+			}
 
-		if err := dtNew.Validate(); err != nil {
-			return err
-		}
-
-		err = appCtx.Repository.Update(func(j *journal.Journal) error {
 			dtNew, err = j.UpdateFriendDate(dtOld, dtNew)
+			if err != nil {
+				return fmt.Errorf("failed to update friend: %w", err)
+			}
 
-			return err
+			log.Info(" ✔ Date updated")
+			log.Info("==> Date Information\n")
+
+			fmtr := formatter.DateTextFormatter{}
+
+			o, _ := fmtr.FormatSingle(dtNew)
+			fmt.Println(o)
+
+			return nil
 		})
-		if err != nil {
-			return err
-		}
-
-		log.Info(" ✔ Date updated")
-		log.Info("==> Date Information\n")
-
-		fmtr := formatter.DateTextFormatter{}
-
-		o, _ := fmtr.FormatSingle(dtNew)
-		fmt.Println(o)
-
-		return nil
 	},
 }

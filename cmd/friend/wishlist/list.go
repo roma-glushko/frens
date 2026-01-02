@@ -19,6 +19,7 @@ import (
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/log/formatter"
 
@@ -48,28 +49,30 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		appCtx := jctx.FromCtx(ctx)
-		jr := appCtx.Repository.Journal()
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		items, err := jr.ListFriendWishlistItems(friend.ListWishlistQuery{
-			Keyword: c.String("search"),
-			Friends: c.StringSlice("with"),
-			Tags:    c.StringSlice("tag"),
-		})
-		if err != nil {
-			return err
-		}
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			items, err := j.ListFriendWishlistItems(friend.ListWishlistQuery{
+				Keyword: c.String("search"),
+				Friends: c.StringSlice("with"),
+				Tags:    c.StringSlice("tag"),
+			})
+			if err != nil {
+				return err
+			}
 
-		if len(items) == 0 {
-			log.Info("No wishlist items found for given query.")
+			if len(items) == 0 {
+				log.Info("No wishlist items found for given query.")
+				return nil
+			}
+
+			fmtr := formatter.WishlistItemTextFormatter{}
+
+			o, _ := fmtr.FormatList(items)
+			fmt.Println(o)
+
 			return nil
-		}
-
-		fmtr := formatter.WishlistItemTextFormatter{}
-
-		o, _ := fmtr.FormatList(items)
-		fmt.Println(o)
-
-		return nil
+		})
 	},
 }

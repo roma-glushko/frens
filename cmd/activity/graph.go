@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/journal"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/graph"
@@ -53,37 +55,39 @@ var GraphCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		appCtx := jctx.FromCtx(ctx)
-		jr := appCtx.Repository.Journal()
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		activities, err := jr.ListEvents(friend.ListEventQuery{
-			Type:      friend.EventTypeActivity,
-			Keyword:   strings.TrimSpace(c.String("search")),
-			Tags:      c.StringSlice("tag"),
-			Since:     lang.ExtractDate(c.String("from")),
-			Until:     lang.ExtractDate(c.String("to")),
-			SortBy:    friend.SortRecency,
-			SortOrder: friend.SortOrderDirect,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to list activities: %w", err)
-		}
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			activities, err := j.ListEvents(friend.ListEventQuery{
+				Type:      friend.EventTypeActivity,
+				Keyword:   strings.TrimSpace(c.String("search")),
+				Tags:      c.StringSlice("tag"),
+				Since:     lang.ExtractDate(c.String("from")),
+				Until:     lang.ExtractDate(c.String("to")),
+				SortBy:    friend.SortRecency,
+				SortOrder: friend.SortOrderDirect,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to list activities: %w", err)
+			}
 
-		if len(activities) == 0 {
-			fmt.Println("No activities found for given query.")
+			if len(activities) == 0 {
+				fmt.Println("No activities found for given query.")
+				return nil
+			}
+
+			graph := graph.NewActivityGraph(
+				activities,
+				j.Activities,
+				!c.Bool("unscaled"),
+			)
+
+			for _, o := range graph.Output() {
+				fmt.Println(o)
+			}
+
 			return nil
-		}
-
-		graph := graph.NewActivityGraph(
-			activities,
-			jr.Activities,
-			!c.Bool("unscaled"),
-		)
-
-		for _, o := range graph.Output() {
-			fmt.Println(o)
-		}
-
-		return nil
+		})
 	},
 }

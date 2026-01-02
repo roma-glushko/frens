@@ -52,42 +52,41 @@ var DeleteCommand = &cli.Command{
 
 		dates := make([]friend.Date, 0, len(c.Args().Slice()))
 
-		appCtx := jctx.FromCtx(c.Context)
-		jr := appCtx.Repository.Journal()
+		ctx := c.Context
+		appCtx := jctx.FromCtx(ctx)
 
-		for _, actID := range c.Args().Slice() {
-			dt, err := jr.GetFriendDate(actID)
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
+			for _, actID := range c.Args().Slice() {
+				dt, err := j.GetFriendDate(actID)
+				if err != nil {
+					return err
+				}
+
+				dates = append(dates, dt)
+			}
+
+			dtWord := utils.P(len(dates), "date", "dates")
+			fmt.Printf("🔍 Found %d %s:\n", len(dates), dtWord)
+
+			for _, act := range dates {
+				fmt.Printf("   • %s\n", act.ID)
+			}
+
+			// TODO: check if interactive mode
+			fmt.Println("\n⚠️  You're about to permanently delete the " + dtWord + ".")
+			if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
+				fmt.Println("\n↩️  Deletion canceled.")
+				return nil
+			}
+
+			err := j.RemoveFriendDates(dates)
 			if err != nil {
 				return err
 			}
 
-			dates = append(dates, dt)
-		}
+			fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(dtWord))
 
-		dtWord := utils.P(len(dates), "date", "dates")
-		fmt.Printf("🔍 Found %d %s:\n", len(dates), dtWord)
-
-		for _, act := range dates {
-			fmt.Printf("   • %s\n", act.ID)
-		}
-
-		// TODO: check if interactive mode
-		fmt.Println("\n⚠️  You're about to permanently delete the " + dtWord + ".")
-		if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
-			fmt.Println("\n↩️  Deletion canceled.")
 			return nil
-		}
-
-		err := appCtx.Repository.Update(func(j *journal.Journal) error {
-			return j.RemoveFriendDates(dates)
 		})
-
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(dtWord))
-
-		return nil
 	},
 }

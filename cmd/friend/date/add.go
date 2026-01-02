@@ -68,89 +68,87 @@ var AddCommand = &cli.Command{
 			Usage:   "Add tags to the date (e.g., 'birthday', 'anniversary')",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
+	Action: func(c *cli.Context) error {
 		var info string
 
-		if ctx.NArg() == 0 {
+		if c.NArg() == 0 {
 			return cli.Exit("You must provide a friend name, nickname, or ID to add a date.", 1)
 		}
 
-		appCtx := jctx.FromCtx(ctx.Context)
-		jr := appCtx.Repository.Journal()
+		ctx := c.Context
+		appCtx := jctx.FromCtx(ctx)
 
-		pID := ctx.Args().First()
-		p, err := jr.GetFriend(pID)
-		if err != nil {
-			return err
-		}
+		pID := c.Args().First()
 
-		if ctx.NArg() == 1 {
-			// TODO: also check if we are in the interactive mode
-			inputForm := tui.NewEditorForm(tui.EditorOptions{
-				Title:      "Add a new friend date information:",
-				SyntaxHint: lang.FormatDateInfo,
-			})
-			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
-
-			if _, err := teaUI.Run(); err != nil {
-				log.Errorf("uh oh: %v", err)
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
+			p, err := j.GetFriend(pID)
+			if err != nil {
 				return err
 			}
 
-			info = inputForm.Textarea.Value()
-		} else {
-			info = strings.Join(ctx.Args().Slice()[1:], " ")
-		}
+			if c.NArg() == 1 {
+				// TODO: also check if we are in the interactive mode
+				inputForm := tui.NewEditorForm(tui.EditorOptions{
+					Title:      "Add a new friend date information:",
+					SyntaxHint: lang.FormatDateInfo,
+				})
+				teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
-		var d friend.Date
+				if _, err := teaUI.Run(); err != nil {
+					log.Errorf("uh oh: %v", err)
+					return err
+				}
 
-		if info != "" {
-			d, err = lang.ExtractDateInfo(info)
+				info = inputForm.Textarea.Value()
+			} else {
+				info = strings.Join(c.Args().Slice()[1:], " ")
+			}
 
-			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Errorf("failed to parse date info: %v", err)
+			var d friend.Date
+
+			if info != "" {
+				d, err = lang.ExtractDateInfo(info)
+
+				if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+					log.Errorf("failed to parse date info: %v", err)
+					return err
+				}
+			}
+
+			desc := c.String("desc")
+			dateExpr := c.String("date")
+			calendar := c.String("calendar") // TODO: parse and validate calendar
+			tags := c.StringSlice("tag")
+
+			if desc != "" {
+				d.Desc = desc
+			}
+
+			if dateExpr != "" {
+				d.DateExpr = dateExpr
+			}
+
+			if calendar != "" {
+				d.Calendar = calendar
+			}
+
+			if len(tags) > 0 {
+				d.Tags = tags
+			}
+
+			if err := d.Validate(); err != nil {
 				return err
 			}
-		}
 
-		// apply CLI flags
-		desc := ctx.String("desc")
-		dateExpr := ctx.String("date")
-		calendar := ctx.String("calendar") // TODO: parse and validate calendar
-		tags := ctx.StringSlice("tag")
-
-		if desc != "" {
-			d.Desc = desc
-		}
-
-		if dateExpr != "" {
-			d.DateExpr = dateExpr
-		}
-
-		if calendar != "" {
-			d.Calendar = calendar
-		}
-
-		if len(tags) > 0 {
-			d.Tags = tags
-		}
-
-		if err := d.Validate(); err != nil {
-			return err
-		}
-
-		err = appCtx.Repository.Update(func(j *journal.Journal) error {
 			d, err = j.AddFriendDate(p.ID, d)
+			if err != nil {
+				return err
+			}
 
-			return err
+			log.Info(" ✔ Date added")
+			log.Infof("  %s: %s", d.DateExpr, d.Desc) // TODO: improve this output
+
+			return nil
 		})
-		if err != nil {
-			return err
-		}
-
-		log.Info(" ✔ Date added")
-		log.Infof("  %s: %s", d.DateExpr, d.Desc) // TODO: improve this output
-
-		return nil
 	},
 }

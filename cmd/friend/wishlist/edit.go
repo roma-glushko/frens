@@ -59,93 +59,92 @@ var EditCommand = &cli.Command{
 			Usage:   "Set tags for the wishlist item",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
-		if ctx.NArg() < 1 {
+	Action: func(c *cli.Context) error {
+		if c.NArg() < 1 {
 			return cli.Exit(
 				"You must provide a wishlist item ID. Execute `frens friend wishlist ls` to find out.",
 				1,
 			)
 		}
 
-		wID := strings.Join(ctx.Args().Slice(), " ")
+		wID := strings.Join(c.Args().Slice(), " ")
 
-		appCtx := jctx.FromCtx(ctx.Context)
-		jr := appCtx.Repository.Journal()
+		ctx := c.Context
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		wOld, err := jr.GetFriendWishlistItem(wID)
-		if err != nil {
-			return err
-		}
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			wOld, err := j.GetFriendWishlistItem(wID)
+			if err != nil {
+				return err
+			}
 
-		inputForm := tui.NewEditorForm(tui.EditorOptions{
-			Title:      "Edit wishlist item (" + wOld.ID + "):",
-			SyntaxHint: lang.FormatWishlistItem,
-		})
+			inputForm := tui.NewEditorForm(tui.EditorOptions{
+				Title:      "Edit wishlist item (" + wOld.ID + "):",
+				SyntaxHint: lang.FormatWishlistItem,
+			})
 
-		inputForm.Textarea.SetValue(lang.RenderWishlistItem(wOld))
+			inputForm.Textarea.SetValue(lang.RenderWishlistItem(wOld))
 
-		teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
+			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
-		if _, err := teaUI.Run(); err != nil {
-			log.Errorf("uh oh: %v", err)
-			return err
-		}
+			if _, err := teaUI.Run(); err != nil {
+				log.Errorf("uh oh: %v", err)
+				return err
+			}
 
-		infoTxt := inputForm.Textarea.Value()
+			infoTxt := inputForm.Textarea.Value()
 
-		if infoTxt == "" {
-			return errors.New("no wishlist item info provided")
-		}
+			if infoTxt == "" {
+				return errors.New("no wishlist item info provided")
+			}
 
-		wNew, err := lang.ExtractWishlistItem(infoTxt)
+			wNew, err := lang.ExtractWishlistItem(infoTxt)
 
-		desc := ctx.String("desc")
-		link := ctx.String("link")
-		price := ctx.String("price")
-		tags := ctx.StringSlice("tag")
+			desc := c.String("desc")
+			link := c.String("link")
+			price := c.String("price")
+			tags := c.StringSlice("tag")
 
-		if desc != "" {
-			wNew.Desc = desc
-		}
+			if desc != "" {
+				wNew.Desc = desc
+			}
 
-		if link != "" {
-			wNew.Link = link
-		}
+			if link != "" {
+				wNew.Link = link
+			}
 
-		if price != "" {
-			wNew.Price = price
-		}
+			if price != "" {
+				wNew.Price = price
+			}
 
-		if len(tags) > 0 {
-			wNew.Tags = tags
-		}
+			if len(tags) > 0 {
+				wNew.Tags = tags
+			}
 
-		if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-			log.Errorf(" failed to parse wishlist item info: %v", err)
-			return err
-		}
+			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+				log.Errorf(" failed to parse wishlist item info: %v", err)
+				return err
+			}
 
-		if err := wNew.Validate(); err != nil {
-			return err
-		}
+			if err := wNew.Validate(); err != nil {
+				return err
+			}
 
-		err = appCtx.Repository.Update(func(j *journal.Journal) error {
 			wNew, err = j.UpdateFriendWishlistItem(wOld, wNew)
+			if err != nil {
+				return err
+			}
 
-			return err
+			log.Info(" Wishlist item updated")
+			log.Info("==> Wishlist Item Information\n")
+
+			fmtr := formatter.WishlistItemTextFormatter{}
+
+			o, _ := fmtr.FormatSingle(&wNew)
+			fmt.Println(o)
+
+			return nil
 		})
-		if err != nil {
-			return err
-		}
-
-		log.Info(" Wishlist item updated")
-		log.Info("==> Wishlist Item Information\n")
-
-		fmtr := formatter.WishlistItemTextFormatter{}
-
-		o, _ := fmtr.FormatSingle(&wNew)
-		fmt.Println(o)
-
-		return nil
 	},
 }

@@ -12,35 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package journal
+package store
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/roma-glushko/frens/internal/journal"
-
-	jctx "github.com/roma-glushko/frens/internal/context"
-
-	"github.com/urfave/cli/v2"
 )
 
-var StatsCommand = &cli.Command{
-	Name:  "stats",
-	Usage: "Show journal statistics",
-	Action: func(c *cli.Context) error {
-		ctx := c.Context
-		appCtx := jctx.FromCtx(ctx)
+type JournalUpdater = func(j *journal.Journal) error
 
-		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
-			stats := j.Stats()
-
-			fmt.Println("Journal Statistics:")
-			fmt.Printf("  • Friends: %d\n", stats.Friends)
-			fmt.Printf("  • Locations: %d\n", stats.Locations)
-			fmt.Printf("  • Activities: %d\n", stats.Activities)
-			fmt.Printf("  • Notes: %d\n", stats.Notes)
-
-			return nil
-		})
-	},
+type Store interface {
+	Init(ctx context.Context) error
+	Exist(ctx context.Context) bool
+	Load(ctx context.Context) (*journal.Journal, error)
+	Save(ctx context.Context, journal *journal.Journal) error
+	Tx(ctx context.Context, fn JournalUpdater) error
 }

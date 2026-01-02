@@ -79,10 +79,10 @@ var AddCommand = &cli.Command{
 			Usage:   "Tags associated with the location (for categorization or search purposes)",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
+	Action: func(c *cli.Context) error {
 		var info string
 
-		if ctx.NArg() == 0 {
+		if c.NArg() == 0 {
 			// TODO: also check if we are in the interactive mode
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
 				Title:      "Add a new location information:",
@@ -97,7 +97,7 @@ var AddCommand = &cli.Command{
 
 			info = inputForm.Textarea.Value()
 		} else {
-			info = strings.Join(ctx.Args().Slice(), " ")
+			info = strings.Join(c.Args().Slice(), " ")
 		}
 
 		var l friend.Location
@@ -113,12 +113,12 @@ var AddCommand = &cli.Command{
 		}
 
 		// apply CLI flags
-		id := ctx.String("id")
-		name := ctx.String("name")
-		country := ctx.String("country")
-		desc := ctx.String("desc")
-		aliases := ctx.StringSlice("alias")
-		tags := ctx.StringSlice("tag")
+		id := c.String("id")
+		name := c.String("name")
+		country := c.String("country")
+		desc := c.String("desc")
+		aliases := c.StringSlice("alias")
+		tags := c.StringSlice("tag")
 
 		if id != "" {
 			l.ID = id
@@ -148,14 +148,14 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		appCtx := jctx.FromCtx(ctx.Context)
+		ctx := c.Context
+		appCtx := jctx.FromCtx(ctx)
 
-		err = appCtx.Repository.Update(func(j *journal.Journal) error {
+		err = appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			j.AddLocation(l)
 
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}

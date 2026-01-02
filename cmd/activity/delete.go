@@ -48,48 +48,44 @@ var DeleteCommand = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		if len(c.Args().Slice()) == 0 {
+		ctx := c.Context
+		if c.NArg() == 0 {
 			return cli.Exit("Please provide a activity ID to delete.", 1)
 		}
 
-		activities := make([]friend.Event, 0, len(c.Args().Slice()))
+		activities := make([]friend.Event, 0, c.NArg())
 
 		appCtx := jctx.FromCtx(c.Context)
-		jr := appCtx.Repository.Journal()
 
-		for _, actID := range c.Args().Slice() {
-			act, err := jr.GetEvent(friend.EventTypeActivity, actID)
-			if err != nil {
-				return err
+		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
+			for _, actID := range c.Args().Slice() {
+				act, err := j.GetEvent(friend.EventTypeActivity, actID)
+				if err != nil {
+					return err
+				}
+
+				activities = append(activities, act)
 			}
 
-			activities = append(activities, act)
-		}
+			actWord := utils.P(len(activities), "activity", "activities")
+			fmt.Printf("🔍 Found %d %s:\n", len(activities), actWord)
 
-		actWord := utils.P(len(activities), "activity", "activities")
-		fmt.Printf("🔍 Found %d %s:\n", len(activities), actWord)
+			for _, act := range activities {
+				fmt.Printf("   • %s\n", act.ID)
+			}
 
-		for _, act := range activities {
-			fmt.Printf("   • %s\n", act.ID)
-		}
+			// TODO: check if interactive mode
+			fmt.Println("\n⚠️  You're about to permanently delete the " + actWord + ".")
+			if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
+				fmt.Println("\n↩️  Deletion canceled.")
+				return nil
+			}
 
-		// TODO: check if interactive mode
-		fmt.Println("\n⚠️  You're about to permanently delete the " + actWord + ".")
-		if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
-			fmt.Println("\n↩️  Deletion canceled.")
-			return nil
-		}
-
-		err := appCtx.Repository.Update(func(j *journal.Journal) error {
 			j.RemoveEvents(friend.EventTypeActivity, activities)
+
+			fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(actWord))
+
 			return nil
 		})
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(actWord))
-
-		return nil
 	},
 }

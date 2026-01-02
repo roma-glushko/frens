@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roma-glushko/frens/internal/journal"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/log/formatter"
 
@@ -65,8 +67,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		appCtx := jctx.FromCtx(ctx)
-		jr := appCtx.Repository.Journal()
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
 		sortOrder := friend.SortOrderDirect
 
@@ -74,24 +76,26 @@ var ListCommand = &cli.Command{
 			sortOrder = friend.SortOrderReverse
 		}
 
-		friends := jr.ListFriends(friend.ListFriendQuery{
-			Keyword:   strings.TrimSpace(c.String("search")),
-			Locations: c.StringSlice("location"),
-			Tags:      c.StringSlice("tag"),
-			SortBy:    friend.SortOption(c.String("sort")),
-			SortOrder: sortOrder,
-		})
+		return s.Tx(ctx, func(j *journal.Journal) error {
+			friends := j.ListFriends(friend.ListFriendQuery{
+				Keyword:   strings.TrimSpace(c.String("search")),
+				Locations: c.StringSlice("location"),
+				Tags:      c.StringSlice("tag"),
+				SortBy:    friend.SortOption(c.String("sort")),
+				SortOrder: sortOrder,
+			})
 
-		if len(friends) == 0 {
-			log.Info("No friends found for given query.")
+			if len(friends) == 0 {
+				log.Info("No friends found for given query.")
+				return nil
+			}
+
+			fmtr := formatter.PersonTextFormatter{}
+
+			o, _ := fmtr.FormatList(friends)
+			fmt.Println(o)
+
 			return nil
-		}
-
-		fmtr := formatter.PersonTextFormatter{}
-
-		o, _ := fmtr.FormatList(friends)
-		fmt.Println(o)
-
-		return nil
+		})
 	},
 }

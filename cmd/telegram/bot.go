@@ -15,6 +15,7 @@
 package telegram
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -81,7 +82,7 @@ var BotCommand = &cli.Command{
 
 		startedAt := time.Now()
 		appCtx := jctx.FromCtx(ctx)
-		jr := appCtx.Repository.Journal()
+		s := appCtx.Store
 
 		if len(userList) > 0 {
 			bot.Use(middleware.Whitelist(userList...))
@@ -109,17 +110,21 @@ var BotCommand = &cli.Command{
 		})
 
 		bot.Handle("/stats", func(c tele.Context) error {
-			stats := jr.Stats()
+			ctx := context.Background()
 
-			var sb strings.Builder
+			return s.Tx(ctx, func(jr *journal.Journal) error {
+				stats := jr.Stats()
 
-			sb.WriteString("Frens Stats:\n")
-			sb.WriteString(fmt.Sprintf("Friends: %d\n", stats.Friends))
-			sb.WriteString(fmt.Sprintf("Locations: %d\n", stats.Locations))
-			sb.WriteString(fmt.Sprintf("Notes: %d\n", stats.Notes))
-			sb.WriteString(fmt.Sprintf("Activities: %d\n", stats.Activities))
+				var sb strings.Builder
 
-			return c.Send(sb.String())
+				sb.WriteString("Frens Stats:\n")
+				sb.WriteString(fmt.Sprintf("Friends: %d\n", stats.Friends))
+				sb.WriteString(fmt.Sprintf("Locations: %d\n", stats.Locations))
+				sb.WriteString(fmt.Sprintf("Notes: %d\n", stats.Notes))
+				sb.WriteString(fmt.Sprintf("Activities: %d\n", stats.Activities))
+
+				return c.Send(sb.String())
+			})
 		})
 
 		bot.Handle("/listfrens", func(c tele.Context) error {
@@ -130,37 +135,41 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("Failed to parse query: %v", err))
 			}
 
-			friends := jr.ListFriends(q)
+			ctx := context.Background()
 
-			if len(friends) == 0 {
-				return c.Send("No friends found matching your query.")
-			}
+			return s.Tx(ctx, func(jr *journal.Journal) error {
+				friends := jr.ListFriends(q)
 
-			var sb strings.Builder
-
-			sb.WriteString("Here are your friends:\n")
-
-			for _, f := range friends {
-				sb.WriteString(fmt.Sprintf("👤 %s\n", f.String()))
-
-				if len(f.Tags) > 0 {
-					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(f.Tags, ", ")))
+				if len(friends) == 0 {
+					return c.Send("No friends found matching your query.")
 				}
 
-				if len(f.Locations) > 0 {
-					sb.WriteString(
-						fmt.Sprintf("  Locations: %s\n", strings.Join(f.Locations, ", ")),
-					)
+				var sb strings.Builder
+
+				sb.WriteString("Here are your friends:\n")
+
+				for _, f := range friends {
+					sb.WriteString(fmt.Sprintf("👤 %s\n", f.String()))
+
+					if len(f.Tags) > 0 {
+						sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(f.Tags, ", ")))
+					}
+
+					if len(f.Locations) > 0 {
+						sb.WriteString(
+							fmt.Sprintf("  Locations: %s\n", strings.Join(f.Locations, ", ")),
+						)
+					}
+
+					if f.Desc != "" {
+						sb.WriteString(fmt.Sprintf("  Description: %s\n", f.Desc))
+					}
+
+					sb.WriteString("\n")
 				}
 
-				if f.Desc != "" {
-					sb.WriteString(fmt.Sprintf("  Description: %s\n", f.Desc))
-				}
-
-				sb.WriteString("\n")
-			}
-
-			return c.Send(sb.String())
+				return c.Send(sb.String())
+			})
 		})
 
 		bot.Handle("/listlocs", func(c tele.Context) error {
@@ -171,27 +180,31 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("Failed to parse query: %v", err))
 			}
 
-			locs := jr.ListLocations(q)
+			ctx := context.Background()
 
-			if len(locs) == 0 {
-				return c.Send("No locations found matching your query.")
-			}
+			return s.Tx(ctx, func(jr *journal.Journal) error {
+				locs := jr.ListLocations(q)
 
-			var sb strings.Builder
-
-			sb.WriteString("Here are your locations:\n")
-
-			for _, l := range locs {
-				sb.WriteString(fmt.Sprintf("📍 %s\n", l.String()))
-
-				if len(l.Tags) > 0 {
-					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(l.Tags, ", ")))
+				if len(locs) == 0 {
+					return c.Send("No locations found matching your query.")
 				}
 
-				sb.WriteString("\n")
-			}
+				var sb strings.Builder
 
-			return c.Send(sb.String())
+				sb.WriteString("Here are your locations:\n")
+
+				for _, l := range locs {
+					sb.WriteString(fmt.Sprintf("📍 %s\n", l.String()))
+
+					if len(l.Tags) > 0 {
+						sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(l.Tags, ", ")))
+					}
+
+					sb.WriteString("\n")
+				}
+
+				return c.Send(sb.String())
+			})
 		})
 
 		bot.Handle("/listnotes", func(c tele.Context) error {
@@ -204,30 +217,34 @@ var BotCommand = &cli.Command{
 
 			q.Type = friend.EventTypeNote
 
-			notes, err := jr.ListEvents(q)
-			if err != nil {
-				return c.Send(fmt.Sprintf("Failed to list notes: %v", err))
-			}
+			ctx := context.Background()
 
-			if len(notes) == 0 {
-				return c.Send("No notes found matching your query.")
-			}
-
-			var sb strings.Builder
-
-			sb.WriteString("Here are your notes:\n")
-
-			for _, nt := range notes {
-				sb.WriteString(nt.Desc + "\n")
-
-				if len(nt.Tags) > 0 {
-					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
+			return s.Tx(ctx, func(jr *journal.Journal) error {
+				notes, err := jr.ListEvents(q)
+				if err != nil {
+					return c.Send(fmt.Sprintf("Failed to list notes: %v", err))
 				}
 
-				sb.WriteString("\n")
-			}
+				if len(notes) == 0 {
+					return c.Send("No notes found matching your query.")
+				}
 
-			return c.Send(sb.String())
+				var sb strings.Builder
+
+				sb.WriteString("Here are your notes:\n")
+
+				for _, nt := range notes {
+					sb.WriteString(nt.Desc + "\n")
+
+					if len(nt.Tags) > 0 {
+						sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
+					}
+
+					sb.WriteString("\n")
+				}
+
+				return c.Send(sb.String())
+			})
 		})
 
 		bot.Handle("/listactivities", func(c tele.Context) error {
@@ -240,30 +257,34 @@ var BotCommand = &cli.Command{
 
 			q.Type = friend.EventTypeActivity
 
-			activities, err := jr.ListEvents(q)
-			if err != nil {
-				return c.Send(fmt.Sprintf("Failed to list activities: %v", err))
-			}
+			ctx := context.Background()
 
-			if len(activities) == 0 {
-				return c.Send("No activities found matching your query.")
-			}
-
-			var sb strings.Builder
-
-			sb.WriteString("Here are your activities:\n")
-
-			for _, nt := range activities {
-				sb.WriteString(nt.Desc + "\n")
-
-				if len(nt.Tags) > 0 {
-					sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
+			return s.Tx(ctx, func(jr *journal.Journal) error {
+				activities, err := jr.ListEvents(q)
+				if err != nil {
+					return c.Send(fmt.Sprintf("Failed to list activities: %v", err))
 				}
 
-				sb.WriteString("\n")
-			}
+				if len(activities) == 0 {
+					return c.Send("No activities found matching your query.")
+				}
 
-			return c.Send(sb.String())
+				var sb strings.Builder
+
+				sb.WriteString("Here are your activities:\n")
+
+				for _, nt := range activities {
+					sb.WriteString(nt.Desc + "\n")
+
+					if len(nt.Tags) > 0 {
+						sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
+					}
+
+					sb.WriteString("\n")
+				}
+
+				return c.Send(sb.String())
+			})
 		})
 
 		bot.Handle("/addfriend", func(c tele.Context) error {
@@ -281,29 +302,31 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("failed to parse friend info: %v", err))
 			}
 
-			err = appCtx.Repository.Update(func(l *journal.Journal) error {
-				l.AddFriend(f)
-				return nil
+			ctx := context.Background()
+
+			return s.Tx(ctx, func(j *journal.Journal) error {
+				j.AddFriend(f)
+
+				if err != nil {
+					return c.Send(fmt.Sprintf("failed to add friend: %v", err))
+				}
+
+				fmt.Println("Added new friend: " + f.String())
+
+				var sb strings.Builder
+
+				sb.WriteString("✅ Added new friend: " + f.String())
+
+				if len(f.Locations) > 0 {
+					sb.WriteString("\n📍 Locations: " + strings.Join(f.Locations, ", "))
+				}
+
+				if len(f.Tags) > 0 {
+					sb.WriteString("\n🏷️ Tags: " + strings.Join(f.Tags, ", "))
+				}
+
+				return c.Send(sb.String())
 			})
-			if err != nil {
-				return c.Send(fmt.Sprintf("failed to add friend: %v", err))
-			}
-
-			fmt.Println("Added new friend: " + f.String())
-
-			var sb strings.Builder
-
-			sb.WriteString("✅ Added new friend: " + f.String())
-
-			if len(f.Locations) > 0 {
-				sb.WriteString("\n📍 Locations: " + strings.Join(f.Locations, ", "))
-			}
-
-			if len(f.Tags) > 0 {
-				sb.WriteString("\n🏷️ Tags: " + strings.Join(f.Tags, ", "))
-			}
-
-			return c.Send(sb.String())
 		})
 
 		bot.Handle("/addlocation", func(c tele.Context) error {
@@ -323,31 +346,33 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("failed to parse friend info: %v", err))
 			}
 
-			err = appCtx.Repository.Update(func(j *journal.Journal) error {
+			ctx := context.Background()
+
+			return s.Tx(ctx, func(j *journal.Journal) error {
 				j.AddLocation(l)
-				return nil
+
+				if err != nil {
+					return c.Send(fmt.Sprintf("failed to add friend: %v", err))
+				}
+
+				var sb strings.Builder
+
+				sb.WriteString("✅ Added new location: " + l.String())
+
+				if len(l.Aliases) > 0 {
+					sb.WriteString("\n📍 Aliases: " + strings.Join(l.Aliases, ", "))
+				}
+
+				if len(l.Tags) > 0 {
+					sb.WriteString("\n🏷️ Tags: " + strings.Join(l.Tags, ", "))
+				}
+
+				if l.Desc != "" {
+					sb.WriteString("\n🧭 Description: \n" + l.Desc)
+				}
+
+				return c.Send(sb.String())
 			})
-			if err != nil {
-				return c.Send(fmt.Sprintf("failed to add friend: %v", err))
-			}
-
-			var sb strings.Builder
-
-			sb.WriteString("✅ Added new location: " + l.String())
-
-			if len(l.Aliases) > 0 {
-				sb.WriteString("\n📍 Aliases: " + strings.Join(l.Aliases, ", "))
-			}
-
-			if len(l.Tags) > 0 {
-				sb.WriteString("\n🏷️ Tags: " + strings.Join(l.Tags, ", "))
-			}
-
-			if l.Desc != "" {
-				sb.WriteString("\n🧭 Description: \n" + l.Desc)
-			}
-
-			return c.Send(sb.String())
 		})
 
 		bot.Handle("/addnote", func(c tele.Context) error {
@@ -365,26 +390,27 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("failed to parse note info: %v", err))
 			}
 
-			err = appCtx.Repository.Update(func(j *journal.Journal) error {
+			ctx := context.Background()
+
+			return s.Tx(ctx, func(j *journal.Journal) error {
 				e, err = j.AddEvent(e)
-				return err
+				if err != nil {
+					return c.Send(fmt.Sprintf("failed to add note: %v", err))
+				}
+
+				fmt.Println("✅ Added new note: " + e.ID)
+
+				var sb strings.Builder
+
+				sb.WriteString("✅ Added new note: " + e.ID)
+				sb.WriteString("\n🧭 Description: \n" + e.Desc)
+
+				if len(e.Tags) > 0 {
+					sb.WriteString("\n🏷️ Tags: " + strings.Join(e.Tags, ", "))
+				}
+
+				return c.Send(sb.String())
 			})
-			if err != nil {
-				return c.Send(fmt.Sprintf("failed to add note: %v", err))
-			}
-
-			fmt.Println("✅ Added new note: " + e.ID)
-
-			var sb strings.Builder
-
-			sb.WriteString("✅ Added new note: " + e.ID)
-			sb.WriteString("\n🧭 Description: \n" + e.Desc)
-
-			if len(e.Tags) > 0 {
-				sb.WriteString("\n🏷️ Tags: " + strings.Join(e.Tags, ", "))
-			}
-
-			return c.Send(sb.String())
 		})
 
 		bot.Handle("/addactivity", func(c tele.Context) error {
@@ -402,27 +428,27 @@ var BotCommand = &cli.Command{
 				return c.Send(fmt.Sprintf("failed to parse activity info: %v", err))
 			}
 
-			err = appCtx.Repository.Update(func(j *journal.Journal) error {
+			ctx := context.Background()
+
+			return s.Tx(ctx, func(j *journal.Journal) error {
 				e, err = j.AddEvent(e)
-				return err
+				if err != nil {
+					return c.Send(fmt.Sprintf("failed to add activity: %v", err))
+				}
+
+				fmt.Println("✅ Added new activity: " + e.ID)
+
+				var sb strings.Builder
+
+				sb.WriteString("✅ Added new activity: " + e.ID)
+				sb.WriteString("\n🧭 Description: \n" + e.Desc)
+
+				if len(e.Tags) > 0 {
+					sb.WriteString("\n🏷️ Tags: " + strings.Join(e.Tags, ", "))
+				}
+
+				return c.Send(sb.String())
 			})
-
-			if err != nil {
-				return c.Send(fmt.Sprintf("failed to add activity: %v", err))
-			}
-
-			fmt.Println("✅ Added new activity: " + e.ID)
-
-			var sb strings.Builder
-
-			sb.WriteString("✅ Added new activity: " + e.ID)
-			sb.WriteString("\n🧭 Description: \n" + e.Desc)
-
-			if len(e.Tags) > 0 {
-				sb.WriteString("\n🏷️ Tags: " + strings.Join(e.Tags, ", "))
-			}
-
-			return c.Send(sb.String())
 		})
 
 		bot.Handle("/edit", func(c tele.Context) error {

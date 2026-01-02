@@ -18,9 +18,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/roma-glushko/frens/cmd/telegram"
+	"github.com/roma-glushko/frens/internal/config"
+	"github.com/roma-glushko/frens/internal/store/file"
 
-	"github.com/roma-glushko/frens/internal/journaldir"
+	"github.com/roma-glushko/frens/cmd/telegram"
 
 	"github.com/mattn/go-isatty"
 	"github.com/roma-glushko/frens/cmd/activity"
@@ -86,35 +87,26 @@ func NewApp() cli.App {
 				Usage:   "path to the journal directory (default: ~/.config/frens/)",
 			},
 		},
-		Before: func(ctx *cli.Context) error {
-			debugLevel := ctx.Bool("debug")
-			quietLevel := ctx.Bool("quiet")
+		Before: func(c *cli.Context) error {
+			ctx := c.Context
+			debugLevel := c.Bool("debug")
+			quietLevel := c.Bool("quiet")
 
 			InitLogging(debugLevel, quietLevel)
 
-			jDir, err := journaldir.Dir(ctx.String("journal"))
+			jDir, err := config.Dir(c.String("journal"))
 			if err != nil {
 				return fmt.Errorf("could not load journal directory from %s: %v", jDir, err)
 			}
 
 			log.Debugf(" Using journal directory: %s", jDir)
 
-			// Create repository - it will lazy-load the journal when first accessed
-			repo := journaldir.NewRepository(jDir)
-
-			// Pre-load the journal if it exists
-			if journaldir.Exists(jDir) {
-				if _, err := repo.Load(); err != nil {
-					return fmt.Errorf("failed to load journal from %s: %w", jDir, err)
-				}
-			}
-
-			jCtx := jctx.AppContext{
+			appCtx := jctx.AppContext{
 				JournalDir: jDir,
-				Repository: repo,
+				Store:      file.NewTOMLFileStore(jDir),
 			}
 
-			ctx.Context = jctx.WithCtx(ctx.Context, &jCtx)
+			c.Context = jctx.WithCtx(ctx, &appCtx)
 
 			return nil
 		},

@@ -81,10 +81,10 @@ var AddCommand = &cli.Command{
 			Usage:   "Add friend's nicknames (used in search and matching the friend in activities)",
 		},
 	},
-	Action: func(ctx *cli.Context) error {
+	Action: func(c *cli.Context) error {
 		var info string
 
-		if ctx.NArg() == 0 {
+		if c.NArg() == 0 {
 			// TODO: also check if we are in the interactive mode
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
 				Title:      "Add a new friend information:",
@@ -99,7 +99,7 @@ var AddCommand = &cli.Command{
 
 			info = inputForm.Textarea.Value()
 		} else {
-			info = strings.Join(ctx.Args().Slice(), " ")
+			info = strings.Join(c.Args().Slice(), " ")
 		}
 
 		var f friend.Person
@@ -115,12 +115,12 @@ var AddCommand = &cli.Command{
 		}
 
 		// apply CLI flags
-		id := ctx.String("id")
-		name := ctx.String("name")
-		desc := ctx.String("desc")
-		nicknames := ctx.StringSlice("nickname")
-		tags := ctx.StringSlice("tag")
-		locs := ctx.StringSlice("location")
+		id := c.String("id")
+		name := c.String("name")
+		desc := c.String("desc")
+		nicknames := c.StringSlice("nickname")
+		tags := c.StringSlice("tag")
+		locs := c.StringSlice("location")
 
 		if id != "" {
 			f.ID = id
@@ -150,9 +150,10 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		appCtx := jctx.FromCtx(ctx.Context)
+		ctx := c.Context
+		appCtx := jctx.FromCtx(ctx)
 
-		err = appCtx.Repository.Update(func(j *journal.Journal) error {
+		err = appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			j.AddFriend(f)
 			return nil
 		})

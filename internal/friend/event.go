@@ -37,9 +37,15 @@ type Event struct {
 	Date time.Time `toml:"date"`
 	Desc string    `toml:"desc"`
 
-	Friends   []string `toml:"friends,omitempty"`
-	Locations []string `toml:"locations,omitempty"`
-	Tags      []string `toml:"tags,omitempty"`
+	FriendIDs   []string `toml:"friends,omitempty"`
+	LocationIDs []string `toml:"locations,omitempty"`
+	Tags        []string `toml:"tags,omitempty"`
+}
+
+type EventView struct {
+	Event
+	Friends   Persons   `toml:"-"`
+	Locations Locations `toml:"-"`
 }
 
 var _ tag.Tagged = (*Event)(nil)

@@ -17,6 +17,8 @@ package date
 import (
 	"fmt"
 
+	"github.com/roma-glushko/frens/internal/journal"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/log/formatter"
 
@@ -49,28 +51,30 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		appCtx := jctx.FromCtx(ctx)
-		jr := appCtx.Repository.Journal()
+		jctx := jctx.FromCtx(ctx)
+		s := jctx.Store
 
-		dates, err := jr.ListFriendDates(friend.ListDateQuery{
-			Keyword: c.String("search"),
-			Friends: c.StringSlice("with"),
-			Tags:    c.StringSlice("tag"),
-		})
-		if err != nil {
-			return err
-		}
+		return s.Tx(ctx, func(jr *journal.Journal) error {
+			dates, err := jr.ListFriendDates(friend.ListDateQuery{
+				Keyword: c.String("search"),
+				Friends: c.StringSlice("with"),
+				Tags:    c.StringSlice("tag"),
+			})
+			if err != nil {
+				return err
+			}
 
-		if len(dates) == 0 {
-			log.Info("No dates found for given query.")
+			if len(dates) == 0 {
+				log.Info("No dates found for given query.")
+				return nil
+			}
+
+			fmtr := formatter.DateTextFormatter{}
+
+			o, _ := fmtr.FormatList(dates)
+			fmt.Println(o)
+
 			return nil
-		}
-
-		fmtr := formatter.DateTextFormatter{}
-
-		o, _ := fmtr.FormatList(dates)
-		fmt.Println(o)
-
-		return nil
+		})
 	},
 }
