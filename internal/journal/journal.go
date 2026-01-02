@@ -794,7 +794,10 @@ func (j *Journal) RemoveFriendDates(toRemove []friend.Date) error {
 
 // Wishlist methods
 
-func (j *Journal) AddFriendWishlistItem(fID string, w friend.WishlistItem) (friend.WishlistItem, error) {
+func (j *Journal) AddFriendWishlistItem(
+	fID string,
+	w friend.WishlistItem,
+) (friend.WishlistItem, error) {
 	f, err := j.GetFriend(fID)
 	if err != nil {
 		return friend.WishlistItem{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
@@ -844,7 +847,9 @@ func (j *Journal) GetFriendWishlistItem(wID string) (friend.WishlistItem, error)
 	return friend.WishlistItem{}, fmt.Errorf("wishlist item with ID %s not found", wID)
 }
 
-func (j *Journal) ListFriendWishlistItems(q friend.ListWishlistQuery) ([]friend.WishlistItem, error) {
+func (j *Journal) ListFriendWishlistItems( //nolint:cyclop
+	q friend.ListWishlistQuery,
+) ([]friend.WishlistItem, error) {
 	items := make([]friend.WishlistItem, 0, 10)
 
 	frs := j.Friends
