@@ -7,7 +7,7 @@ before:
     - go generate
 
 builds:
-  - binary: frens
+  - binary: [frens]
     mod_timestamp: "{{ .CommitTimestamp }}"
     env:
       - CGO_ENABLED=0
