@@ -106,6 +106,7 @@ var AddCommand = &cli.Command{
 
 			// Validate and add each contact
 			addedContacts := make([]string, 0, len(contacts))
+
 			for _, contact := range contacts {
 				if err := contact.Validate(); err != nil {
 					return fmt.Errorf("invalid contact %s: %w", contact.Value, err)
@@ -122,7 +123,7 @@ var AddCommand = &cli.Command{
 				)
 			}
 
-			log.Infof(" Added %d contact(s) for %s", len(contacts), p.Name)
+			log.Infof(" Added %d contact(s) for %s", len(addedContacts), p.Name)
 
 			fmtr := formatter.ContactTextFormatter{}
 			for _, contact := range contacts {

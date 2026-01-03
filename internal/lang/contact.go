@@ -47,7 +47,7 @@ var contactTypeAliases = map[string]friend.ContactType{
 }
 
 // FormatContactInfo describes the expected input format for contacts
-var FormatContactInfo = "[TYPE:]VALUE [...] [#tags] - e.g., ig:@handle +48123456789 x:@user email@example.com #work"
+var FormatContactInfo = "[TYPE:]VALUE [...] [#tags] - e.g., ig:@handle +48123456789 x:@user name@example.com #work"
 
 // ExtractContacts parses multiple contacts from a single input string.
 // Supported formats:
@@ -179,7 +179,7 @@ func RenderContact(c friend.Contact) string {
 }
 
 // RenderContacts formats multiple contacts for display/editing
-func RenderContacts(contacts []friend.Contact) string {
+func RenderContacts(contacts []friend.Contact) string { //nolint:cyclop
 	parts := make([]string, 0, len(contacts))
 
 	// Collect unique tags across all contacts
