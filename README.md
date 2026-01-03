@@ -53,60 +53,154 @@ For other platforms and architectures, you can download `frens`' binaries right 
 
 ## Language
 
-One of the major `fren`'s features is the ability to input all data as a free-form text 
+One of the major `fren`'s features is the ability to input all data as a free-form text
 using a simple and straightforward syntax.
 
 ### Tags
 
-Tags are one of the common parts of other pieces of information like `Activities`, `Notes`, `Friends` or `Locations`.
+Tags are a common element across all entities like `Friends`, `Locations`, `Activities`, `Notes`, `Contacts`, and `Wishlist` items.
 
-Tags can be specified via the `#tag` syntax like this:
+Tags can be specified via the `#tag` syntax:
 
 ```text
-#scool #family #university #school:math #school:physics #family-extended
+#family #university #work:engineering #hobby-photography
+```
+
+Tags support namespaces with colons and hyphens for multi-word tags.
+
+### Properties
+
+Properties allow you to set specific attributes on entities using the `$property:value` syntax:
+
+```text
+$id:custom-id $price:$50 $cal:hebrew
 ```
 
 ### Locations
 
-`Locations` can be added like this:
+`Locations` represent places where you and your friends live, work, or spend time together:
 
 ```text
-Scranton, USA (aka "The Electric City") :: a great place to live and work #office @Scranton $id:scranton
+Scranton, USA (aka "The Electric City") :: a great place to live and work #office $id:scranton
 ```
 
-Then, you can set location for your `Friends`, `Activities` and `Notes` via the `@location` syntax like this:
+```text
+Berlin, Germany :: vibrant tech hub with amazing coffee culture #europe #tech
+```
 
 ```text
-@NewYork @LosAngeles @Scranton
+Tokyo (aka "東京") :: visited during cherry blossom season #travel #asia
+```
+
+Reference locations in other entities via the `@location` syntax:
+
+```text
+@NewYork @Berlin @Tokyo
 ```
 
 ### Friends
 
-Similarly to `Locations`, the basic information about `Friend` can be added using a similar syntax:
+Basic information about a `Friend` can be added using a similar syntax:
 
 ```text
-Michael Harry Scott (aka "The World's Best Boss"), my Dunder Mifflin boss, is a great friend of mine #office @Scranton
+Michael Harry Scott (aka "The World's Best Boss") :: my Dunder Mifflin boss #office @Scranton $id:mscott
 ```
 
-You can also specify ID of the friend via `$id:friendid` syntax like this:
+```text
+Sarah Chen (aka "Saz", "SC") :: college roommate, now works at Google #college #tech @SanFrancisco
+```
 
 ```text
-Michael Harry Scott (aka "The World's Best Boss") $id:mscott, ...
+Hans Mueller :: met at a conference in Berlin, shares my love for hiking #conference #outdoor @Berlin
+```
+
+### Contacts
+
+`Contacts` store contact information for your friends with support for various platforms:
+
+```text
+email:sarah@example.com phone:+1234567890 #work
+```
+
+```text
+tg:@telegram_user gh:roma-glushko ig:@photography_account #personal
+```
+
+Supported contact types and their aliases:
+- `email` / `mail` - email addresses
+- `phone` / `tel` - phone numbers
+- `telegram` / `tg` - Telegram handles
+- `whatsapp` / `wa` - WhatsApp contacts
+- `twitter` / `x` - Twitter/X handles
+- `linkedin` / `li` - LinkedIn profiles
+- `github` / `gh` - GitHub profiles
+- `instagram` / `ig` - Instagram handles
+- `facebook` / `fb` - Facebook profiles
+- `discord`, `slack`, `signal` - messaging platforms
+
+Auto-detection works for common formats:
+
+```text
+john@company.com +48123456789 #work
+```
+
+### Dates
+
+`Dates` track important dates for your friends like birthdays and anniversaries:
+
+```text
+January 15 :: Birthday #birthday
+```
+
+```text
+March 10, 2020 :: Wedding anniversary #anniversary #celebration
+```
+
+```text
+15 Nisan :: Passover celebration #holiday $cal:hebrew
+```
+
+Supported calendars: `gregorian` (default), `hebrew`.
+
+### Wishlist
+
+`Wishlist` items help you track gift ideas for your friends:
+
+```text
+Kindle Paperwhite https://amazon.com/kindle $price:$140 #reading #gift-ideas
+```
+
+```text
+Specialty coffee subscription #coffee #monthly
+```
+
+```text
+Concert tickets for Coldplay @Berlin $price:$120 #music #experience
 ```
 
 ### Activities & Notes
 
-`Activities` and `Notes` are events that have the same syntax:
+`Activities` and `Notes` are events that share the same syntax:
 
 ```text
 yesterday :: Jim put my stuff in jello #office @Scranton
 ```
 
-You can also completely omit the date, so it will be set to the current date:
+```text
+2024-12-25 :: Christmas dinner with the whole family #family #holiday @Home
+```
 
 ```text
-Dwight bought a new beet farm #office @Scranton
+last week :: Helped Sarah move to her new apartment #friends @SanFrancisco
 ```
+
+You can omit the date, and it will default to the current date:
+
+```text
+Grabbed coffee and caught up on life #casual @Berlin
+```
+
+Relative dates like "yesterday", "last week", "2 days ago" are supported.
 
 ## Credits
 
