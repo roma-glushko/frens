@@ -118,6 +118,7 @@ func NewApp() cli.App {
 			note.Commands,
 			activity.Commands,
 			telegram.Commands,
+			ServeCommand,
 			ZenCommand,
 		},
 	}

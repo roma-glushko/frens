@@ -8,3 +8,8 @@ tmp
 
 coverage.xml
 coverage.txt
+
+# UI build artifacts
+ui/node_modules
+ui/dist
+internal/ui/dist
