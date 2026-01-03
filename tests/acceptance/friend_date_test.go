@@ -21,216 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestJournal_AddActivityWithFriend(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	a := []string{
-		"frens",
-		"-j",
-		jDir,
-		"friend",
-		"add",
-		"John Doe :: A good friend #friends @NewYork $id:john_doe",
-	}
-
-	err = app.RunContext(ctx, a)
-	require.NoError(t, err)
-
-	a = []string{
-		"frens",
-		"-j",
-		jDir,
-		"activity",
-		"add",
-		"Had a great time with John Doe at the park #friends @NewYork",
-	}
-
-	err = app.RunContext(ctx, a)
-	require.NoError(t, err)
-}
-
-func TestActivity_List(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	// Add activities
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Had coffee with friends #social @CoffeeShop",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Team meeting at office #work @Office",
-	})
-	require.NoError(t, err)
-
-	// List all activities
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_List_WithSearch(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	// Add activities
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Had coffee with friends #social",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Team meeting at office #work",
-	})
-	require.NoError(t, err)
-
-	// Search activities
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--search", "coffee",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_List_WithTagFilter(t *testing.T) {
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	// Add activities with different tags
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Had coffee with friends #social",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Team meeting at office #work",
-	})
-	require.NoError(t, err)
-
-	// Filter by tag
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--tag", "work",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_List_WithSortAndReverse(t *testing.T) {
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	// Add activities
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Alpha activity #test",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Beta activity #test",
-	})
-	require.NoError(t, err)
-
-	// List with alpha sort
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--sort", "alpha",
-	})
-	require.NoError(t, err)
-
-	// List with recency sort (default)
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--sort", "recency",
-	})
-	require.NoError(t, err)
-
-	// List with reverse sort
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--reverse",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_List_WithDateFilters(t *testing.T) {
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	// Add activities
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Today's activity #test",
-	})
-	require.NoError(t, err)
-
-	// List with from filter
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--from", "yesterday",
-	})
-	require.NoError(t, err)
-
-	// List with to filter
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--to", "tomorrow",
-	})
-	require.NoError(t, err)
-
-	// List with both from and to filters
-	err = app.RunContext(t.Context(), []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--from", "yesterday",
-		"--to", "tomorrow",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_AddWithFriendReference(t *testing.T) {
+func TestFriendDate_Add(t *testing.T) {
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
@@ -244,18 +35,224 @@ func TestActivity_AddWithFriendReference(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// Add activity with friend reference
+	// Add a date
 	err = app.RunContext(t.Context(), []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Had lunch with &john_doe #social @Restaurant",
+		"friend", "date", "add",
+		"john_doe",
+		"birthday :: May 13th",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendDate_Add_WithFlags(t *testing.T) {
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add a friend first
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	// List activities to verify
+	// Add a date using CLI flags
 	err = app.RunContext(t.Context(), []string{
 		"frens", "-j", jDir,
-		"activity", "list",
+		"friend", "date", "add",
+		"john_doe",
+		"--desc", "Birthday",
+		"--date", "1990-05-13",
+		"--tag", "birthday",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendDate_Add_Anniversary(t *testing.T) {
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add a friend first
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	// Add an anniversary date
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "add",
+		"john_doe",
+		"anniversary :: 2009-9-09 #important",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendDate_List(t *testing.T) {
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add a friend with dates
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "add",
+		"john_doe",
+		"birthday :: May 13th",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "add",
+		"john_doe",
+		"anniversary :: 2009-9-09",
+	})
+	require.NoError(t, err)
+
+	// List all dates
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "list",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendDate_List_WithFriendFilter(t *testing.T) {
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add friends with dates
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"Jane Smith :: Work colleague #work @SanFrancisco $id:jane_smith",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "add",
+		"john_doe",
+		"birthday :: May 13th",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "add",
+		"jane_smith",
+		"birthday :: June 20th",
+	})
+	require.NoError(t, err)
+
+	// List dates for specific friend
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "list",
+		"--with", "john_doe",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendDate_List_WithTagFilter(t *testing.T) {
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add friend with tagged dates
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "add",
+		"john_doe",
+		"birthday :: May 13th #birthday",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "add",
+		"john_doe",
+		"anniversary :: 2009-9-09 #anniversary",
+	})
+	require.NoError(t, err)
+
+	// Filter by tag
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "list",
+		"--tag", "birthday",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendDate_List_WithSearch(t *testing.T) {
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add friend with dates
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "add",
+		"john_doe",
+		"birthday :: May 13th",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "add",
+		"john_doe",
+		"wedding anniversary :: 2009-9-09",
+	})
+	require.NoError(t, err)
+
+	// Search dates
+	err = app.RunContext(t.Context(), []string{
+		"frens", "-j", jDir,
+		"friend", "date", "list",
+		"--search", "wedding",
 	})
 	require.NoError(t, err)
 }
