@@ -53,7 +53,7 @@ For other platforms and architectures, you can download `frens`' binaries right 
 
 ## Language
 
-One of the major `fren`'s features is the ability to input all data as a free-form text
+One of the major `fren`' features is the ability to input all data as a free-form text
 using a simple and straightforward syntax.
 
 ### Tags
