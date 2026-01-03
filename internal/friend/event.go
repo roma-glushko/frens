@@ -32,14 +32,14 @@ const (
 )
 
 type Event struct {
-	ID   string    `toml:"id"`
-	Type EventType `toml:"type"`
-	Date time.Time `toml:"date"`
-	Desc string    `toml:"desc"`
+	ID   string    `toml:"id" json:"id"`
+	Type EventType `toml:"type" json:"type"`
+	Date time.Time `toml:"date" json:"date"`
+	Desc string    `toml:"desc" json:"description"`
 
-	FriendIDs   []string `toml:"friends,omitempty"`
-	LocationIDs []string `toml:"locations,omitempty"`
-	Tags        []string `toml:"tags,omitempty"`
+	FriendIDs   []string `toml:"friends,omitempty" json:"friendIds,omitempty"`
+	LocationIDs []string `toml:"locations,omitempty" json:"locationIds,omitempty"`
+	Tags        []string `toml:"tags,omitempty" json:"tags,omitempty"`
 }
 
 type EventView struct {

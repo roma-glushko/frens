@@ -30,17 +30,17 @@ import (
 var ErrLocNameEmpty = errors.New("location name must be provided")
 
 type Location struct {
-	ID      string   `toml:"id"`
-	Name    string   `toml:"name"`
-	Country string   `toml:"country,omitempty"`
-	Desc    string   `toml:"desc,omitempty"`
-	Aliases []string `toml:"aliases,omitempty"`
-	Tags    []string `toml:"tags,omitempty"`
+	ID      string   `toml:"id" json:"id"`
+	Name    string   `toml:"name" json:"name"`
+	Country string   `toml:"country,omitempty" json:"country,omitempty"`
+	Desc    string   `toml:"desc,omitempty" json:"description,omitempty"`
+	Aliases []string `toml:"aliases,omitempty" json:"aliases,omitempty"`
+	Tags    []string `toml:"tags,omitempty" json:"tags,omitempty"`
 
 	// Cached information
-	Notes              int       `toml:"notes,omitempty"`
-	Activities         int       `toml:"activities,omitempty"`
-	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero"`
+	Notes              int       `toml:"notes,omitempty" json:"notesCount"`
+	Activities         int       `toml:"activities,omitempty" json:"activitiesCount"`
+	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero" json:"lastActivity,omitzero"`
 }
 
 var (

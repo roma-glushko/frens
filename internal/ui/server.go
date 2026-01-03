@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/roma-glushko/frens/internal/store"
 )
 
 // Server serves the embedded UI over HTTP.
@@ -16,13 +17,15 @@ type Server struct {
 	addr   string
 	server *http.Server
 	logger *log.Logger
+	store  store.Store
 }
 
 // NewServer creates a new UI server.
-func NewServer(addr string, logger *log.Logger) *Server {
+func NewServer(addr string, logger *log.Logger, s store.Store) *Server {
 	return &Server{
 		addr:   addr,
 		logger: logger,
+		store:  s,
 	}
 }
 
@@ -34,6 +37,12 @@ func (s *Server) Start(ctx context.Context) (string, error) {
 	}
 
 	mux := http.NewServeMux()
+
+	// Register API routes
+	if s.store != nil {
+		api := NewAPI(s.store)
+		api.RegisterRoutes(mux)
+	}
 
 	// Serve static files with SPA fallback
 	fileServer := http.FileServer(http.FS(assets))

@@ -21,6 +21,7 @@ import (
 	"syscall"
 
 	"github.com/charmbracelet/log"
+	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/ui"
 	"github.com/urfave/cli/v2"
 )
@@ -50,7 +51,12 @@ var ServeCommand = &cli.Command{
 			Level: log.InfoLevel,
 		})
 
-		server := ui.NewServer(addr, logger)
+		appCtx := jctx.FromCtx(c.Context)
+		if appCtx == nil {
+			return fmt.Errorf("failed to get app context")
+		}
+
+		server := ui.NewServer(addr, logger, appCtx.Store)
 
 		actualAddr, err := server.Start(c.Context)
 		if err != nil {

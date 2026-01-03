@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
-  import { Users, Calendar, MapPin, StickyNote, BarChart3 } from "lucide-svelte";
+  import { Users, Calendar, MapPin, StickyNote, BarChart3, TrendingUp } from "lucide-svelte";
   import { currentPath } from "$lib/stores/router.svelte";
 
   interface Props {
@@ -22,6 +22,7 @@
     { label: "Activities", href: "/activities", icon: Calendar },
     { label: "Notes", href: "/notes", icon: StickyNote },
     { label: "Locations", href: "/locations", icon: MapPin },
+    { label: "Stats", href: "/stats", icon: TrendingUp },
   ];
 
   function isActive(href: string): boolean {
