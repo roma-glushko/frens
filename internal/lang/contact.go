@@ -137,11 +137,13 @@ func detectContactType(value string) friend.ContactType {
 
 	// Check if it's mostly digits (phone number)
 	digitCount := 0
+
 	for _, r := range value {
 		if r >= '0' && r <= '9' {
 			digitCount++
 		}
 	}
+
 	if digitCount > len(value)/2 && digitCount >= 7 {
 		return friend.ContactTypePhone
 	}
@@ -182,6 +184,7 @@ func RenderContacts(contacts []friend.Contact) string {
 
 	// Collect unique tags across all contacts
 	allTags := make(map[string]bool)
+
 	for _, c := range contacts {
 		for _, t := range c.Tags {
 			allTags[t] = true
@@ -213,9 +216,11 @@ func RenderContacts(contacts []friend.Contact) string {
 	// Append shared tags at the end
 	if len(allTags) > 0 {
 		tags := make([]string, 0, len(allTags))
+
 		for t := range allTags {
 			tags = append(tags, t)
 		}
+
 		result += " " + RenderTags(tags)
 	}
 

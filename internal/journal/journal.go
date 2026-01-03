@@ -973,7 +973,9 @@ func (j *Journal) GetFriendContact(cID string) (friend.Contact, error) {
 	return friend.Contact{}, fmt.Errorf("contact with ID %s not found", cID)
 }
 
-func (j *Journal) ListFriendContacts(q friend.ListContactQuery) ([]friend.Contact, error) { //nolint:cyclop
+func (j *Journal) ListFriendContacts( //nolint:cyclop
+	q friend.ListContactQuery,
+) ([]friend.Contact, error) {
 	contacts := make([]friend.Contact, 0, 10)
 
 	frs := j.Friends
@@ -1000,12 +1002,14 @@ func (j *Journal) ListFriendContacts(q friend.ListContactQuery) ([]friend.Contac
 
 			if len(q.Types) > 0 {
 				found := false
+
 				for _, t := range q.Types {
 					if c.Type == t {
 						found = true
 						break
 					}
 				}
+
 				if !found {
 					continue
 				}

@@ -116,7 +116,10 @@ var AddCommand = &cli.Command{
 					return err
 				}
 
-				addedContacts = append(addedContacts, fmt.Sprintf("%s: %s", added.Type, added.Value))
+				addedContacts = append(
+					addedContacts,
+					fmt.Sprintf("%s: %s", added.Type, added.Value),
+				)
 			}
 
 			log.Infof(" Added %d contact(s) for %s", len(contacts), p.Name)
