@@ -21,214 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestJournal_AddActivityWithFriend(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	a := []string{
-		"frens",
-		"-j",
-		jDir,
-		"friend",
-		"add",
-		"John Doe :: A good friend #friends @NewYork $id:john_doe",
-	}
-
-	err = app.RunContext(ctx, a)
-	require.NoError(t, err)
-
-	a = []string{
-		"frens",
-		"-j",
-		jDir,
-		"activity",
-		"add",
-		"Had a great time with John Doe at the park #friends @NewYork",
-	}
-
-	err = app.RunContext(ctx, a)
-	require.NoError(t, err)
-}
-
-func TestActivity_List(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Had coffee with friends #social @CoffeeShop",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Team meeting at office #work @Office",
-	})
-	require.NoError(t, err)
-
-	// List all activities
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_List_WithSearch(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Had coffee with friends #social",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Team meeting at office #work",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--search", "coffee",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_List_WithTagFilter(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Had coffee with friends #social",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Team meeting at office #work",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--tag", "work",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_List_WithSortAndReverse(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	// Add activities
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Alpha activity #test",
-	})
-	require.NoError(t, err)
-
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Beta activity #test",
-	})
-	require.NoError(t, err)
-
-	// List with alpha sort
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--sort", "alpha",
-	})
-	require.NoError(t, err)
-
-	// List with recency sort (default)
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--sort", "recency",
-	})
-	require.NoError(t, err)
-
-	// List with reverse sort
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--reverse",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_List_WithDateFilters(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
-	// Add activities
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "add",
-		"Today's activity #test",
-	})
-	require.NoError(t, err)
-
-	// List with from filter
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--from", "yesterday",
-	})
-	require.NoError(t, err)
-
-	// List with to filter
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--to", "tomorrow",
-	})
-	require.NoError(t, err)
-
-	// List with both from and to filters
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--from", "yesterday",
-		"--to", "tomorrow",
-	})
-	require.NoError(t, err)
-}
-
-func TestActivity_AddWithFriendReference(t *testing.T) {
+func TestFriendWishlist_Add(t *testing.T) {
 	ctx := t.Context()
 	app := cmd.NewApp()
 
@@ -243,18 +36,247 @@ func TestActivity_AddWithFriendReference(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// Add activity with friend reference
+	// Add a wishlist item with description
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Had lunch with &john_doe #social @Restaurant",
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Cool mechanical keyboard #techgift",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendWishlist_Add_WithFlags(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add a friend first
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	// List activities to verify
+	// Add a wishlist item using CLI flags
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "list",
+		"friend", "wishlist", "add",
+		"john_doe",
+		"--desc", "Cool mechanical keyboard",
+		"--price", "150USD",
+		"--tag", "tech",
+		"--tag", "gift",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendWishlist_Add_MultipleItems(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add a friend first
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	// Add multiple wishlist items
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Cool mechanical keyboard #tech",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Gaming mouse #gaming",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Noise cancelling headphones #audio",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendWishlist_List(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add a friend with wishlist items
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Cool keyboard #tech",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Gaming mouse #gaming",
+	})
+	require.NoError(t, err)
+
+	// List all wishlist items
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "list",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendWishlist_List_WithFriendFilter(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add multiple friends with wishlist items
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"Jane Smith :: Work colleague #work @SanFrancisco $id:jane_smith",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Gaming keyboard #tech",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"jane_smith",
+		"Book on leadership #books",
+	})
+	require.NoError(t, err)
+
+	// List wishlist items for specific friend
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "list",
+		"--with", "john_doe",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendWishlist_List_WithTagFilter(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add friend with tagged wishlist items
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Mechanical keyboard #tech #office",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Gaming headset #gaming #audio",
+	})
+	require.NoError(t, err)
+
+	// Filter by tag
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "list",
+		"--tag", "gaming",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriendWishlist_List_WithSearch(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add friend with wishlist items
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Mechanical keyboard",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "add",
+		"john_doe",
+		"Wireless mouse",
+	})
+	require.NoError(t, err)
+
+	// Search wishlist items
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "wishlist", "list",
+		"--search", "keyboard",
 	})
 	require.NoError(t, err)
 }

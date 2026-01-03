@@ -917,6 +917,146 @@ func (j *Journal) RemoveFriendWishlistItems(toRemove []friend.WishlistItem) erro
 	return nil
 }
 
+// Contact methods
+
+func (j *Journal) AddFriendContact(fID string, c friend.Contact) (friend.Contact, error) {
+	f, err := j.GetFriend(fID)
+	if err != nil {
+		return friend.Contact{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
+	}
+
+	if c.ID == "" {
+		c.ID = ksuid.New().String()
+	}
+
+	for _, p := range j.Friends {
+		if p.ID == f.ID {
+			p.Contacts = append(p.Contacts, &c)
+			break
+		}
+	}
+
+	j.SetDirty(true)
+
+	return c, nil
+}
+
+func (j *Journal) UpdateFriendContact(o, n friend.Contact) (friend.Contact, error) {
+	n.ID = o.ID
+
+	for _, f := range j.Friends {
+		for i, c := range f.Contacts {
+			if c.ID == o.ID {
+				f.Contacts[i] = &n
+
+				j.SetDirty(true)
+
+				return n, nil
+			}
+		}
+	}
+
+	return friend.Contact{}, fmt.Errorf("contact with ID %s not found", o.ID)
+}
+
+func (j *Journal) GetFriendContact(cID string) (friend.Contact, error) {
+	for _, f := range j.Friends {
+		for _, c := range f.Contacts {
+			if c.ID == cID {
+				c.Person = f.ID
+
+				return *c, nil
+			}
+		}
+	}
+
+	return friend.Contact{}, fmt.Errorf("contact with ID %s not found", cID)
+}
+
+func (j *Journal) ListFriendContacts( //nolint:cyclop
+	q friend.ListContactQuery,
+) ([]friend.Contact, error) {
+	contacts := make([]friend.Contact, 0, 10)
+
+	frs := j.Friends
+
+	if len(q.Friends) > 0 {
+		frs = make([]*friend.Person, 0, len(q.Friends))
+
+		for _, fID := range q.Friends {
+			f, err := j.GetFriend(fID)
+			if err != nil {
+				return contacts, fmt.Errorf("failed to get friend %s: %w", fID, err)
+			}
+
+			frs = append(frs, &f)
+		}
+	}
+
+	for _, f := range frs {
+		for _, c := range f.Contacts {
+			if q.Keyword != "" &&
+				!strings.Contains(strings.ToLower(c.Value), strings.ToLower(q.Keyword)) {
+				continue
+			}
+
+			if len(q.Types) > 0 {
+				found := false
+
+				for _, t := range q.Types {
+					if c.Type == t {
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					continue
+				}
+			}
+
+			if len(q.Tags) > 0 && !tag.HasTags(c, q.Tags) {
+				continue
+			}
+
+			c.Person = f.ID
+
+			contacts = append(contacts, *c)
+		}
+	}
+
+	return contacts, nil
+}
+
+func (j *Journal) RemoveFriendContacts(toRemove []friend.Contact) error {
+	for _, cID := range toRemove {
+		found := false
+
+		for _, f := range j.Friends {
+			for i, c := range f.Contacts {
+				if c.ID == cID.ID {
+					f.Contacts = append(f.Contacts[:i], f.Contacts[i+1:]...)
+					found = true
+
+					j.SetDirty(true)
+
+					break
+				}
+			}
+
+			if found {
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("contact with ID %s not found", cID.ID)
+		}
+	}
+
+	return nil
+}
+
 func (j *Journal) Stats() Stats {
 	return Stats{
 		Friends:    len(j.Friends),

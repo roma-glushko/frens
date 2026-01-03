@@ -21,240 +21,223 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestJournal_AddActivityWithFriend(t *testing.T) {
+func TestLocation_List(t *testing.T) {
 	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
-	a := []string{
-		"frens",
-		"-j",
-		jDir,
-		"friend",
-		"add",
-		"John Doe :: A good friend #friends @NewYork $id:john_doe",
-	}
-
-	err = app.RunContext(ctx, a)
-	require.NoError(t, err)
-
-	a = []string{
-		"frens",
-		"-j",
-		jDir,
-		"activity",
-		"add",
-		"Had a great time with John Doe at the park #friends @NewYork",
-	}
-
-	err = app.RunContext(ctx, a)
-	require.NoError(t, err)
-}
-
-func TestActivity_List(t *testing.T) {
-	ctx := t.Context()
-	app := cmd.NewApp()
-
-	jDir, err := InitJournal(t, app)
-	require.NoError(t, err)
-
+	// Add locations
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Had coffee with friends #social @CoffeeShop",
+		"location", "add",
+		"New York City :: The Big Apple #city @USA $id:nyc",
 	})
 	require.NoError(t, err)
 
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Team meeting at office #work @Office",
+		"location", "add",
+		"San Francisco :: Tech hub #city @USA $id:sf",
 	})
 	require.NoError(t, err)
 
-	// List all activities
+	// List all locations
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "list",
+		"location", "list",
 	})
 	require.NoError(t, err)
 }
 
-func TestActivity_List_WithSearch(t *testing.T) {
+func TestLocation_List_WithSearch(t *testing.T) {
 	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
+	// Add locations
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Had coffee with friends #social",
+		"location", "add",
+		"New York City :: The Big Apple #city @USA $id:nyc",
 	})
 	require.NoError(t, err)
 
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Team meeting at office #work",
+		"location", "add",
+		"San Francisco :: Tech hub #city @USA $id:sf",
 	})
 	require.NoError(t, err)
 
+	// Search locations
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "list",
-		"--search", "coffee",
+		"location", "list",
+		"--search", "York",
 	})
 	require.NoError(t, err)
 }
 
-func TestActivity_List_WithTagFilter(t *testing.T) {
+func TestLocation_List_WithTagFilter(t *testing.T) {
 	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
+	// Add locations with different tags
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Had coffee with friends #social",
+		"location", "add",
+		"New York City :: The Big Apple #city #metro @USA $id:nyc",
 	})
 	require.NoError(t, err)
 
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Team meeting at office #work",
+		"location", "add",
+		"Central Park :: Green space #park #outdoor @USA $id:central_park",
 	})
 	require.NoError(t, err)
 
+	// Filter by tag
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "list",
-		"--tag", "work",
+		"location", "list",
+		"--tag", "park",
 	})
 	require.NoError(t, err)
 }
 
-func TestActivity_List_WithSortAndReverse(t *testing.T) {
+func TestLocation_List_WithCountryFilter(t *testing.T) {
 	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
-	// Add activities
+	// Add locations with different countries
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Alpha activity #test",
+		"location", "add",
+		"New York City :: The Big Apple #city @USA $id:nyc",
 	})
 	require.NoError(t, err)
 
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Beta activity #test",
+		"location", "add",
+		"London :: Capital of UK #city @UK $id:london",
+	})
+	require.NoError(t, err)
+
+	// Filter by country
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"location", "list",
+		"--country", "USA",
+	})
+	require.NoError(t, err)
+}
+
+func TestLocation_List_WithSortAndReverse(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add locations
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"location", "add",
+		"Boston :: Historic city #city @USA $id:boston",
+	})
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"location", "add",
+		"Austin :: Texas capital #city @USA $id:austin",
 	})
 	require.NoError(t, err)
 
 	// List with alpha sort
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "list",
+		"location", "list",
 		"--sort", "alpha",
-	})
-	require.NoError(t, err)
-
-	// List with recency sort (default)
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--sort", "recency",
 	})
 	require.NoError(t, err)
 
 	// List with reverse sort
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "list",
+		"location", "list",
+		"--sort", "alpha",
 		"--reverse",
 	})
 	require.NoError(t, err)
 }
 
-func TestActivity_List_WithDateFilters(t *testing.T) {
+func TestLocation_Delete(t *testing.T) {
 	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
-	// Add activities
+	// Add a location
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Today's activity #test",
+		"location", "add",
+		"New York City :: The Big Apple #city @USA $id:nyc",
 	})
 	require.NoError(t, err)
 
-	// List with from filter
+	// Delete the location with force flag
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "list",
-		"--from", "yesterday",
-	})
-	require.NoError(t, err)
-
-	// List with to filter
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--to", "tomorrow",
-	})
-	require.NoError(t, err)
-
-	// List with both from and to filters
-	err = app.RunContext(ctx, []string{
-		"frens", "-j", jDir,
-		"activity", "list",
-		"--from", "yesterday",
-		"--to", "tomorrow",
+		"location", "delete",
+		"--force",
+		"nyc",
 	})
 	require.NoError(t, err)
 }
 
-func TestActivity_AddWithFriendReference(t *testing.T) {
+func TestLocation_Delete_Multiple(t *testing.T) {
 	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
-	// Add a friend first
+	// Add multiple locations
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"friend", "add",
-		"John Doe :: A good friend #friends @NewYork $id:john_doe",
+		"location", "add",
+		"New York City :: The Big Apple #city @USA $id:nyc",
 	})
 	require.NoError(t, err)
 
-	// Add activity with friend reference
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "add",
-		"Had lunch with &john_doe #social @Restaurant",
+		"location", "add",
+		"San Francisco :: Tech hub #city @USA $id:sf",
 	})
 	require.NoError(t, err)
 
-	// List activities to verify
+	// Delete multiple locations at once
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
-		"activity", "list",
+		"location", "delete",
+		"--force",
+		"nyc",
+		"sf",
 	})
 	require.NoError(t, err)
 }

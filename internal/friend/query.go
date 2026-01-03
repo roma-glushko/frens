@@ -123,3 +123,10 @@ type ListWishlistQuery struct {
 	Friends []string
 	Tags    []string
 }
+
+type ListContactQuery struct {
+	Keyword string
+	Friends []string
+	Types   []ContactType
+	Tags    []string
+}
