@@ -22,13 +22,14 @@ import (
 )
 
 func TestFriendWishlist_Add(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend first
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -36,7 +37,7 @@ func TestFriendWishlist_Add(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add a wishlist item with description
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -46,13 +47,14 @@ func TestFriendWishlist_Add(t *testing.T) {
 }
 
 func TestFriendWishlist_Add_WithFlags(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend first
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -60,7 +62,7 @@ func TestFriendWishlist_Add_WithFlags(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add a wishlist item using CLI flags
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -73,13 +75,14 @@ func TestFriendWishlist_Add_WithFlags(t *testing.T) {
 }
 
 func TestFriendWishlist_Add_MultipleItems(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend first
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -87,7 +90,7 @@ func TestFriendWishlist_Add_MultipleItems(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add multiple wishlist items
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -95,7 +98,7 @@ func TestFriendWishlist_Add_MultipleItems(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -103,7 +106,7 @@ func TestFriendWishlist_Add_MultipleItems(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -113,20 +116,21 @@ func TestFriendWishlist_Add_MultipleItems(t *testing.T) {
 }
 
 func TestFriendWishlist_List(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend with wishlist items
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -134,7 +138,7 @@ func TestFriendWishlist_List(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -143,7 +147,7 @@ func TestFriendWishlist_List(t *testing.T) {
 	require.NoError(t, err)
 
 	// List all wishlist items
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "list",
 	})
@@ -151,27 +155,28 @@ func TestFriendWishlist_List(t *testing.T) {
 }
 
 func TestFriendWishlist_List_WithFriendFilter(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add multiple friends with wishlist items
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"Jane Smith :: Work colleague #work @SanFrancisco $id:jane_smith",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -179,7 +184,7 @@ func TestFriendWishlist_List_WithFriendFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"jane_smith",
@@ -188,7 +193,7 @@ func TestFriendWishlist_List_WithFriendFilter(t *testing.T) {
 	require.NoError(t, err)
 
 	// List wishlist items for specific friend
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "list",
 		"--with", "john_doe",
@@ -197,20 +202,21 @@ func TestFriendWishlist_List_WithFriendFilter(t *testing.T) {
 }
 
 func TestFriendWishlist_List_WithTagFilter(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add friend with tagged wishlist items
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -218,7 +224,7 @@ func TestFriendWishlist_List_WithTagFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -227,7 +233,7 @@ func TestFriendWishlist_List_WithTagFilter(t *testing.T) {
 	require.NoError(t, err)
 
 	// Filter by tag
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "list",
 		"--tag", "gaming",
@@ -236,20 +242,21 @@ func TestFriendWishlist_List_WithTagFilter(t *testing.T) {
 }
 
 func TestFriendWishlist_List_WithSearch(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add friend with wishlist items
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -257,7 +264,7 @@ func TestFriendWishlist_List_WithSearch(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "add",
 		"john_doe",
@@ -266,7 +273,7 @@ func TestFriendWishlist_List_WithSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search wishlist items
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "wishlist", "list",
 		"--search", "keyboard",

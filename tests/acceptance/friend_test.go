@@ -22,13 +22,14 @@ import (
 )
 
 func TestFriend_List(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend first
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -36,7 +37,7 @@ func TestFriend_List(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add another friend
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"Jane Smith :: Work colleague #work @SanFrancisco $id:jane_smith",
@@ -44,7 +45,7 @@ func TestFriend_List(t *testing.T) {
 	require.NoError(t, err)
 
 	// List all friends
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "list",
 	})
@@ -52,20 +53,21 @@ func TestFriend_List(t *testing.T) {
 }
 
 func TestFriend_List_WithSearch(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add friends
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"Jane Smith :: Work colleague #work @SanFrancisco $id:jane_smith",
@@ -73,7 +75,7 @@ func TestFriend_List_WithSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search for specific friend
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "list",
 		"--search", "John",
@@ -82,20 +84,21 @@ func TestFriend_List_WithSearch(t *testing.T) {
 }
 
 func TestFriend_List_WithTagFilter(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add friends with different tags
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"Jane Smith :: Work colleague #work @SanFrancisco $id:jane_smith",
@@ -103,7 +106,7 @@ func TestFriend_List_WithTagFilter(t *testing.T) {
 	require.NoError(t, err)
 
 	// Filter by tag
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "list",
 		"--tag", "work",
@@ -112,20 +115,21 @@ func TestFriend_List_WithTagFilter(t *testing.T) {
 }
 
 func TestFriend_List_WithLocationFilter(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add friends with different locations
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"Jane Smith :: Work colleague #work @SanFrancisco $id:jane_smith",
@@ -133,7 +137,7 @@ func TestFriend_List_WithLocationFilter(t *testing.T) {
 	require.NoError(t, err)
 
 	// Filter by location
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "list",
 		"--location", "NewYork",
@@ -142,20 +146,21 @@ func TestFriend_List_WithLocationFilter(t *testing.T) {
 }
 
 func TestFriend_List_WithSortAndReverse(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add friends
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"Alice Brown :: College friend #college @Boston $id:alice_brown",
@@ -163,7 +168,7 @@ func TestFriend_List_WithSortAndReverse(t *testing.T) {
 	require.NoError(t, err)
 
 	// List with alpha sort
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "list",
 		"--sort", "alpha",
@@ -171,7 +176,7 @@ func TestFriend_List_WithSortAndReverse(t *testing.T) {
 	require.NoError(t, err)
 
 	// List with reverse sort
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "list",
 		"--sort", "alpha",
@@ -181,13 +186,14 @@ func TestFriend_List_WithSortAndReverse(t *testing.T) {
 }
 
 func TestFriend_Delete(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -195,7 +201,7 @@ func TestFriend_Delete(t *testing.T) {
 	require.NoError(t, err)
 
 	// Delete the friend with force flag
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "delete",
 		"--force",
@@ -205,20 +211,21 @@ func TestFriend_Delete(t *testing.T) {
 }
 
 func TestFriend_Delete_Multiple(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add multiple friends
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"Jane Smith :: Work colleague #work @SanFrancisco $id:jane_smith",
@@ -226,7 +233,7 @@ func TestFriend_Delete_Multiple(t *testing.T) {
 	require.NoError(t, err)
 
 	// Delete multiple friends at once
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "delete",
 		"--force",
