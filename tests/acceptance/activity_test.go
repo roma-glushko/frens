@@ -60,7 +60,6 @@ func TestActivity_List(t *testing.T) {
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
-	// Add activities
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "add",
@@ -90,7 +89,6 @@ func TestActivity_List_WithSearch(t *testing.T) {
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
-	// Add activities
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "add",
@@ -105,7 +103,6 @@ func TestActivity_List_WithSearch(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// Search activities
 	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "list",
@@ -115,28 +112,27 @@ func TestActivity_List_WithSearch(t *testing.T) {
 }
 
 func TestActivity_List_WithTagFilter(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
-	// Add activities with different tags
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "add",
 		"Had coffee with friends #social",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "add",
 		"Team meeting at office #work",
 	})
 	require.NoError(t, err)
 
-	// Filter by tag
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "list",
 		"--tag", "work",
@@ -145,20 +141,21 @@ func TestActivity_List_WithTagFilter(t *testing.T) {
 }
 
 func TestActivity_List_WithSortAndReverse(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add activities
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "add",
 		"Alpha activity #test",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "add",
 		"Beta activity #test",
@@ -166,7 +163,7 @@ func TestActivity_List_WithSortAndReverse(t *testing.T) {
 	require.NoError(t, err)
 
 	// List with alpha sort
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "list",
 		"--sort", "alpha",
@@ -174,7 +171,7 @@ func TestActivity_List_WithSortAndReverse(t *testing.T) {
 	require.NoError(t, err)
 
 	// List with recency sort (default)
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "list",
 		"--sort", "recency",
@@ -182,7 +179,7 @@ func TestActivity_List_WithSortAndReverse(t *testing.T) {
 	require.NoError(t, err)
 
 	// List with reverse sort
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "list",
 		"--reverse",
@@ -191,13 +188,14 @@ func TestActivity_List_WithSortAndReverse(t *testing.T) {
 }
 
 func TestActivity_List_WithDateFilters(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add activities
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "add",
 		"Today's activity #test",
@@ -205,7 +203,7 @@ func TestActivity_List_WithDateFilters(t *testing.T) {
 	require.NoError(t, err)
 
 	// List with from filter
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "list",
 		"--from", "yesterday",
@@ -213,7 +211,7 @@ func TestActivity_List_WithDateFilters(t *testing.T) {
 	require.NoError(t, err)
 
 	// List with to filter
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "list",
 		"--to", "tomorrow",
@@ -221,7 +219,7 @@ func TestActivity_List_WithDateFilters(t *testing.T) {
 	require.NoError(t, err)
 
 	// List with both from and to filters
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "list",
 		"--from", "yesterday",
@@ -231,13 +229,14 @@ func TestActivity_List_WithDateFilters(t *testing.T) {
 }
 
 func TestActivity_AddWithFriendReference(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend first
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -245,7 +244,7 @@ func TestActivity_AddWithFriendReference(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add activity with friend reference
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "add",
 		"Had lunch with &john_doe #social @Restaurant",
@@ -253,7 +252,7 @@ func TestActivity_AddWithFriendReference(t *testing.T) {
 	require.NoError(t, err)
 
 	// List activities to verify
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"activity", "list",
 	})

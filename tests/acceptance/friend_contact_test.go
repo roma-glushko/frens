@@ -22,13 +22,14 @@ import (
 )
 
 func TestFriendContact_Add(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend first
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -36,7 +37,7 @@ func TestFriendContact_Add(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add contact information
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "add",
 		"john_doe",
@@ -46,13 +47,14 @@ func TestFriendContact_Add(t *testing.T) {
 }
 
 func TestFriendContact_Add_Multiple(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend first
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -60,7 +62,7 @@ func TestFriendContact_Add_Multiple(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add multiple contact information at once
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "add",
 		"john_doe",
@@ -72,13 +74,14 @@ func TestFriendContact_Add_Multiple(t *testing.T) {
 }
 
 func TestFriendContact_Add_WithTags(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend first
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -86,7 +89,7 @@ func TestFriendContact_Add_WithTags(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add contact with tags
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "add",
 		"john_doe",
@@ -97,13 +100,14 @@ func TestFriendContact_Add_WithTags(t *testing.T) {
 }
 
 func TestFriendContact_Add_SocialMedia(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend first
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
@@ -111,7 +115,7 @@ func TestFriendContact_Add_SocialMedia(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add various social media contacts
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "add",
 		"john_doe",
@@ -123,20 +127,21 @@ func TestFriendContact_Add_SocialMedia(t *testing.T) {
 }
 
 func TestFriendContact_List(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add a friend and contacts
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "add",
 		"john_doe",
@@ -146,7 +151,7 @@ func TestFriendContact_List(t *testing.T) {
 	require.NoError(t, err)
 
 	// List all contacts
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "list",
 	})
@@ -154,27 +159,28 @@ func TestFriendContact_List(t *testing.T) {
 }
 
 func TestFriendContact_List_WithFriendFilter(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add friends with contacts
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"Jane Smith :: Work colleague #work @SanFrancisco $id:jane_smith",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "add",
 		"john_doe",
@@ -182,7 +188,7 @@ func TestFriendContact_List_WithFriendFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "add",
 		"jane_smith",
@@ -191,7 +197,7 @@ func TestFriendContact_List_WithFriendFilter(t *testing.T) {
 	require.NoError(t, err)
 
 	// List contacts for specific friend
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "list",
 		"--with", "john_doe",
@@ -200,20 +206,21 @@ func TestFriendContact_List_WithFriendFilter(t *testing.T) {
 }
 
 func TestFriendContact_List_WithTypeFilter(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add friend with various contact types
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "add",
 		"john_doe",
@@ -224,7 +231,7 @@ func TestFriendContact_List_WithTypeFilter(t *testing.T) {
 	require.NoError(t, err)
 
 	// List only email contacts
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "list",
 		"--type", "email",
@@ -233,20 +240,21 @@ func TestFriendContact_List_WithTypeFilter(t *testing.T) {
 }
 
 func TestFriendContact_List_WithSearch(t *testing.T) {
+	ctx := t.Context()
 	app := cmd.NewApp()
 
 	jDir, err := InitJournal(t, app)
 	require.NoError(t, err)
 
 	// Add friend with contacts
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "add",
 		"John Doe :: A good friend #friends @NewYork $id:john_doe",
 	})
 	require.NoError(t, err)
 
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "add",
 		"john_doe",
@@ -256,7 +264,7 @@ func TestFriendContact_List_WithSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// Search contacts
-	err = app.RunContext(t.Context(), []string{
+	err = app.RunContext(ctx, []string{
 		"frens", "-j", jDir,
 		"friend", "contact", "list",
 		"--search", "company",
