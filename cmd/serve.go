@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 
@@ -110,13 +111,17 @@ func openURL(url string) error {
 
 func isWSL() bool {
 	_, err := os.Stat("/proc/version")
+
 	if err != nil {
 		return false
 	}
+
 	data, err := os.ReadFile("/proc/version")
+
 	if err != nil {
 		return false
 	}
+
 	return contains(string(data), "microsoft") || contains(string(data), "WSL")
 }
 
@@ -143,26 +148,6 @@ func containsAt(s, substr string) bool {
 }
 
 func runCommand(name string, args ...string) error {
-	cmd := newCommand(name, args...)
+	cmd := exec.Command(name, args...)
 	return cmd.Start()
-}
-
-// newCommand creates a new exec.Cmd - this is a simple wrapper for testing
-func newCommand(name string, args ...string) *command {
-	return &command{name: name, args: args}
-}
-
-type command struct {
-	name string
-	args []string
-}
-
-func (c *command) Start() error {
-	proc, err := os.StartProcess(c.name, append([]string{c.name}, c.args...), &os.ProcAttr{
-		Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
-	})
-	if err != nil {
-		return err
-	}
-	return proc.Release()
 }
