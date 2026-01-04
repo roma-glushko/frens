@@ -16,7 +16,6 @@ package contact
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -25,7 +24,6 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -64,8 +62,8 @@ var EditCommand = &cli.Command{
 		cID := strings.Join(c.Args().Slice(), " ")
 
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		return s.Tx(ctx, func(j *journal.Journal) error {
 			cOld, err := j.GetFriendContact(cID)
@@ -124,12 +122,7 @@ var EditCommand = &cli.Command{
 			log.Info(" Contact updated")
 			log.Info("==> Contact Information\n")
 
-			fmtr := formatter.ContactTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(&cNew)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.Print(cNew)
 		})
 	},
 }

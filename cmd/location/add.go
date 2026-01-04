@@ -16,10 +16,7 @@ package location
 
 import (
 	"errors"
-	"fmt"
 	"strings"
-
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 
@@ -41,7 +38,7 @@ var AddCommand = &cli.Command{
 	ArgsUsage: `<INFO>
 		If no arguments are provided, a textarea will be shown to fill in the details interactively.
 		Otherwise, the information will be parsed from the command options.
-		
+
 		<INFO> format:
 			` + lang.FormatLocationInfo + `
 
@@ -179,11 +176,6 @@ var AddCommand = &cli.Command{
 		log.Info(" ✔ Location added")
 		log.Info("==> Location Information\n")
 
-		fmtr := formatter.LocationTextFormatter{}
-
-		o, _ := fmtr.FormatSingle(l)
-		fmt.Println(o)
-
-		return nil
+		return appCtx.Printer.Print(l)
 	},
 }

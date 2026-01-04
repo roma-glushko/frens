@@ -15,15 +15,14 @@
 package location
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/journal"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/log"
 
 	"github.com/urfave/cli/v2"
 )
@@ -66,8 +65,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		sortOrder := friend.SortOrderDirect
 
@@ -85,16 +84,11 @@ var ListCommand = &cli.Command{
 			})
 
 			if len(locations) == 0 {
-				fmt.Println("No locations found")
+				log.Info("No locations found")
 				return nil
 			}
 
-			fmtr := formatter.LocationTextFormatter{}
-
-			o, _ := fmtr.FormatList(locations)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.PrintList(locations)
 		})
 	},
 }

@@ -15,13 +15,11 @@
 package friend
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/roma-glushko/frens/internal/journal"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/log"
@@ -67,8 +65,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		sortOrder := friend.SortOrderDirect
 
@@ -90,12 +88,7 @@ var ListCommand = &cli.Command{
 				return nil
 			}
 
-			fmtr := formatter.PersonTextFormatter{}
-
-			o, _ := fmtr.FormatList(friends)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.PrintList(friends)
 		})
 	},
 }

@@ -34,9 +34,14 @@ type WishlistItemTextFormatter struct{}
 var _ log.Formatter = (*WishlistItemTextFormatter)(nil)
 
 func (f WishlistItemTextFormatter) FormatSingle(e any) (string, error) {
-	w, ok := e.(*friend.WishlistItem)
+	var w friend.WishlistItem
 
-	if !ok {
+	switch v := e.(type) {
+	case friend.WishlistItem:
+		w = v
+	case *friend.WishlistItem:
+		w = *v
+	default:
 		return "", ErrInvalidEntity
 	}
 

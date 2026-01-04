@@ -34,9 +34,14 @@ type ContactTextFormatter struct{}
 var _ log.Formatter = (*ContactTextFormatter)(nil)
 
 func (f ContactTextFormatter) FormatSingle(e any) (string, error) {
-	c, ok := e.(*friend.Contact)
+	var c friend.Contact
 
-	if !ok {
+	switch v := e.(type) {
+	case friend.Contact:
+		c = v
+	case *friend.Contact:
+		c = *v
+	default:
 		return "", ErrInvalidEntity
 	}
 

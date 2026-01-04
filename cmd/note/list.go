@@ -23,7 +23,6 @@ import (
 	"github.com/roma-glushko/frens/internal/log"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/roma-glushko/frens/internal/friend"
 
@@ -75,8 +74,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		sortOrder := friend.SortOrderDirect
 
@@ -103,12 +102,7 @@ var ListCommand = &cli.Command{
 				return nil
 			}
 
-			fmtr := formatter.EventTextFormatter{}
-
-			o, _ := fmtr.FormatList(notes)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.PrintList(notes)
 		})
 	},
 }
