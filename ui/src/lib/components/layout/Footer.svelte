@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { Heart, Github, ExternalLink } from "lucide-svelte";
+  import { Heart, Github, ExternalLink, GitBranch, AlertCircle, CheckCircle2, CircleDot } from "lucide-svelte";
+  import { onMount } from "svelte";
+  import { api, type SyncStatus } from "$lib/api";
 
   const currentYear = new Date().getFullYear();
 
@@ -8,6 +10,17 @@
     { label: "GitHub", href: "https://github.com/roma-glushko/frens" },
     { label: "Issues", href: "https://github.com/roma-glushko/frens/issues" },
   ];
+
+  let syncStatus: SyncStatus | null = $state(null);
+  let syncError: boolean = $state(false);
+
+  onMount(async () => {
+    try {
+      syncStatus = await api.sync.status();
+    } catch {
+      syncError = true;
+    }
+  });
 </script>
 
 <footer class="border-t border-border bg-background">
@@ -66,15 +79,54 @@
         <p class="text-sm text-muted-foreground">
           &copy; {currentYear} Roma Hlushko. Apache-2.0 License.
         </p>
-        <a
-          href="https://github.com/roma-glushko/frens"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Github class="h-4 w-4" />
-          Star on GitHub
-        </a>
+
+        <!-- Sync Status -->
+        <div class="flex items-center gap-4">
+          {#if syncError}
+            <span class="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+              <AlertCircle class="h-4 w-4 text-destructive" />
+              Sync unavailable
+            </span>
+          {:else if syncStatus}
+            {#if !syncStatus.gitInstalled}
+              <span class="inline-flex items-center gap-1.5 text-sm text-muted-foreground" title="Git is not installed">
+                <AlertCircle class="h-4 w-4 text-yellow-500" />
+                Git not found
+              </span>
+            {:else if !syncStatus.gitInited}
+              <span class="inline-flex items-center gap-1.5 text-sm text-muted-foreground" title="Run 'frens journal connect' to enable sync">
+                <CircleDot class="h-4 w-4 text-yellow-500" />
+                Sync not configured
+              </span>
+            {:else}
+              <span class="inline-flex items-center gap-1.5 text-sm text-muted-foreground" title={syncStatus.hasChanges ? `${syncStatus.changeCount} uncommitted change${syncStatus.changeCount !== 1 ? 's' : ''}` : 'All changes synced'}>
+                {#if syncStatus.hasChanges}
+                  <CircleDot class="h-4 w-4 text-yellow-500" />
+                  <span>{syncStatus.changeCount} pending</span>
+                {:else}
+                  <CheckCircle2 class="h-4 w-4 text-green-500" />
+                  <span>Synced</span>
+                {/if}
+                {#if syncStatus.branch}
+                  <span class="inline-flex items-center gap-1 text-xs text-muted-foreground/70">
+                    <GitBranch class="h-3 w-3" />
+                    {syncStatus.branch}
+                  </span>
+                {/if}
+              </span>
+            {/if}
+          {/if}
+
+          <a
+            href="https://github.com/roma-glushko/frens"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Github class="h-4 w-4" />
+            Star on GitHub
+          </a>
+        </div>
       </div>
     </div>
   </div>

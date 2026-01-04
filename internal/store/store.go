@@ -28,4 +28,5 @@ type Store interface {
 	Load(ctx context.Context) (*journal.Journal, error)
 	Save(ctx context.Context, journal *journal.Journal) error
 	Tx(ctx context.Context, fn JournalUpdater) error
+	Path() string
 }

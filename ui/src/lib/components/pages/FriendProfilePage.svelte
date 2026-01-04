@@ -63,6 +63,10 @@
     currentPath.navigate("/friends");
   }
 
+  function viewLocation(id: string) {
+    currentPath.navigate(`/locations/${id}`);
+  }
+
   function formatLastActivity(dateStr?: string): string {
     if (!dateStr) return "No activity yet";
     const date = new Date(dateStr);
@@ -311,12 +315,14 @@
           <CardContent class="pt-0">
             <div class="flex flex-wrap gap-2">
               {#each friend.locations as location}
-                <span
-                  class="inline-flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-sm"
+                <button
+                  type="button"
+                  onclick={() => viewLocation(location)}
+                  class="inline-flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-sm hover:bg-muted/80 transition-colors"
                 >
                   <MapPin class="h-3.5 w-3.5 text-muted-foreground" />
                   {location}
-                </span>
+                </button>
               {/each}
             </div>
           </CardContent>
@@ -353,9 +359,17 @@
                     </div>
                   {/if}
                   {#if activity.locationIds && activity.locationIds.length > 0}
-                    <div class="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
+                    <div class="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground flex-wrap">
                       <MapPin class="h-3 w-3" />
-                      {activity.locationIds.join(", ")}
+                      {#each activity.locationIds as locationId, i}
+                        <button
+                          type="button"
+                          onclick={() => viewLocation(locationId)}
+                          class="hover:text-foreground transition-colors"
+                        >
+                          {locationId}{i < activity.locationIds.length - 1 ? "," : ""}
+                        </button>
+                      {/each}
                     </div>
                   {/if}
                 </div>

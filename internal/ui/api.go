@@ -24,6 +24,7 @@ import (
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/store"
+	"github.com/roma-glushko/frens/internal/sync"
 )
 
 // ComprehensiveStats contains all statistics for the Stats page.
@@ -59,6 +60,29 @@ type Insight struct {
 	FriendID    string `json:"friendId,omitempty"`
 }
 
+// SyncStatus represents the current sync status of the journal.
+type SyncStatus struct {
+	GitInstalled bool   `json:"gitInstalled"`
+	GitInited    bool   `json:"gitInited"`
+	Branch       string `json:"branch,omitempty"`
+	HasChanges   bool   `json:"hasChanges"`
+	ChangeCount  int    `json:"changeCount"`
+}
+
+// FeedItem represents a unified feed item (activity, note, friend added, location added).
+type FeedItem struct {
+	ID          string   `json:"id"`
+	Type        string   `json:"type"` // "activity", "note", "friend_added", "location_added"
+	Date        string   `json:"date"`
+	Description string   `json:"description"`
+	FriendIDs   []string `json:"friendIds,omitempty"`
+	LocationIDs []string `json:"locationIds,omitempty"`
+	Tags        []string `json:"tags,omitempty"`
+	// For friend_added/location_added
+	EntityID   string `json:"entityId,omitempty"`
+	EntityName string `json:"entityName,omitempty"`
+}
+
 // API holds the dependencies for API handlers.
 type API struct {
 	store store.Store
@@ -83,6 +107,8 @@ func (a *API) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/activities", a.handleListActivities)
 	mux.HandleFunc("GET /api/stats", a.handleGetStats)
 	mux.HandleFunc("GET /api/stats/comprehensive", a.handleGetComprehensiveStats)
+	mux.HandleFunc("GET /api/sync/status", a.handleGetSyncStatus)
+	mux.HandleFunc("GET /api/feed", a.handleGetFeed)
 }
 
 // handleListFriends returns all friends.
@@ -583,6 +609,144 @@ func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(result); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// handleGetFeed returns a unified feed of recent activity.
+func (a *API) handleGetFeed(w http.ResponseWriter, r *http.Request) {
+	var feed []FeedItem
+
+	err := a.store.Tx(r.Context(), func(j *journal.Journal) error {
+		// Add activities
+		for _, event := range j.Activities {
+			feed = append(feed, FeedItem{
+				ID:          event.ID,
+				Type:        "activity",
+				Date:        event.Date.Format(time.RFC3339),
+				Description: event.Desc,
+				FriendIDs:   event.FriendIDs,
+				LocationIDs: event.LocationIDs,
+				Tags:        event.Tags,
+			})
+		}
+
+		// Add notes
+		for _, event := range j.Notes {
+			feed = append(feed, FeedItem{
+				ID:          event.ID,
+				Type:        "note",
+				Date:        event.Date.Format(time.RFC3339),
+				Description: event.Desc,
+				FriendIDs:   event.FriendIDs,
+				LocationIDs: event.LocationIDs,
+				Tags:        event.Tags,
+			})
+		}
+
+		// Add friend additions
+		for _, f := range j.Friends {
+			if !f.CreatedAt.IsZero() {
+				feed = append(feed, FeedItem{
+					ID:          "friend-" + f.ID,
+					Type:        "friend_added",
+					Date:        f.CreatedAt.Format(time.RFC3339),
+					Description: "Added " + f.Name + " as a friend",
+					EntityID:    f.ID,
+					EntityName:  f.Name,
+				})
+			}
+		}
+
+		// Add location additions
+		for _, l := range j.Locations {
+			if !l.CreatedAt.IsZero() {
+				feed = append(feed, FeedItem{
+					ID:          "location-" + l.ID,
+					Type:        "location_added",
+					Date:        l.CreatedAt.Format(time.RFC3339),
+					Description: "Added " + l.Name + " as a location",
+					EntityID:    l.ID,
+					EntityName:  l.Name,
+				})
+			}
+		}
+
+		// Sort by date descending
+		sort.Slice(feed, func(i, j int) bool {
+			ti, _ := time.Parse(time.RFC3339, feed[i].Date)
+			tj, _ := time.Parse(time.RFC3339, feed[j].Date)
+			return ti.After(tj)
+		})
+
+		return nil
+	})
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if feed == nil {
+		feed = []FeedItem{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(feed); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// handleGetSyncStatus returns the current sync status of the journal.
+func (a *API) handleGetSyncStatus(w http.ResponseWriter, r *http.Request) {
+	status := SyncStatus{}
+
+	git := sync.NewGit(a.store.Path())
+
+	// Check if git is installed
+	if err := git.Installed(); err != nil {
+		status.GitInstalled = false
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(status); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+	status.GitInstalled = true
+
+	// Check if git repository is initialized
+	if err := git.Inited(); err != nil {
+		status.GitInited = false
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(status); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+	status.GitInited = true
+
+	// Get current branch
+	if branch, err := git.GetBranchName(r.Context()); err == nil {
+		status.Branch = branch
+	}
+
+	// Get uncommitted changes
+	if gitStatus, err := git.GetStatus(r.Context()); err == nil {
+		if gitStatus != "" {
+			status.HasChanges = true
+			// Count number of changed files (each line in porcelain output is a file)
+			lines := 0
+			for _, c := range gitStatus {
+				if c == '\n' {
+					lines++
+				}
+			}
+			status.ChangeCount = lines + 1 // +1 for the last line without newline
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(status); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

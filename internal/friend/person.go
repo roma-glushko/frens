@@ -48,6 +48,7 @@ type Person struct {
 	Contacts  []*Contact      `toml:"contacts,omitempty" json:"contacts,omitempty"`
 	Dates     []*Date         `toml:"dates,omitempty" json:"dates,omitempty"`
 	Wishlist  []*WishlistItem `toml:"wishlist,omitempty" json:"wishlist,omitempty"`
+	CreatedAt time.Time       `toml:"created_at,omitempty,omitzero" json:"createdAt,omitzero"`
 	// Cached information
 	Activities         int       `toml:"activities,omitempty" json:"activitiesCount"`
 	Notes              int       `toml:"notes,omitempty" json:"notesCount"`

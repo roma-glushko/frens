@@ -62,6 +62,10 @@ func NewTOMLFileStore(dir string) *TOMLFileStore {
 	}
 }
 
+func (s *TOMLFileStore) Path() string {
+	return s.dir
+}
+
 func (s *TOMLFileStore) Init(ctx context.Context) error {
 	var errs []error
 

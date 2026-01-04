@@ -6,7 +6,7 @@
   import CardTitle from "$lib/components/ui/card/CardTitle.svelte";
   import CardContent from "$lib/components/ui/card/CardContent.svelte";
   import { Users, Calendar, StickyNote, MapPin } from "lucide-svelte";
-  import { api, type Stats, type Event } from "$lib/api";
+  import { api, type Stats, type FeedItem } from "$lib/api";
 
   let stats = $state<Stats>({
     friends: 0,
@@ -17,31 +17,28 @@
 
   let recentEntries = $state<TimelineEntry[]>([]);
 
-  function eventToTimelineEntry(event: Event): TimelineEntry {
+  function feedItemToTimelineEntry(item: FeedItem): TimelineEntry {
     return {
-      id: event.id,
-      type: event.type,
-      content: event.description,
-      date: new Date(event.date),
-      tags: event.tags,
-      location: event.locationIds?.[0],
+      id: item.id,
+      type: item.type,
+      content: item.description,
+      date: new Date(item.date),
+      tags: item.tags,
+      location: item.locationIds?.[0],
+      entityId: item.entityId,
+      entityName: item.entityName,
     };
   }
 
   onMount(async () => {
     try {
-      const [statsData, activities, notes] = await Promise.all([
+      const [statsData, feedData] = await Promise.all([
         api.stats.get(),
-        api.activities.list(),
-        api.notes.list(),
+        api.feed.list(),
       ]);
 
       stats = statsData;
-
-      // Combine and sort by date, take most recent 10
-      const allEvents = [...activities, ...notes];
-      allEvents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      recentEntries = allEvents.slice(0, 10).map(eventToTimelineEntry);
+      recentEntries = feedData.slice(0, 10).map(feedItemToTimelineEntry);
     } catch (e) {
       console.error("Failed to load dashboard data:", e);
     }

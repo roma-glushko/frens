@@ -58,6 +58,28 @@ export interface ComprehensiveStats {
   insights: Insight[];
 }
 
+export interface SyncStatus {
+  gitInstalled: boolean;
+  gitInited: boolean;
+  branch?: string;
+  hasChanges: boolean;
+  changeCount: number;
+}
+
+export type FeedItemType = "activity" | "note" | "friend_added" | "location_added";
+
+export interface FeedItem {
+  id: string;
+  type: FeedItemType;
+  date: string;
+  description: string;
+  friendIds?: string[];
+  locationIds?: string[];
+  tags?: string[];
+  entityId?: string;
+  entityName?: string;
+}
+
 export type EventType = "activity" | "note";
 
 export interface Event {
@@ -130,5 +152,11 @@ export const api = {
     get: (): Promise<Stats> => fetchJson<Stats>("/stats"),
     getComprehensive: (): Promise<ComprehensiveStats> =>
       fetchJson<ComprehensiveStats>("/stats/comprehensive"),
+  },
+  sync: {
+    status: (): Promise<SyncStatus> => fetchJson<SyncStatus>("/sync/status"),
+  },
+  feed: {
+    list: (): Promise<FeedItem[]> => fetchJson<FeedItem[]>("/feed"),
   },
 };
