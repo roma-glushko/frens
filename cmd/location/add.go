@@ -25,6 +25,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/geo"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
@@ -150,6 +151,21 @@ var AddCommand = &cli.Command{
 
 		ctx := c.Context
 		appCtx := jctx.FromCtx(ctx)
+
+		// Geocode the location to get coordinates
+		if l.Lat == nil || l.Lng == nil {
+			geocoder := geo.NewGeocoder()
+			coords, err := geocoder.GeocodeLocation(ctx, l.Name, l.Country)
+			if err != nil {
+				log.Warnf("Failed to geocode location: %v", err)
+			} else if coords != nil {
+				l.Lat = &coords.Lat
+				l.Lng = &coords.Lng
+				log.Infof("Resolved coordinates: %.4f, %.4f", coords.Lat, coords.Lng)
+			} else {
+				log.Warn("Could not find coordinates for this location")
+			}
+		}
 
 		err = appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			j.AddLocation(l)

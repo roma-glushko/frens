@@ -25,6 +25,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
+	"github.com/roma-glushko/frens/internal/geo"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -134,6 +135,29 @@ var EditCommand = &cli.Command{
 
 			if err := lNew.Validate(); err != nil {
 				return err
+			}
+
+			// Re-geocode if name/country changed or coordinates are missing
+			nameChanged := lNew.Name != lOld.Name
+			countryChanged := lNew.Country != lOld.Country
+			missingCoords := lNew.Lat == nil || lNew.Lng == nil
+
+			if nameChanged || countryChanged || missingCoords {
+				geocoder := geo.NewGeocoder()
+				coords, err := geocoder.GeocodeLocation(ctx, lNew.Name, lNew.Country)
+				if err != nil {
+					log.Warn("Failed to geocode location", "err", err)
+				} else if coords != nil {
+					lNew.Lat = &coords.Lat
+					lNew.Lng = &coords.Lng
+					log.Info("Resolved coordinates", "lat", coords.Lat, "lng", coords.Lng)
+				} else {
+					log.Warn("Could not find coordinates for this location")
+				}
+			} else {
+				// Preserve existing coordinates
+				lNew.Lat = lOld.Lat
+				lNew.Lng = lOld.Lng
 			}
 
 			j.UpdateLocation(lOld, lNew)

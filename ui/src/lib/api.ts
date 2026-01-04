@@ -99,6 +99,8 @@ export interface Location {
   description?: string;
   aliases?: string[];
   tags?: string[];
+  lat?: number;
+  lng?: number;
   activitiesCount: number;
   notesCount: number;
   lastActivity?: string;

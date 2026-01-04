@@ -36,6 +36,8 @@ type Location struct {
 	Desc      string    `toml:"desc,omitempty" json:"description,omitempty"`
 	Aliases   []string  `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	Tags      []string  `toml:"tags,omitempty" json:"tags,omitempty"`
+	Lat       *float64  `toml:"lat,omitempty" json:"lat,omitempty"`
+	Lng       *float64  `toml:"lng,omitempty" json:"lng,omitempty"`
 	CreatedAt time.Time `toml:"created_at,omitempty,omitzero" json:"createdAt,omitzero"`
 
 	// Cached information
