@@ -86,11 +86,11 @@ func ParseContactType(s string) ContactType {
 }
 
 type Contact struct {
-	ID     string      `toml:"id" json:"id"`
-	Type   ContactType `toml:"type" json:"type"`
-	Value  string      `toml:"value" json:"value"`
+	ID     string      `toml:"id"             json:"id"`
+	Type   ContactType `toml:"type"           json:"type"`
+	Value  string      `toml:"value"          json:"value"`
 	Tags   []string    `toml:"tags,omitempty" json:"tags,omitempty"`
-	Person string      `toml:"-" json:"-"`
+	Person string      `toml:"-"              json:"-"`
 }
 
 func (c *Contact) SetTags(tags []string) {

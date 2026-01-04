@@ -74,7 +74,12 @@ func (g *Geocoder) Geocode(ctx context.Context, query string) (*Coordinates, err
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request: %w", err)
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		if err = resp.Body.Close(); err != nil {
+			fmt.Printf("failed to close response body: %v\n", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -106,7 +111,10 @@ func (g *Geocoder) Geocode(ctx context.Context, query string) (*Coordinates, err
 }
 
 // GeocodeLocation builds a query from name and country and resolves coordinates
-func (g *Geocoder) GeocodeLocation(ctx context.Context, name, country string) (*Coordinates, error) {
+func (g *Geocoder) GeocodeLocation(
+	ctx context.Context,
+	name, country string,
+) (*Coordinates, error) {
 	query := name
 
 	if country != "" {

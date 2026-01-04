@@ -30,19 +30,19 @@ import (
 var ErrLocNameEmpty = errors.New("location name must be provided")
 
 type Location struct {
-	ID        string    `toml:"id" json:"id"`
-	Name      string    `toml:"name" json:"name"`
-	Country   string    `toml:"country,omitempty" json:"country,omitempty"`
-	Desc      string    `toml:"desc,omitempty" json:"description,omitempty"`
-	Aliases   []string  `toml:"aliases,omitempty" json:"aliases,omitempty"`
-	Tags      []string  `toml:"tags,omitempty" json:"tags,omitempty"`
-	Lat       *float64  `toml:"lat,omitempty" json:"lat,omitempty"`
-	Lng       *float64  `toml:"lng,omitempty" json:"lng,omitempty"`
+	ID        string    `toml:"id"                            json:"id"`
+	Name      string    `toml:"name"                          json:"name"`
+	Country   string    `toml:"country,omitempty"             json:"country,omitempty"`
+	Desc      string    `toml:"desc,omitempty"                json:"description,omitempty"`
+	Aliases   []string  `toml:"aliases,omitempty"             json:"aliases,omitempty"`
+	Tags      []string  `toml:"tags,omitempty"                json:"tags,omitempty"`
+	Lat       *float64  `toml:"lat,omitempty"                 json:"lat,omitempty"`
+	Lng       *float64  `toml:"lng,omitempty"                 json:"lng,omitempty"`
 	CreatedAt time.Time `toml:"created_at,omitempty,omitzero" json:"createdAt,omitzero"`
 
 	// Cached information
-	Notes              int       `toml:"notes,omitempty" json:"notesCount"`
-	Activities         int       `toml:"activities,omitempty" json:"activitiesCount"`
+	Notes              int       `toml:"notes,omitempty"                         json:"notesCount"`
+	Activities         int       `toml:"activities,omitempty"                    json:"activitiesCount"`
 	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero" json:"lastActivity,omitzero"`
 }
 

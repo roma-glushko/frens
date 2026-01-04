@@ -3,7 +3,6 @@ package ui
 import (
 	"context"
 	"fmt"
-	"io/fs"
 	"net"
 	"net/http"
 	"time"
@@ -46,6 +45,7 @@ func (s *Server) Start(ctx context.Context) (string, error) {
 
 	// Serve static files with SPA fallback
 	fileServer := http.FileServer(http.FS(assets))
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Try to serve the file directly
 		path := r.URL.Path
@@ -60,18 +60,26 @@ func (s *Server) Start(ctx context.Context) (string, error) {
 			if _, err := assets.Open("index.html"); err == nil {
 				r.URL.Path = "/"
 				fileServer.ServeHTTP(w, r)
+
 				return
 			}
+
 			http.NotFound(w, r)
+
 			return
 		}
-		f.Close()
+
+		if err := f.Close(); err != nil {
+			s.logger.Warn("Failed to close file", "error", err)
+		}
 
 		// Serve the actual file
 		fileServer.ServeHTTP(w, r)
 	})
 
-	listener, err := net.Listen("tcp", s.addr)
+	lc := net.ListenConfig{}
+
+	listener, err := lc.Listen(ctx, "tcp", s.addr)
 	if err != nil {
 		return "", fmt.Errorf("failed to listen on %s: %w", s.addr, err)
 	}
@@ -104,47 +112,4 @@ func (s *Server) Stop(ctx context.Context) error {
 	defer cancel()
 
 	return s.server.Shutdown(shutdownCtx)
-}
-
-// serveFile serves a file from the embedded filesystem.
-func serveFile(w http.ResponseWriter, r *http.Request, assets fs.FS, path string) {
-	f, err := assets.Open(path)
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
-	defer f.Close()
-
-	stat, err := f.Stat()
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	if seeker, ok := f.(fs.File); ok {
-		if rs, ok := seeker.(interface {
-			Read([]byte) (int, error)
-			Seek(int64, int) (int64, error)
-		}); ok {
-			http.ServeContent(w, r, stat.Name(), stat.ModTime(), &readSeeker{rs})
-			return
-		}
-	}
-
-	http.ServeFile(w, r, path)
-}
-
-type readSeeker struct {
-	rs interface {
-		Read([]byte) (int, error)
-		Seek(int64, int) (int64, error)
-	}
-}
-
-func (r *readSeeker) Read(p []byte) (int, error) {
-	return r.rs.Read(p)
-}
-
-func (r *readSeeker) Seek(offset int64, whence int) (int64, error) {
-	return r.rs.Seek(offset, whence)
 }

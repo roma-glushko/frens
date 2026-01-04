@@ -120,15 +120,16 @@ func (a *API) handleListFriends(w http.ResponseWriter, r *http.Request) {
 			SortBy:    friend.SortAlpha,
 			SortOrder: friend.SortOrderDirect,
 		})
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(friends); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -143,6 +144,7 @@ func (a *API) handleGetFriend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var foundFriend friend.Person
+
 	var found bool
 
 	err := a.store.Tx(r.Context(), func(j *journal.Journal) error {
@@ -150,11 +152,13 @@ func (a *API) handleGetFriend(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+
 		foundFriend = f
+
 		found = true
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -166,6 +170,7 @@ func (a *API) handleGetFriend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(foundFriend); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -190,9 +195,9 @@ func (a *API) handleGetFriendActivities(w http.ResponseWriter, r *http.Request) 
 				}
 			}
 		}
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -203,6 +208,7 @@ func (a *API) handleGetFriendActivities(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(activities); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -227,9 +233,9 @@ func (a *API) handleGetFriendNotes(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -240,6 +246,7 @@ func (a *API) handleGetFriendNotes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(notes); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -254,9 +261,9 @@ func (a *API) handleListLocations(w http.ResponseWriter, r *http.Request) {
 			SortBy:    friend.SortAlpha,
 			SortOrder: friend.SortOrderDirect,
 		})
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -267,6 +274,7 @@ func (a *API) handleListLocations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(locations); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -287,16 +295,18 @@ func (a *API) handleGetLocation(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+
 		foundLocation = loc
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(foundLocation); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -321,9 +331,9 @@ func (a *API) handleGetLocationActivities(w http.ResponseWriter, r *http.Request
 				}
 			}
 		}
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -334,6 +344,7 @@ func (a *API) handleGetLocationActivities(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(activities); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -358,9 +369,9 @@ func (a *API) handleGetLocationNotes(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -371,6 +382,7 @@ func (a *API) handleGetLocationNotes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(notes); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -384,9 +396,9 @@ func (a *API) handleListNotes(w http.ResponseWriter, r *http.Request) {
 		for _, note := range j.Notes {
 			notes = append(notes, *note)
 		}
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -397,6 +409,7 @@ func (a *API) handleListNotes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(notes); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -410,9 +423,9 @@ func (a *API) handleListActivities(w http.ResponseWriter, r *http.Request) {
 		for _, activity := range j.Activities {
 			activities = append(activities, *activity)
 		}
+
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -423,6 +436,7 @@ func (a *API) handleListActivities(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(activities); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -436,20 +450,20 @@ func (a *API) handleGetStats(w http.ResponseWriter, r *http.Request) {
 		stats = j.Stats()
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(stats); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 // handleGetComprehensiveStats returns comprehensive statistics for the Stats page.
-func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request) { //nolint:cyclop
 	var result ComprehensiveStats
 
 	err := a.store.Tx(r.Context(), func(j *journal.Journal) error {
@@ -461,18 +475,22 @@ func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request
 			SortBy:    friend.SortActivities,
 			SortOrder: friend.SortOrderReverse,
 		})
+
 		for i, f := range friends {
 			if i >= 5 {
 				break
 			}
+
 			item := RankedItem{
 				ID:    f.ID,
 				Name:  f.Name,
 				Count: f.Activities,
 			}
+
 			if !f.MostRecentActivity.IsZero() {
 				item.LastActivity = f.MostRecentActivity.Format(time.RFC3339)
 			}
+
 			result.TopFriends = append(result.TopFriends, item)
 		}
 
@@ -481,28 +499,34 @@ func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request
 			SortBy:    friend.SortActivities,
 			SortOrder: friend.SortOrderReverse,
 		})
+
 		for i, l := range locations {
 			if i >= 5 {
 				break
 			}
+
 			item := RankedItem{
 				ID:    l.ID,
 				Name:  l.Name,
 				Count: l.Activities,
 			}
+
 			if !l.MostRecentActivity.IsZero() {
 				item.LastActivity = l.MostRecentActivity.Format(time.RFC3339)
 			}
+
 			result.TopLocations = append(result.TopLocations, item)
 		}
 
 		// Top tags by occurrence count
 		tagCounts := make(map[string]int)
+
 		for _, event := range j.Activities {
 			for _, tag := range event.Tags {
 				tagCounts[tag]++
 			}
 		}
+
 		for _, event := range j.Notes {
 			for _, tag := range event.Tags {
 				tagCounts[tag]++
@@ -513,17 +537,22 @@ func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request
 			tag   string
 			count int
 		}
+
 		var tags []tagCount
+
 		for tag, count := range tagCounts {
 			tags = append(tags, tagCount{tag, count})
 		}
+
 		sort.Slice(tags, func(i, j int) bool {
 			return tags[i].count > tags[j].count
 		})
+
 		for i, t := range tags {
 			if i >= 10 {
 				break
 			}
+
 			result.TopTags = append(result.TopTags, RankedItem{
 				ID:    t.tag,
 				Name:  t.tag,
@@ -549,6 +578,7 @@ func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request
 				dp.Activities++
 			}
 		}
+
 		for _, event := range j.Notes {
 			key := event.Date.Format("Jan 2006")
 			if dp, ok := monthData[key]; ok {
@@ -565,8 +595,10 @@ func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request
 
 		// Insights: Friends to reconnect with (no activity in 30+ days)
 		thirtyDaysAgo := now.AddDate(0, 0, -30)
+
 		for _, f := range friends {
-			if f.Activities > 0 && !f.MostRecentActivity.IsZero() && f.MostRecentActivity.Before(thirtyDaysAgo) {
+			if f.Activities > 0 && !f.MostRecentActivity.IsZero() &&
+				f.MostRecentActivity.Before(thirtyDaysAgo) {
 				days := int(now.Sub(f.MostRecentActivity).Hours() / 24)
 				result.Insights = append(result.Insights, Insight{
 					Type:        "reconnect",
@@ -584,7 +616,6 @@ func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request
 
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -594,20 +625,25 @@ func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request
 	if result.TopFriends == nil {
 		result.TopFriends = []RankedItem{}
 	}
+
 	if result.TopLocations == nil {
 		result.TopLocations = []RankedItem{}
 	}
+
 	if result.TopTags == nil {
 		result.TopTags = []RankedItem{}
 	}
+
 	if result.ActivityTimeline == nil {
 		result.ActivityTimeline = []TimelineDataPoint{}
 	}
+
 	if result.Insights == nil {
 		result.Insights = []Insight{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(result); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -676,12 +712,12 @@ func (a *API) handleGetFeed(w http.ResponseWriter, r *http.Request) {
 		sort.Slice(feed, func(i, j int) bool {
 			ti, _ := time.Parse(time.RFC3339, feed[i].Date)
 			tj, _ := time.Parse(time.RFC3339, feed[j].Date)
+
 			return ti.After(tj)
 		})
 
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -692,13 +728,14 @@ func (a *API) handleGetFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(feed); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 // handleGetSyncStatus returns the current sync status of the journal.
-func (a *API) handleGetSyncStatus(w http.ResponseWriter, r *http.Request) {
+func (a *API) handleGetSyncStatus(w http.ResponseWriter, r *http.Request) { //nolint:cyclop
 	status := SyncStatus{}
 
 	git := sync.NewGit(a.store.Path())
@@ -706,23 +743,31 @@ func (a *API) handleGetSyncStatus(w http.ResponseWriter, r *http.Request) {
 	// Check if git is installed
 	if err := git.Installed(); err != nil {
 		status.GitInstalled = false
+
 		w.Header().Set("Content-Type", "application/json")
+
 		if err := json.NewEncoder(w).Encode(status); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+
 		return
 	}
+
 	status.GitInstalled = true
 
 	// Check if git repository is initialized
 	if err := git.Inited(); err != nil {
 		status.GitInited = false
+
 		w.Header().Set("Content-Type", "application/json")
+
 		if err := json.NewEncoder(w).Encode(status); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+
 		return
 	}
+
 	status.GitInited = true
 
 	// Get current branch
@@ -736,16 +781,19 @@ func (a *API) handleGetSyncStatus(w http.ResponseWriter, r *http.Request) {
 			status.HasChanges = true
 			// Count number of changed files (each line in porcelain output is a file)
 			lines := 0
+
 			for _, c := range gitStatus {
 				if c == '\n' {
 					lines++
 				}
 			}
+
 			status.ChangeCount = lines + 1 // +1 for the last line without newline
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if err := json.NewEncoder(w).Encode(status); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -755,19 +803,26 @@ func formatDaysAgo(days int) string {
 	if days == 1 {
 		return "1 day ago"
 	}
+
 	if days < 7 {
 		return fmt.Sprintf("%d days ago", days)
 	}
+
 	if days < 30 {
 		weeks := days / 7
+
 		if weeks == 1 {
 			return "1 week ago"
 		}
+
 		return fmt.Sprintf("%d weeks ago", weeks)
 	}
+
 	months := days / 30
+
 	if months == 1 {
 		return "1 month ago"
 	}
+
 	return fmt.Sprintf("%d months ago", months)
 }

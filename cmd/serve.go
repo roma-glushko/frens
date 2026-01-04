@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -52,23 +53,21 @@ var ServeCommand = &cli.Command{
 			Level: log.InfoLevel,
 		})
 
-		appCtx := jctx.FromCtx(c.Context)
-		if appCtx == nil {
-			return fmt.Errorf("failed to get app context")
-		}
+		ctx := c.Context
+		appCtx := jctx.FromCtx(ctx)
 
 		server := ui.NewServer(addr, logger, appCtx.Store)
 
-		actualAddr, err := server.Start(c.Context)
+		actualAddr, err := server.Start(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to start server: %w", err)
 		}
 
-		url := fmt.Sprintf("http://%s", actualAddr)
+		url := "http://" + actualAddr
 		logger.Info("Frens UI is running", "url", url)
 
 		if openBrowser {
-			if err := openURL(url); err != nil {
+			if err := openURL(ctx, url); err != nil {
 				logger.Warn("Failed to open browser", "error", err)
 			}
 		}
@@ -90,34 +89,35 @@ var ServeCommand = &cli.Command{
 }
 
 // openURL opens the specified URL in the default browser.
-func openURL(url string) error {
-	var cmd string
+func openURL(ctx context.Context, url string) error {
+	var exe string
+
 	var args []string
 
 	switch {
 	case isWSL():
-		cmd = "cmd.exe"
+		exe = "cmd.exe"
 		args = []string{"/c", "start", url}
 	case isMacOS():
-		cmd = "open"
+		exe = "open"
 		args = []string{url}
 	default:
-		cmd = "xdg-open"
+		exe = "xdg-open"
 		args = []string{url}
 	}
 
-	return runCommand(cmd, args...)
+	cmd := exec.CommandContext(ctx, exe, args...)
+
+	return cmd.Start()
 }
 
 func isWSL() bool {
 	_, err := os.Stat("/proc/version")
-
 	if err != nil {
 		return false
 	}
 
 	data, err := os.ReadFile("/proc/version")
-
 	if err != nil {
 		return false
 	}
@@ -144,10 +144,6 @@ func containsAt(s, substr string) bool {
 			return true
 		}
 	}
-	return false
-}
 
-func runCommand(name string, args ...string) error {
-	cmd := exec.Command(name, args...)
-	return cmd.Start()
+	return false
 }
