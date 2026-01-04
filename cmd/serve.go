@@ -79,7 +79,7 @@ var ServeCommand = &cli.Command{
 
 		logger.Info("Shutting down server...")
 
-		if err := server.Stop(c.Context); err != nil {
+		if err := server.Stop(ctx); err != nil {
 			return fmt.Errorf("failed to stop server: %w", err)
 		}
 

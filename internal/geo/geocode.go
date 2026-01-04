@@ -1,4 +1,4 @@
-// Copyright 2025 Roma Hlushko
+// Copyright 2026 Roma Hlushko
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ func NewGeocoder() *Geocoder {
 // Geocode resolves a location query (e.g., "Berlin, Germany") to coordinates
 func (g *Geocoder) Geocode(ctx context.Context, query string) (*Coordinates, error) {
 	params := url.Values{}
+
 	params.Set("q", query)
 	params.Set("format", "json")
 	params.Set("limit", "1")
@@ -63,12 +64,13 @@ func (g *Geocoder) Geocode(ctx context.Context, query string) (*Coordinates, err
 	reqURL := fmt.Sprintf("%s?%s", g.baseURL, params.Encode())
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create geocode req: %w", err)
 	}
 
 	// Nominatim requires a User-Agent header
-	req.Header.Set("User-Agent", "frens-cli/1.0 (https://github.com/roma-glushko/frens)")
+	req.Header.Set("User-Agent", "frens/1.0 (https://github.com/roma-glushko/frens)")
 
 	resp, err := g.client.Do(req)
 	if err != nil {
