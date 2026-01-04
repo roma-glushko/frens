@@ -64,7 +64,6 @@ func (g *Geocoder) Geocode(ctx context.Context, query string) (*Coordinates, err
 	reqURL := fmt.Sprintf("%s?%s", g.baseURL, params.Encode())
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to create geocode req: %w", err)
 	}

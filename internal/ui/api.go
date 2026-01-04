@@ -159,7 +159,6 @@ func (a *API) handleGetFriend(w http.ResponseWriter, r *http.Request) {
 
 		return nil
 	})
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return

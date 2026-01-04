@@ -12,4 +12,7 @@ coverage.txt
 # UI build artifacts
 ui/node_modules
 ui/dist
-internal/ui/dist
+
+internal/ui/dist/*
+!internal/ui/dist
+!internal/ui/dist/.gitkeep

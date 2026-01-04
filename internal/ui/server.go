@@ -68,7 +68,6 @@ func (s *Server) Start(ctx context.Context) (string, error) {
 
 		// Check if file exists
 		f, err := assets.Open(path[1:]) // Remove leading slash
-
 		if err != nil {
 			// File not found, serve index.html for SPA routing
 			if _, err := assets.Open("index.html"); err == nil {
