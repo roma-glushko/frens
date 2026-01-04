@@ -27,5 +27,6 @@ header:
   paths-ignore:
     - 'tools/*.yaml'
     - 'tools/*.yml'
+    - 'internal/ui/dist/.gitkeep'
 
   comment: on-failure
