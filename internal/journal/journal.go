@@ -1,4 +1,4 @@
-// Copyright 2025 Roma Hlushko
+// Copyright 2026 Roma Hlushko
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gosimple/slug"
 
@@ -93,6 +94,10 @@ func (j *Journal) Path() string {
 func (j *Journal) AddFriend(f friend.Person) {
 	if f.ID == "" {
 		f.ID = slug.Make(f.Name)
+	}
+
+	if f.CreatedAt.IsZero() {
+		f.CreatedAt = time.Now()
 	}
 
 	// TODO: check for duplicated IDs
@@ -242,6 +247,10 @@ func (j *Journal) RemoveFriends(toRemove []friend.Person) {
 func (j *Journal) AddLocation(l friend.Location) {
 	if l.ID == "" {
 		l.ID = slug.Make(l.Name)
+	}
+
+	if l.CreatedAt.IsZero() {
+		l.CreatedAt = time.Now()
 	}
 
 	// TODO: check for duplicated IDs

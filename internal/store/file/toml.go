@@ -1,4 +1,4 @@
-// Copyright 2025 Roma Hlushko
+// Copyright 2026 Roma Hlushko
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,6 +60,10 @@ func NewTOMLFileStore(dir string) *TOMLFileStore {
 	return &TOMLFileStore{
 		dir: dir,
 	}
+}
+
+func (s *TOMLFileStore) Path() string {
+	return s.dir
 }
 
 func (s *TOMLFileStore) Init(ctx context.Context) error {

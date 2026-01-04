@@ -1,4 +1,4 @@
-// Copyright 2025 Roma Hlushko
+// Copyright 2026 Roma Hlushko
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,17 +30,20 @@ import (
 var ErrLocNameEmpty = errors.New("location name must be provided")
 
 type Location struct {
-	ID      string   `toml:"id"`
-	Name    string   `toml:"name"`
-	Country string   `toml:"country,omitempty"`
-	Desc    string   `toml:"desc,omitempty"`
-	Aliases []string `toml:"aliases,omitempty"`
-	Tags    []string `toml:"tags,omitempty"`
+	ID        string    `toml:"id"                            json:"id"`
+	Name      string    `toml:"name"                          json:"name"`
+	Country   string    `toml:"country,omitempty"             json:"country,omitempty"`
+	Desc      string    `toml:"desc,omitempty"                json:"description,omitempty"`
+	Aliases   []string  `toml:"aliases,omitempty"             json:"aliases,omitempty"`
+	Tags      []string  `toml:"tags,omitempty"                json:"tags,omitempty"`
+	Lat       *float64  `toml:"lat,omitempty"                 json:"lat,omitempty"`
+	Lng       *float64  `toml:"lng,omitempty"                 json:"lng,omitempty"`
+	CreatedAt time.Time `toml:"created_at,omitempty,omitzero" json:"createdAt,omitzero"`
 
 	// Cached information
-	Notes              int       `toml:"notes,omitempty"`
-	Activities         int       `toml:"activities,omitempty"`
-	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero"`
+	Notes              int       `toml:"notes,omitempty"                         json:"notesCount"`
+	Activities         int       `toml:"activities,omitempty"                    json:"activitiesCount"`
+	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero" json:"lastActivity,omitzero"`
 }
 
 var (

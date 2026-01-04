@@ -1,4 +1,4 @@
-// Copyright 2025 Roma Hlushko
+// Copyright 2026 Roma Hlushko
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,4 +28,5 @@ type Store interface {
 	Load(ctx context.Context) (*journal.Journal, error)
 	Save(ctx context.Context, journal *journal.Journal) error
 	Tx(ctx context.Context, fn JournalUpdater) error
+	Path() string
 }

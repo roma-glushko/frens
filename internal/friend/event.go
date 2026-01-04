@@ -1,4 +1,4 @@
-// Copyright 2025 Roma Hlushko
+// Copyright 2026 Roma Hlushko
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,14 +32,14 @@ const (
 )
 
 type Event struct {
-	ID   string    `toml:"id"`
-	Type EventType `toml:"type"`
-	Date time.Time `toml:"date"`
-	Desc string    `toml:"desc"`
+	ID   string    `toml:"id"   json:"id"`
+	Type EventType `toml:"type" json:"type"`
+	Date time.Time `toml:"date" json:"date"`
+	Desc string    `toml:"desc" json:"description"`
 
-	FriendIDs   []string `toml:"friends,omitempty"`
-	LocationIDs []string `toml:"locations,omitempty"`
-	Tags        []string `toml:"tags,omitempty"`
+	FriendIDs   []string `toml:"friends,omitempty"   json:"friendIds,omitempty"`
+	LocationIDs []string `toml:"locations,omitempty" json:"locationIds,omitempty"`
+	Tags        []string `toml:"tags,omitempty"      json:"tags,omitempty"`
 }
 
 type EventView struct {

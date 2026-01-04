@@ -60,8 +60,16 @@ lint-ci: ## Lint the source code in CI mode
 run: ## Run Frens
 	@go run -ldflags $(LDFLAGS_COMMON) main.go -- $(filter-out $@,$(MAKECMDGOALS))
 
+.PHONY: ui
+ui: ## Build UI assets
+	@echo "🎨 Building UI.."
+	@cd ui && npm install && npm run build
+	@rm -rf internal/ui/dist
+	@cp -r ui/dist internal/ui/dist
+	@echo "✅ UI assets copied to internal/ui/dist"
+
 .PHONY: build
-build: ## Build Frens
+build: ui ## Build Frens
 	@echo "🔨 Building binary.."
 	@echo " • Version: $(VERSION)"
 	@echo " • Commit: $(COMMIT)"

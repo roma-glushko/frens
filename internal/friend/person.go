@@ -1,4 +1,4 @@
-// Copyright 2025 Roma Hlushko
+// Copyright 2026 Roma Hlushko
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,21 +39,22 @@ func (p Persons) Less(i, j int) bool { return p[i].Name < p[j].Name }
 func (p Persons) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 type Person struct {
-	ID        string          `toml:"id"`
-	Name      string          `toml:"name"`
-	Desc      string          `toml:"desc,omitempty"`
-	Nicknames []string        `toml:"nicknames,omitempty"`
-	Tags      []string        `toml:"tags,omitempty"`
-	Locations []string        `toml:"locations,omitempty"`
-	Contacts  []*Contact      `toml:"contacts,omitempty"`
-	Dates     []*Date         `toml:"dates,omitempty"`
-	Wishlist  []*WishlistItem `toml:"wishlist,omitempty"`
+	ID        string          `toml:"id"                                      json:"id"`
+	Name      string          `toml:"name"                                    json:"name"`
+	Desc      string          `toml:"desc,omitempty"                          json:"description,omitempty"`
+	Nicknames []string        `toml:"nicknames,omitempty"                     json:"nicknames,omitempty"`
+	Tags      []string        `toml:"tags,omitempty"                          json:"tags,omitempty"`
+	Locations []string        `toml:"locations,omitempty"                     json:"locations,omitempty"`
+	Contacts  []*Contact      `toml:"contacts,omitempty"                      json:"contacts,omitempty"`
+	Dates     []*Date         `toml:"dates,omitempty"                         json:"dates,omitempty"`
+	Wishlist  []*WishlistItem `toml:"wishlist,omitempty"                      json:"wishlist,omitempty"`
+	CreatedAt time.Time       `toml:"created_at,omitempty,omitzero"           json:"createdAt,omitzero"`
 	// Cached information
-	Activities         int       `toml:"activities,omitempty"`
-	Notes              int       `toml:"notes,omitempty"`
-	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero"`
+	Activities         int       `toml:"activities,omitempty"                    json:"activitiesCount"`
+	Notes              int       `toml:"notes,omitempty"                         json:"notesCount"`
+	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero" json:"lastActivity,omitzero"`
 	// internal use only
-	Score int `toml:"-"`
+	Score int `toml:"-"                                       json:"-"`
 }
 
 var (

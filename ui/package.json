@@ -1,0 +1,33 @@
+{
+  "name": "frens-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tailwindcss/vite": "^4.0.0",
+    "@tsconfig/svelte": "^5.0.4",
+    "svelte": "^5.16.0",
+    "svelte-check": "^4.1.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  },
+  "dependencies": {
+    "@types/leaflet": "^1.9.21",
+    "bits-ui": "^1.0.0-next.74",
+    "chart.js": "^4.5.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "leaflet": "^1.9.4",
+    "lucide-svelte": "^0.469.0",
+    "tailwind-merge": "^2.6.0",
+    "tailwind-variants": "^0.3.0",
+    "tailwindcss": "^4.0.0"
+  }
+}

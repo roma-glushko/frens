@@ -1,4 +1,4 @@
-// Copyright 2025 Roma Hlushko
+// Copyright 2026 Roma Hlushko
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,11 +86,11 @@ func ParseContactType(s string) ContactType {
 }
 
 type Contact struct {
-	ID     string      `toml:"id"`
-	Type   ContactType `toml:"type"`
-	Value  string      `toml:"value"`
-	Tags   []string    `toml:"tags,omitempty"`
-	Person string      `toml:"-"`
+	ID     string      `toml:"id"             json:"id"`
+	Type   ContactType `toml:"type"           json:"type"`
+	Value  string      `toml:"value"          json:"value"`
+	Tags   []string    `toml:"tags,omitempty" json:"tags,omitempty"`
+	Person string      `toml:"-"              json:"-"`
 }
 
 func (c *Contact) SetTags(tags []string) {
