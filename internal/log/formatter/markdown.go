@@ -58,7 +58,7 @@ type PersonMarkdownFormatter struct{}
 
 var _ log.Formatter = (*PersonMarkdownFormatter)(nil)
 
-func (p PersonMarkdownFormatter) FormatSingle(e any) (string, error) {
+func (p PersonMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (string, error) {
 	person, ok := e.(friend.Person)
 	if !ok {
 		return "", ErrInvalidEntity
@@ -95,7 +95,7 @@ func (p PersonMarkdownFormatter) FormatSingle(e any) (string, error) {
 	return sb.String(), nil
 }
 
-func (p PersonMarkdownFormatter) FormatList(el any) (string, error) {
+func (p PersonMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (string, error) {
 	persons, ok := el.([]friend.Person)
 	if !ok {
 		return "", ErrInvalidEntity
@@ -128,7 +128,7 @@ type ContactMarkdownFormatter struct{}
 
 var _ log.Formatter = (*ContactMarkdownFormatter)(nil)
 
-func (f ContactMarkdownFormatter) FormatSingle(e any) (string, error) {
+func (f ContactMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (string, error) {
 	var c friend.Contact
 
 	switch v := e.(type) {
@@ -156,7 +156,7 @@ func (f ContactMarkdownFormatter) FormatSingle(e any) (string, error) {
 	return sb.String(), nil
 }
 
-func (f ContactMarkdownFormatter) FormatList(el any) (string, error) {
+func (f ContactMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (string, error) {
 	contacts, ok := el.([]friend.Contact)
 	if !ok {
 		return "", ErrInvalidEntity
@@ -188,7 +188,7 @@ type EventMarkdownFormatter struct{}
 
 var _ log.Formatter = (*EventMarkdownFormatter)(nil)
 
-func (f EventMarkdownFormatter) FormatSingle(e any) (string, error) {
+func (f EventMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (string, error) {
 	event, ok := e.(friend.Event)
 	if !ok {
 		return "", ErrInvalidEntity
@@ -221,7 +221,7 @@ func (f EventMarkdownFormatter) FormatSingle(e any) (string, error) {
 	return sb.String(), nil
 }
 
-func (f EventMarkdownFormatter) FormatList(el any) (string, error) {
+func (f EventMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (string, error) {
 	events, ok := el.([]friend.Event)
 	if !ok {
 		return "", ErrInvalidEntity
@@ -255,7 +255,7 @@ type LocationMarkdownFormatter struct{}
 
 var _ log.Formatter = (*LocationMarkdownFormatter)(nil)
 
-func (l LocationMarkdownFormatter) FormatSingle(e any) (string, error) {
+func (l LocationMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (string, error) {
 	location, ok := e.(friend.Location)
 	if !ok {
 		return "", ErrInvalidEntity
@@ -289,7 +289,7 @@ func (l LocationMarkdownFormatter) FormatSingle(e any) (string, error) {
 	return sb.String(), nil
 }
 
-func (l LocationMarkdownFormatter) FormatList(el any) (string, error) {
+func (l LocationMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (string, error) {
 	locations, ok := el.([]friend.Location)
 	if !ok {
 		return "", ErrInvalidEntity
@@ -320,7 +320,7 @@ type DateMarkdownFormatter struct{}
 
 var _ log.Formatter = (*DateMarkdownFormatter)(nil)
 
-func (f DateMarkdownFormatter) FormatSingle(e any) (string, error) {
+func (f DateMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (string, error) {
 	var dt friend.Date
 
 	switch v := e.(type) {
@@ -356,7 +356,7 @@ func (f DateMarkdownFormatter) FormatSingle(e any) (string, error) {
 	return sb.String(), nil
 }
 
-func (f DateMarkdownFormatter) FormatList(el any) (string, error) {
+func (f DateMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (string, error) {
 	dates, ok := el.([]*friend.Date)
 	if !ok {
 		return "", ErrInvalidEntity
@@ -387,7 +387,7 @@ type WishlistItemMarkdownFormatter struct{}
 
 var _ log.Formatter = (*WishlistItemMarkdownFormatter)(nil)
 
-func (f WishlistItemMarkdownFormatter) FormatSingle(e any) (string, error) {
+func (f WishlistItemMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (string, error) {
 	var w friend.WishlistItem
 
 	switch v := e.(type) {
@@ -428,7 +428,7 @@ func (f WishlistItemMarkdownFormatter) FormatSingle(e any) (string, error) {
 	return sb.String(), nil
 }
 
-func (f WishlistItemMarkdownFormatter) FormatList(el any) (string, error) {
+func (f WishlistItemMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (string, error) {
 	items, ok := el.([]friend.WishlistItem)
 	if !ok {
 		return "", ErrInvalidEntity

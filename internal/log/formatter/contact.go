@@ -33,7 +33,7 @@ type ContactTextFormatter struct{}
 
 var _ log.Formatter = (*ContactTextFormatter)(nil)
 
-func (f ContactTextFormatter) FormatSingle(e any) (string, error) {
+func (f ContactTextFormatter) FormatSingle(ctx log.FormatterContext, e any) (string, error) {
 	var c friend.Contact
 
 	switch v := e.(type) {
@@ -45,6 +45,28 @@ func (f ContactTextFormatter) FormatSingle(e any) (string, error) {
 		return "", ErrInvalidEntity
 	}
 
+	if ctx.Density == log.DensityCompact {
+		return f.formatCompact(c), nil
+	}
+
+	return f.formatRegular(c), nil
+}
+
+func (f ContactTextFormatter) formatCompact(c friend.Contact) string {
+	parts := []string{idStyle.Render(c.ID), string(c.Type), c.Value}
+
+	if c.Person != "" {
+		parts = append(parts, c.Person)
+	}
+
+	if len(c.Tags) > 0 {
+		parts = append(parts, tagStyle.Render(lang.RenderTags(c.Tags)))
+	}
+
+	return strings.Join(parts, " ") + "\n"
+}
+
+func (f ContactTextFormatter) formatRegular(c friend.Contact) string {
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf("[%s]", idStyle.Render(c.ID)))
@@ -53,18 +75,18 @@ func (f ContactTextFormatter) FormatSingle(e any) (string, error) {
 
 	if c.Person != "" {
 		sb.WriteString("\n")
-		sb.WriteString(" 👤 " + c.Person)
+		sb.WriteString(" + " + c.Person)
 	}
 
 	if len(c.Tags) > 0 {
 		sb.WriteString("\n")
-		sb.WriteString(" • " + tagStyle.Render(lang.RenderTags(c.Tags)))
+		sb.WriteString(" * " + tagStyle.Render(lang.RenderTags(c.Tags)))
 	}
 
-	return sb.String(), nil
+	return sb.String()
 }
 
-func (f ContactTextFormatter) FormatList(el any) (string, error) {
+func (f ContactTextFormatter) FormatList(ctx log.FormatterContext, el any) (string, error) {
 	contacts, ok := el.([]friend.Contact)
 
 	if !ok {
@@ -76,15 +98,26 @@ func (f ContactTextFormatter) FormatList(el any) (string, error) {
 	w := tabwriter.NewWriter(&buf, 0, 0, 3, ' ', 0)
 
 	for _, c := range contacts {
-		_, _ = fmt.Fprintf(
-			w,
-			" %s\t%s\t%s\t%s\t%s\n",
-			idStyle.Render(c.ID),
-			labelStyle.Render(c.Person),
-			c.Type,
-			c.Value,
-			tagStyle.Render(lang.RenderTags(c.Tags)),
-		)
+		if ctx.Density == log.DensityCompact {
+			_, _ = fmt.Fprintf(
+				w,
+				"%s\t%s\t%s\t%s\n",
+				idStyle.Render(c.ID),
+				c.Person,
+				c.Type,
+				c.Value,
+			)
+		} else {
+			_, _ = fmt.Fprintf(
+				w,
+				" %s\t%s\t%s\t%s\t%s\n",
+				idStyle.Render(c.ID),
+				labelStyle.Render(c.Person),
+				c.Type,
+				c.Value,
+				tagStyle.Render(lang.RenderTags(c.Tags)),
+			)
+		}
 	}
 
 	_ = w.Flush()

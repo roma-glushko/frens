@@ -63,20 +63,42 @@ type PersonTextFormatter struct{}
 
 var _ log.Formatter = (*PersonTextFormatter)(nil)
 
-func (p PersonTextFormatter) FormatSingle(e any) (string, error) {
+func (p PersonTextFormatter) FormatSingle(ctx log.FormatterContext, e any) (string, error) {
 	person, ok := e.(friend.Person)
 
 	if !ok {
 		return "", ErrInvalidEntity
 	}
 
+	if ctx.Density == log.DensityCompact {
+		return p.formatCompact(person), nil
+	}
+
+	return p.formatRegular(person), nil
+}
+
+func (p PersonTextFormatter) formatCompact(person friend.Person) string {
+	parts := []string{idStyle.Render(person.ID), person.String()}
+
+	if len(person.Tags) > 0 {
+		parts = append(parts, tagStyle.Render(lang.RenderTags(person.Tags)))
+	}
+
+	if len(person.Locations) > 0 {
+		parts = append(parts, locationStyle.Render(lang.RenderLocMarkers(person.Locations)))
+	}
+
+	return strings.Join(parts, " ") + "\n"
+}
+
+func (p PersonTextFormatter) formatRegular(person friend.Person) string {
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf(" %s [%s]", labelStyle.Render(person.String()), person.ID))
 	sb.WriteString("\n")
 
 	if len(person.Tags) > 0 {
-		sb.WriteString(" • " + tagStyle.Render(lang.RenderTags(person.Tags)))
+		sb.WriteString(" * " + tagStyle.Render(lang.RenderTags(person.Tags)))
 		sb.WriteString(" ")
 	}
 
@@ -96,10 +118,10 @@ func (p PersonTextFormatter) FormatSingle(e any) (string, error) {
 		sb.WriteString("\n")
 	}
 
-	return sb.String(), nil
+	return sb.String()
 }
 
-func (p PersonTextFormatter) FormatList(el any) (string, error) {
+func (p PersonTextFormatter) FormatList(ctx log.FormatterContext, el any) (string, error) {
 	persons, ok := el.([]friend.Person)
 
 	if !ok {
@@ -111,16 +133,27 @@ func (p PersonTextFormatter) FormatList(el any) (string, error) {
 	w := tabwriter.NewWriter(&buf, 0, 0, 3, ' ', 0)
 
 	for _, person := range persons {
-		_, _ = fmt.Fprintf(
-			w,
-			" %s\t%s\t%s\t%s\t%s\t%s\n",
-			idStyle.Render(person.ID),
-			labelStyle.Render(person.String()),
-			tagStyle.Render(lang.RenderTags(person.Tags)),
-			locationStyle.Render(lang.RenderLocMarkers(person.Locations)),
-			countLabel.Render(fmt.Sprintf("✎ %d", person.Notes)),
-			countLabel.Render(fmt.Sprintf("⚙ %d", person.Activities)),
-		)
+		if ctx.Density == log.DensityCompact {
+			_, _ = fmt.Fprintf(
+				w,
+				"%s\t%s\t%s\t%s\n",
+				idStyle.Render(person.ID),
+				person.String(),
+				tagStyle.Render(lang.RenderTags(person.Tags)),
+				locationStyle.Render(lang.RenderLocMarkers(person.Locations)),
+			)
+		} else {
+			_, _ = fmt.Fprintf(
+				w,
+				" %s\t%s\t%s\t%s\t%s\t%s\n",
+				idStyle.Render(person.ID),
+				labelStyle.Render(person.String()),
+				tagStyle.Render(lang.RenderTags(person.Tags)),
+				locationStyle.Render(lang.RenderLocMarkers(person.Locations)),
+				countLabel.Render(fmt.Sprintf("N %d", person.Notes)),
+				countLabel.Render(fmt.Sprintf("A %d", person.Activities)),
+			)
+		}
 	}
 
 	_ = w.Flush()

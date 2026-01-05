@@ -41,14 +41,35 @@ func (f Format) String() string {
 	}
 }
 
+type Density int
+
+const (
+	DensityRegular Density = iota
+	DensityCompact
+)
+
+func (d Density) String() string {
+	switch d {
+	case DensityCompact:
+		return "compact"
+	default:
+		return "regular"
+	}
+}
+
+// FormatterContext provides formatting options to formatters
+type FormatterContext struct {
+	Density Density
+}
+
 type formatterKey struct {
 	Format Format
 	Type   reflect.Type
 }
 
 type Formatter interface {
-	FormatSingle(entity any) (string, error)
-	FormatList(entities any) (string, error)
+	FormatSingle(ctx FormatterContext, entity any) (string, error)
+	FormatList(ctx FormatterContext, entities any) (string, error)
 }
 
 var (

@@ -28,13 +28,19 @@ type Printer interface {
 }
 
 type printer struct {
-	format Format
-	w      io.Writer
+	format  Format
+	density Density
+	w       io.Writer
 }
 
-// NewPrinter creates a Printer that outputs entities in the specified format.
+// NewPrinter creates a Printer that outputs entities in the specified format with regular density.
 func NewPrinter(format Format, w io.Writer) Printer {
-	return &printer{format: format, w: w}
+	return &printer{format: format, density: DensityRegular, w: w}
+}
+
+// NewPrinterWithDensity creates a Printer with the specified format and density.
+func NewPrinterWithDensity(format Format, density Density, w io.Writer) Printer {
+	return &printer{format: format, density: density, w: w}
 }
 
 func (p *printer) Print(entity any) error {
@@ -43,7 +49,8 @@ func (p *printer) Print(entity any) error {
 		return err
 	}
 
-	out, err := fmtr.FormatSingle(entity)
+	ctx := FormatterContext{Density: p.density}
+	out, err := fmtr.FormatSingle(ctx, entity)
 	if err != nil {
 		return err
 	}
@@ -69,7 +76,8 @@ func (p *printer) PrintList(entities any) error {
 		return err
 	}
 
-	out, err := fmtr.FormatList(entities)
+	ctx := FormatterContext{Density: p.density}
+	out, err := fmtr.FormatList(ctx, entities)
 	if err != nil {
 		return err
 	}

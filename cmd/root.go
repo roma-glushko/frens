@@ -104,6 +104,11 @@ func NewApp() cli.App {
 				Value:   "text",
 				Usage:   "output format: text, json, markdown",
 			},
+			&cli.BoolFlag{
+				Name:    "compact",
+				Aliases: []string{"c"},
+				Usage:   "use compact output (one line per entity)",
+			},
 		},
 		Before: func(c *cli.Context) error {
 			ctx := c.Context
@@ -121,10 +126,15 @@ func NewApp() cli.App {
 
 			format := parseFormat(c.String("format"))
 
+			density := log.DensityRegular
+			if c.Bool("compact") {
+				density = log.DensityCompact
+			}
+
 			appCtx := jctx.AppContext{
 				JournalDir: jDir,
 				Store:      file.NewTOMLFileStore(jDir),
-				Printer:    log.NewPrinter(format, os.Stdout),
+				Printer:    log.NewPrinterWithDensity(format, density, os.Stdout),
 			}
 
 			c.Context = jctx.WithCtx(ctx, &appCtx)
