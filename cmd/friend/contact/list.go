@@ -15,13 +15,10 @@
 package contact
 
 import (
-	"fmt"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/log"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 	"github.com/urfave/cli/v2"
 )
 
@@ -53,8 +50,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		return s.Tx(ctx, func(j *journal.Journal) error {
 			// Parse contact types
@@ -79,12 +76,7 @@ var ListCommand = &cli.Command{
 				return nil
 			}
 
-			fmtr := formatter.ContactTextFormatter{}
-
-			o, _ := fmtr.FormatList(contacts)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.PrintList(contacts)
 		})
 	},
 }

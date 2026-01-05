@@ -16,10 +16,7 @@ package friend
 
 import (
 	"errors"
-	"fmt"
 	"strings"
-
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 
@@ -138,12 +135,7 @@ var EditCommand = &cli.Command{
 			log.Info(" ✔ Friend updated")
 			log.Info("==> Friend Information\n")
 
-			fmtr := formatter.PersonTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(pNew)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.Print(pNew)
 		})
 	},
 }

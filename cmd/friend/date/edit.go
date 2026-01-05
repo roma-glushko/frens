@@ -19,8 +19,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/log/formatter"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -123,7 +121,7 @@ var EditCommand = &cli.Command{
 			}
 
 			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Errorf(" ✖ failed to parse friend info: %v", err)
+				log.Errorf(" failed to parse friend info: %v", err)
 				return err
 			}
 			if err := dtNew.Validate(); err != nil {
@@ -135,15 +133,10 @@ var EditCommand = &cli.Command{
 				return fmt.Errorf("failed to update friend: %w", err)
 			}
 
-			log.Info(" ✔ Date updated")
+			log.Info(" Date updated")
 			log.Info("==> Date Information\n")
 
-			fmtr := formatter.DateTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(dtNew)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.Print(dtNew)
 		})
 	},
 }

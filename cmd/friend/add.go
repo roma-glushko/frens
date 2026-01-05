@@ -16,11 +16,9 @@ package friend
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	log "github.com/roma-glushko/frens/internal/log"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 
@@ -42,7 +40,7 @@ var AddCommand = &cli.Command{
 	ArgsUsage: `<INFO>
 		If no arguments are provided, a textarea will be shown to fill in the details interactively.
 		Otherwise, the information will be parsed from the command options.
-		
+
 		<INFO> format:
 			` + lang.FormatPersonInfo + `
 
@@ -163,13 +161,7 @@ var AddCommand = &cli.Command{
 
 		log.Info(" ✔ Friend added\n")
 		log.Info("==> Friend Information\n")
-		// log.PrintEntity(f)
 
-		fmtr := formatter.PersonTextFormatter{}
-
-		o, _ := fmtr.FormatSingle(f)
-		fmt.Println(o)
-
-		return nil
+		return appCtx.Printer.Print(f)
 	},
 }

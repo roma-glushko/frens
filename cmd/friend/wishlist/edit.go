@@ -16,10 +16,7 @@ package wishlist
 
 import (
 	"errors"
-	"fmt"
 	"strings"
-
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 
@@ -70,8 +67,8 @@ var EditCommand = &cli.Command{
 		wID := strings.Join(c.Args().Slice(), " ")
 
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		return s.Tx(ctx, func(j *journal.Journal) error {
 			wOld, err := j.GetFriendWishlistItem(wID)
@@ -139,12 +136,7 @@ var EditCommand = &cli.Command{
 			log.Info(" Wishlist item updated")
 			log.Info("==> Wishlist Item Information\n")
 
-			fmtr := formatter.WishlistItemTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(&wNew)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.Print(wNew)
 		})
 	},
 }

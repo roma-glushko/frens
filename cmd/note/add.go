@@ -19,8 +19,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/roma-glushko/frens/internal/log/formatter"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -96,12 +94,7 @@ var AddCommand = &cli.Command{
 			log.Infof(" ✔ Note added")
 			log.Info("==> Note Information\n")
 
-			fmtr := formatter.EventTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(e)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.Print(e)
 		})
 	},
 }

@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/log/formatter"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -102,12 +100,7 @@ var EditCommand = &cli.Command{
 			log.Info(" ✔ Activity updated")
 			log.Info("==> Activity Information\n")
 
-			fmtr := formatter.EventTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(actNew)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.Print(actNew)
 		})
 	},
 }

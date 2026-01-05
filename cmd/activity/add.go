@@ -19,8 +19,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/roma-glushko/frens/internal/log/formatter"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -41,7 +39,7 @@ var AddCommand = &cli.Command{
 	ArgsUsage: `<DESCR>
 
 	<DESCR> is a description of the activity to record.
-	
+
 	Examples:
 		"Michael wrote a book 'Somehow I managed'" - no date, will be recorded as today
 		"yesterday :: Jim Halpert put my stuff in jello #pranks" - relative date & description
@@ -106,12 +104,7 @@ var AddCommand = &cli.Command{
 			log.Infof(" ✔ Activity added")
 			log.Info("==> Activity Information\n")
 
-			fmtr := formatter.EventTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(e)
-			fmt.Println(o)
-
-			return err
+			return appCtx.Printer.Print(e)
 		})
 	},
 }

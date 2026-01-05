@@ -16,7 +16,6 @@ package wishlist
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -25,7 +24,6 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/roma-glushko/frens/internal/wishlist"
 	"github.com/urfave/cli/v2"
@@ -165,12 +163,7 @@ var AddCommand = &cli.Command{
 			log.Info(" Wishlist item added")
 			log.Info("==> Wishlist Item Information\n")
 
-			fmtr := formatter.WishlistItemTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(&w)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.Print(w)
 		})
 	},
 }
