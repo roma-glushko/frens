@@ -30,12 +30,13 @@ import (
 )
 
 type Files interface {
-	FriendsFile | EventsFile
+	FriendsFile | EventsFile | RemindersFile
 }
 
 const (
 	FileNameFriends    = "friends.toml"
 	FileNameActivities = "activities.toml"
+	FileNameReminders  = "reminders.toml"
 )
 
 type FriendsFile struct {
@@ -47,6 +48,10 @@ type FriendsFile struct {
 type EventsFile struct {
 	Activities []*friend.Event `toml:"activities"`
 	Notes      []*friend.Event `toml:"notes"`
+}
+
+type RemindersFile struct {
+	Reminders []*friend.Reminder `toml:"reminders"`
 }
 
 type TOMLFileStore struct {
@@ -81,6 +86,12 @@ func (s *TOMLFileStore) Init(ctx context.Context) error {
 		errs = append(errs, fmt.Errorf("failed to create activities file: %w", err))
 	}
 
+	var reminders RemindersFile
+
+	if err := saveFile(ctx, s.dir, FileNameReminders, reminders); err != nil {
+		errs = append(errs, fmt.Errorf("failed to create reminders file: %w", err))
+	}
+
 	return errors.Join(errs...)
 }
 
@@ -112,6 +123,12 @@ func (s *TOMLFileStore) Load(ctx context.Context) (*journal.Journal, error) {
 		errs = append(errs, fmt.Errorf("failed to load activities file: %w", err))
 	}
 
+	// Load reminders (optional file for backwards compatibility)
+	reminders, err := loadFile[RemindersFile](ctx, filepath.Join(s.dir, FileNameReminders))
+	if err != nil && !os.IsNotExist(err) {
+		errs = append(errs, fmt.Errorf("failed to load reminders file: %w", err))
+	}
+
 	if len(errs) != 0 {
 		return nil, errors.Join(errs...)
 	}
@@ -122,6 +139,10 @@ func (s *TOMLFileStore) Load(ctx context.Context) (*journal.Journal, error) {
 		Locations:  entities.Locations,
 		Activities: events.Activities,
 		Notes:      events.Notes,
+	}
+
+	if reminders != nil {
+		j.Reminders = reminders.Reminders
 	}
 
 	j.Init()
@@ -149,6 +170,14 @@ func (s *TOMLFileStore) Save(ctx context.Context, j *journal.Journal) error {
 
 	if err := saveFile(ctx, s.dir, FileNameActivities, events); err != nil {
 		errs = append(errs, fmt.Errorf("failed to create events file: %w", err))
+	}
+
+	reminders := RemindersFile{
+		Reminders: j.Reminders,
+	}
+
+	if err := saveFile(ctx, s.dir, FileNameReminders, reminders); err != nil {
+		errs = append(errs, fmt.Errorf("failed to create reminders file: %w", err))
 	}
 
 	return errors.Join(errs...)

@@ -130,3 +130,16 @@ type ListContactQuery struct {
 	Types   []ContactType
 	Tags    []string
 }
+
+type ListReminderQuery struct {
+	Keyword          string
+	LinkedEntityType LinkedEntityType
+	LinkedEntityID   string
+	FriendID         string
+	State            ReminderState
+	Tags             []string
+	DueBefore        time.Time
+	DueAfter         time.Time
+	SortBy           SortOption
+	SortOrder        SortOrderOption
+}
