@@ -57,11 +57,11 @@ var ListCommand = &cli.Command{
 			}
 
 			if state != "" {
-				q.State = friend.ReminderState(state)
+				q.State = state
 			}
 
 			if linkedType != "" {
-				q.LinkedEntityType = friend.LinkedEntityType(linkedType)
+				q.LinkedEntityType = linkedType
 			}
 
 			reminders := j.ListReminders(q)
@@ -84,6 +84,7 @@ var ListCommand = &cli.Command{
 
 func printReminder(r *friend.Reminder) {
 	stateIcon := "⏳"
+
 	switch r.State {
 	case friend.ReminderStateFired:
 		stateIcon = "✅"

@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	jctx "github.com/roma-glushko/frens/internal/context"
@@ -162,13 +163,24 @@ var AddCommand = &cli.Command{
 				return err
 			}
 
-			log.Info(" Wishlist item added")
+			log.Info(" ✔ Wishlist item added")
 			log.Info("==> Wishlist Item Information\n")
 
 			fmtr := formatter.WishlistItemTextFormatter{}
 
 			o, _ := fmtr.FormatSingle(&w)
 			fmt.Println(o)
+
+			// Check for inline reminder
+			if r, err := lang.ExtractReminder(info, friend.LinkedEntityWishlist, w.ID, p.ID, time.Now(), w.Tags); err != nil {
+				log.Warnf("Failed to parse reminder: %v", err)
+			} else if r != nil {
+				if _, err := j.AddReminder(*r); err != nil {
+					log.Warnf("Failed to create reminder: %v", err)
+				} else {
+					log.Infof(" ✔ Reminder created (triggers %s)", r.TriggerAt.Format("2006-01-02"))
+				}
+			}
 
 			return nil
 		})

@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/roma-glushko/frens/internal/friend"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,6 +32,7 @@ func TestExtractReminderSchedule(t *testing.T) {
 		wantOffsetDir  friend.OffsetDirection
 		wantAbsolute   bool
 		wantInFuture   bool
+		wantWeekday    *time.Weekday
 		wantErr        bool
 	}{
 		{
@@ -40,6 +40,24 @@ func TestExtractReminderSchedule(t *testing.T) {
 			input:          "!r[2025-03-15]",
 			wantRecurrence: friend.RecurrenceOnce,
 			wantAbsolute:   true,
+		},
+		{
+			name:           "weekday Friday",
+			input:          "!r[Friday]",
+			wantRecurrence: friend.RecurrenceOnce,
+			wantWeekday:    func() *time.Weekday { w := time.Friday; return &w }(),
+		},
+		{
+			name:           "weekday monday lowercase",
+			input:          "!r[monday]",
+			wantRecurrence: friend.RecurrenceOnce,
+			wantWeekday:    func() *time.Weekday { w := time.Monday; return &w }(),
+		},
+		{
+			name:           "weekday short form",
+			input:          "!r[wed]",
+			wantRecurrence: friend.RecurrenceOnce,
+			wantWeekday:    func() *time.Weekday { w := time.Wednesday; return &w }(),
 		},
 		{
 			name:           "1 week before",
@@ -110,7 +128,7 @@ func TestExtractReminderSchedule(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			schedule, err := ExtractReminderSchedule(tt.input)
+			schedule, err := ParseReminderSchedule(tt.input)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -118,14 +136,19 @@ func TestExtractReminderSchedule(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			assert.Equal(t, tt.wantRecurrence, schedule.Recurrence)
-			assert.Equal(t, tt.wantOffsetAmt, schedule.OffsetAmount)
-			assert.Equal(t, tt.wantOffsetUnit, schedule.OffsetUnit)
-			assert.Equal(t, tt.wantOffsetDir, schedule.OffsetDirection)
-			assert.Equal(t, tt.wantInFuture, schedule.InFuture)
+			require.Equal(t, tt.wantRecurrence, schedule.Recurrence)
+			require.Equal(t, tt.wantOffsetAmt, schedule.OffsetAmount)
+			require.Equal(t, tt.wantOffsetUnit, schedule.OffsetUnit)
+			require.Equal(t, tt.wantOffsetDir, schedule.OffsetDirection)
+			require.Equal(t, tt.wantInFuture, schedule.InFuture)
 
 			if tt.wantAbsolute {
-				assert.NotNil(t, schedule.AbsoluteDate)
+				require.NotNil(t, schedule.AbsoluteDate)
+			}
+
+			if tt.wantWeekday != nil {
+				require.NotNil(t, schedule.Weekday)
+				require.Equal(t, *tt.wantWeekday, *schedule.Weekday)
 			}
 		})
 	}
@@ -162,7 +185,7 @@ func TestReminderSchedule_ToDuration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.schedule.ToDuration()
-			assert.Equal(t, tt.want, got)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -211,31 +234,109 @@ func TestReminderSchedule_ComputeTriggerDate(t *testing.T) {
 			},
 			want: time.Date(2025, 1, 4, 0, 0, 0, 0, time.UTC),
 		},
+		{
+			name: "next Friday from Wednesday",
+			schedule: ReminderSchedule{
+				Weekday: func() *time.Weekday { w := time.Friday; return &w }(),
+			},
+			want: time.Date(
+				2025,
+				1,
+				3,
+				0,
+				0,
+				0,
+				0,
+				time.UTC,
+			), // Jan 1 2025 is Wednesday, next Friday is Jan 3
+		},
+		{
+			name: "next Wednesday from Wednesday (7 days later)",
+			schedule: ReminderSchedule{
+				Weekday: func() *time.Weekday { w := time.Wednesday; return &w }(),
+			},
+			want: time.Date(
+				2025,
+				1,
+				8,
+				0,
+				0,
+				0,
+				0,
+				time.UTC,
+			), // Jan 1 2025 is Wednesday, next Wednesday is Jan 8
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.schedule.ComputeTriggerDate(baseDate, now)
-			assert.Equal(t, tt.want, got)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestHasReminderExpr(t *testing.T) {
+func TestExtractReminder(t *testing.T) {
+	baseDate := time.Date(2025, 3, 15, 0, 0, 0, 0, time.UTC)
+
 	tests := []struct {
-		input string
-		want  bool
+		name      string
+		input     string
+		wantNil   bool
+		wantErr   bool
+		wantRecur friend.Recurrence
 	}{
-		{"!r[yearly]", true},
-		{"birthday !r[yearly 1w before]", true},
-		{"no reminder here", false},
-		{"!r[]", false}, // Empty brackets is not valid
+		{
+			name:      "yearly reminder",
+			input:     "!r[yearly]",
+			wantRecur: friend.RecurrenceYearly,
+		},
+		{
+			name:      "reminder with surrounding text",
+			input:     "birthday !r[yearly 1w before]",
+			wantRecur: friend.RecurrenceYearly,
+		},
+		{
+			name:    "no reminder expression",
+			input:   "no reminder here",
+			wantNil: true,
+		},
+		{
+			name:    "empty brackets",
+			input:   "!r[]",
+			wantNil: true,
+		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			got := HasReminderExpr(tt.input)
-			assert.Equal(t, tt.want, got)
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ExtractReminder(
+				tt.input,
+				friend.LinkedEntityDate,
+				"entity-123",
+				"friend-456",
+				baseDate,
+				[]string{"tag1"},
+			)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+
+			if tt.wantNil {
+				require.Nil(t, got)
+				return
+			}
+
+			require.NotNil(t, got)
+			require.Equal(t, tt.wantRecur, got.Recurrence)
+			require.Equal(t, friend.LinkedEntityDate, got.LinkedEntityType)
+			require.Equal(t, "entity-123", got.LinkedEntityID)
+			require.Equal(t, "friend-456", got.FriendID)
+			require.Equal(t, []string{"tag1"}, got.Tags)
 		})
 	}
 }
@@ -253,12 +354,12 @@ func TestRemoveReminderExpr(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
 			got := RemoveReminderExpr(tt.input)
-			assert.Equal(t, tt.want, got)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestRenderReminderSchedule(t *testing.T) {
+func TestRenderReminder(t *testing.T) {
 	tests := []struct {
 		name     string
 		reminder *friend.Reminder
@@ -291,8 +392,8 @@ func TestRenderReminderSchedule(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := RenderReminderSchedule(tt.reminder)
-			assert.Equal(t, tt.want, got)
+			got := RenderReminder(tt.reminder)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }

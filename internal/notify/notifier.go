@@ -22,17 +22,21 @@ import (
 
 	"github.com/roma-glushko/frens/internal/config"
 	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/log"
 )
 
 // ReminderContext contains all context needed to send a reminder notification
 type ReminderContext struct {
+	CreatedAt    time.Time
 	Reminder     *friend.Reminder
-	LinkedEntity interface{} // *friend.Date, *friend.WishlistItem, *friend.Event
+	Event        *friend.Event
+	Date         *friend.Date
+	WishlistItem *friend.WishlistItem
 	Friend       *friend.Person
 }
 
-// Dispatcher is the interface that notification channels must implement
-type Dispatcher interface {
+// Notifier is the interface that notification channels must implement
+type Notifier interface {
 	// Type returns the channel type identifier
 	Type() config.ChannelType
 
@@ -43,33 +47,33 @@ type Dispatcher interface {
 	ValidateConfig(channelConfig map[string]interface{}) error
 }
 
-// DispatcherRegistry manages available notification dispatchers
-type DispatcherRegistry struct {
-	dispatchers map[config.ChannelType]Dispatcher
+// Registry manages available notification dispatchers
+type Registry struct {
+	notifiers map[config.ChannelType]Notifier
 }
 
-// NewDispatcherRegistry creates a new dispatcher registry
-func NewDispatcherRegistry() *DispatcherRegistry {
-	return &DispatcherRegistry{
-		dispatchers: make(map[config.ChannelType]Dispatcher),
+// NewRegistry creates a new dispatcher registry
+func NewRegistry() *Registry {
+	return &Registry{
+		notifiers: make(map[config.ChannelType]Notifier),
 	}
 }
 
 // Register adds a dispatcher to the registry
-func (r *DispatcherRegistry) Register(d Dispatcher) {
-	r.dispatchers[d.Type()] = d
+func (r *Registry) Register(n Notifier) {
+	r.notifiers[n.Type()] = n
 }
 
 // Get retrieves a dispatcher by channel type
-func (r *DispatcherRegistry) Get(channelType config.ChannelType) (Dispatcher, bool) {
-	d, ok := r.dispatchers[channelType]
+func (r *Registry) Get(channelType config.ChannelType) (Notifier, bool) {
+	n, ok := r.notifiers[channelType]
 
-	return d, ok
+	return n, ok
 }
 
 // GetAll returns all registered dispatchers
-func (r *DispatcherRegistry) GetAll() map[config.ChannelType]Dispatcher {
-	return r.dispatchers
+func (r *Registry) GetAll() map[config.ChannelType]Notifier {
+	return r.notifiers
 }
 
 // SendResult represents the result of sending a notification
@@ -82,18 +86,18 @@ type SendResult struct {
 
 // NotificationSender handles sending notifications through configured channels
 type NotificationSender struct {
-	registry   *DispatcherRegistry
-	notifyConf *config.NotificationConfig
+	registry   *Registry
+	notifyConf *config.Notifications
 }
 
 // NewNotificationSender creates a new notification sender
 func NewNotificationSender(
-	registry *DispatcherRegistry,
-	notifyConf *config.NotificationConfig,
+	dr *Registry,
+	nc *config.Notifications,
 ) *NotificationSender {
 	return &NotificationSender{
-		registry:   registry,
-		notifyConf: notifyConf,
+		registry:   dr,
+		notifyConf: nc,
 	}
 }
 
@@ -105,35 +109,25 @@ func (s *NotificationSender) Send(
 ) ([]SendResult, error) {
 	results := make([]SendResult, 0)
 
-	// Collect tags from reminder
 	tags := rc.Reminder.Tags
 
-	// Build content for keyword matching
-	content := buildContentForMatching(rc)
-
-	// Find matching rule
-	rule := s.notifyConf.MatchRuleWithContext(config.MatchRuleContext{
+	rule := s.notifyConf.MatchRuleWithCtx(config.MatchRuleCtx{
 		Tags:    tags,
-		Content: content,
+		Content: buildContentForMatching(rc),
 	})
 
-	var channelIDs []string
-	var destination string
-
-	if rule != nil {
-		channelIDs = rule.ChannelIDs
-		destination = rule.Destination
-	} else {
-		// Use default channels
-		channelIDs = s.notifyConf.GetDefaultChannels()
-	}
+	channelIDs, destination := s.resolveChannelsAndDestination(rule)
 
 	if len(channelIDs) == 0 {
-		return results, fmt.Errorf("no notification channels configured")
+		log.Warn(
+			"no routing rule matched, notification not sent (add a catch-all rule to prevent this)",
+		)
+
+		return results, nil
 	}
 
 	// Render message
-	templateCtx := NewTemplateContext(rc.Reminder, rc.LinkedEntity, rc.Friend, time.Now())
+	templateCtx := NewTemplateContext(rc, time.Now().UTC())
 
 	message, err := RenderTemplate(template, templateCtx)
 	if err != nil {
@@ -143,6 +137,7 @@ func (s *NotificationSender) Send(
 	// Send to each channel
 	for _, chID := range channelIDs {
 		channel := s.notifyConf.GetChannel(chID)
+
 		if channel == nil {
 			results = append(results, SendResult{
 				ChannelID: chID,
@@ -157,7 +152,8 @@ func (s *NotificationSender) Send(
 			continue
 		}
 
-		dispatcher, ok := s.registry.Get(channel.Type)
+		notifier, ok := s.registry.Get(channel.Type)
+
 		if !ok {
 			results = append(results, SendResult{
 				ChannelID: chID,
@@ -169,6 +165,7 @@ func (s *NotificationSender) Send(
 		}
 
 		dest := destination
+
 		if dest == "" {
 			// Try to get default destination from channel config
 			if defaultDest, ok := channel.Config["default_chat_id"].(string); ok {
@@ -178,7 +175,8 @@ func (s *NotificationSender) Send(
 			}
 		}
 
-		err := dispatcher.Send(ctx, rc, dest, message)
+		err := notifier.Send(ctx, rc, dest, message)
+
 		results = append(results, SendResult{
 			ChannelID:   chID,
 			Destination: dest,
@@ -190,40 +188,56 @@ func (s *NotificationSender) Send(
 	return results, nil
 }
 
+func (s *NotificationSender) resolveChannelsAndDestination(
+	rule *config.RoutingRule,
+) ([]string, string) {
+	if rule == nil {
+		return nil, ""
+	}
+
+	return rule.ChannelIDs, rule.Destination
+}
+
 // buildContentForMatching builds a searchable content string from reminder context
 func buildContentForMatching(rc *ReminderContext) string {
-	var parts []string
+	var parts strings.Builder
 
 	// Add reminder description
 	if rc.Reminder.Desc != "" {
-		parts = append(parts, rc.Reminder.Desc)
+		parts.WriteString(rc.Reminder.Desc)
+		parts.WriteString(" ")
 	}
 
 	// Add friend name if available
 	if rc.Friend != nil {
-		parts = append(parts, rc.Friend.Name)
+		parts.WriteString(rc.Friend.Name)
+		parts.WriteString(" ")
+
 		if rc.Friend.Desc != "" {
-			parts = append(parts, rc.Friend.Desc)
+			parts.WriteString(rc.Friend.Desc)
+			parts.WriteString(" ")
 		}
 	}
 
-	// Add linked entity description
-	switch entity := rc.LinkedEntity.(type) {
-	case *friend.Date:
-		if entity.Desc != "" {
-			parts = append(parts, entity.Desc)
+	if rc.Date != nil {
+		if rc.Date.Desc != "" {
+			parts.WriteString(rc.Date.Desc)
+			parts.WriteString(" ")
 		}
 
-		parts = append(parts, entity.DateExpr)
-	case *friend.WishlistItem:
-		if entity.Desc != "" {
-			parts = append(parts, entity.Desc)
-		}
-	case *friend.Event:
-		if entity.Desc != "" {
-			parts = append(parts, entity.Desc)
-		}
+		parts.WriteString(rc.Date.DateExpr)
+		parts.WriteString(" ")
 	}
 
-	return strings.Join(parts, " ")
+	if rc.WishlistItem != nil && rc.WishlistItem.Desc != "" {
+		parts.WriteString(rc.WishlistItem.Desc)
+		parts.WriteString(" ")
+	}
+
+	if rc.Event != nil && rc.Event.Desc != "" {
+		parts.WriteString(rc.Event.Desc)
+		parts.WriteString(" ")
+	}
+
+	return strings.TrimSpace(parts.String())
 }

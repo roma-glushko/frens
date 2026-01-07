@@ -18,28 +18,29 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/roma-glushko/frens/internal/config"
 )
 
-// DiscordDispatcher sends notifications via Discord webhooks
-type DiscordDispatcher struct {
+// DiscordNotifier sends notifications via Discord webhooks
+type DiscordNotifier struct {
 	webhookURL string
 	client     *http.Client
 }
 
-// NewDiscordDispatcher creates a new Discord dispatcher
-func NewDiscordDispatcher(webhookURL string) *DiscordDispatcher {
-	return &DiscordDispatcher{
+// NewDiscordNotifier creates a new Discord dispatcher
+func NewDiscordNotifier(webhookURL string) *DiscordNotifier {
+	return &DiscordNotifier{
 		webhookURL: webhookURL,
 		client:     &http.Client{},
 	}
 }
 
 // Type returns the channel type
-func (d *DiscordDispatcher) Type() config.ChannelType {
+func (n *DiscordNotifier) Type() config.ChannelType {
 	return config.ChannelDiscord
 }
 
@@ -49,20 +50,21 @@ type discordWebhookPayload struct {
 }
 
 // Send sends a message via Discord webhook
-func (d *DiscordDispatcher) Send(
+func (n *DiscordNotifier) Send(
 	ctx context.Context,
 	_ *ReminderContext,
 	destination string,
 	message string,
 ) error {
-	webhookURL := d.webhookURL
+	webhookURL := n.webhookURL
+
 	if destination != "" {
 		// Allow override via destination
 		webhookURL = destination
 	}
 
 	if webhookURL == "" {
-		return fmt.Errorf("discord webhook URL is required")
+		return errors.New("discord webhook URL is required")
 	}
 
 	payload := discordWebhookPayload{
@@ -74,18 +76,26 @@ func (d *DiscordDispatcher) Send(
 		return fmt.Errorf("failed to marshal discord payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, webhookURL, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		webhookURL,
+		bytes.NewBuffer(jsonData),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to create discord request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := d.client.Do(req)
+	resp, err := n.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send discord message: %w", err)
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("discord webhook returned status %d", resp.StatusCode)
@@ -95,9 +105,9 @@ func (d *DiscordDispatcher) Send(
 }
 
 // ValidateConfig validates the Discord channel configuration
-func (d *DiscordDispatcher) ValidateConfig(channelConfig map[string]interface{}) error {
+func (n *DiscordNotifier) ValidateConfig(channelConfig map[string]interface{}) error {
 	if _, ok := channelConfig["webhook_url"]; !ok {
-		return fmt.Errorf("discord config requires 'webhook_url'")
+		return errors.New("discord config requires 'webhook_url'")
 	}
 
 	return nil

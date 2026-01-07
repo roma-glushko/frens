@@ -28,14 +28,14 @@ import (
 // Manager handles reminder operations including checking and firing reminders
 type Manager struct {
 	journal    *journal.Journal
-	notifyConf *config.NotificationConfig
+	notifyConf *config.Notifications
 	sender     *notify.NotificationSender
 }
 
 // NewManager creates a new reminder manager
 func NewManager(
 	j *journal.Journal,
-	notifyConf *config.NotificationConfig,
+	notifyConf *config.Notifications,
 	sender *notify.NotificationSender,
 ) *Manager {
 	return &Manager{
@@ -54,7 +54,11 @@ type FireResult struct {
 }
 
 // CheckAndFire checks for due reminders and fires them
-func (m *Manager) CheckAndFire(ctx context.Context, now time.Time, dryRun bool) ([]FireResult, error) {
+func (m *Manager) CheckAndFire(
+	ctx context.Context,
+	now time.Time,
+	dryRun bool,
+) ([]FireResult, error) {
 	dueReminders := m.journal.GetDueReminders(now)
 	results := make([]FireResult, 0, len(dueReminders))
 
@@ -85,23 +89,30 @@ func (m *Manager) CheckAndFire(ctx context.Context, now time.Time, dryRun bool) 
 }
 
 // Fire sends notifications for a reminder and updates its state
-func (m *Manager) Fire(ctx context.Context, r *friend.Reminder, now time.Time) ([]notify.SendResult, error) {
+func (m *Manager) Fire(
+	ctx context.Context,
+	r *friend.Reminder,
+	now time.Time,
+) ([]notify.SendResult, error) {
 	// Resolve linked entity and friend
-	linkedEntity, friendRef, err := m.resolveLinkedEntity(r)
+	linkedEntity, friendRef, err := m.journal.ResolveLinkedEntity(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve linked entity: %w", err)
 	}
 
 	// Create reminder context
 	rc := &notify.ReminderContext{
-		Reminder:     r,
-		LinkedEntity: linkedEntity,
+		CreatedAt:    now,
 		Friend:       friendRef,
+		Reminder:     r,
+		Event:        linkedEntity.Event,
+		Date:         linkedEntity.Date,
+		WishlistItem: linkedEntity.WishlistItem,
 	}
 
 	// Get template
 	rule := m.notifyConf.MatchRule(r.Tags)
-	template := notify.GetTemplateForReminder(m.notifyConf, rule, string(r.LinkedEntityType))
+	template := notify.GetTemplateForReminder(m.notifyConf, rule, r.LinkedEntityType)
 
 	// Send notifications
 	sendResults, err := m.sender.Send(ctx, rc, template)
@@ -110,87 +121,6 @@ func (m *Manager) Fire(ctx context.Context, r *friend.Reminder, now time.Time) (
 	}
 
 	// Update reminder state
-	m.updateReminderState(r, now)
-
-	return sendResults, nil
-}
-
-func (m *Manager) resolveLinkedEntity(r *friend.Reminder) (interface{}, *friend.Person, error) {
-	var linkedEntity interface{}
-	var friendRef *friend.Person
-
-	switch r.LinkedEntityType {
-	case friend.LinkedEntityDate:
-		date, err := m.journal.GetFriendDate(r.LinkedEntityID)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		linkedEntity = &date
-
-		if r.FriendID != "" {
-			f, err := m.journal.GetFriend(r.FriendID)
-			if err == nil {
-				friendRef = &f
-			}
-		}
-
-	case friend.LinkedEntityWishlist:
-		item, err := m.journal.GetFriendWishlistItem(r.LinkedEntityID)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		linkedEntity = &item
-
-		if r.FriendID != "" {
-			f, err := m.journal.GetFriend(r.FriendID)
-			if err == nil {
-				friendRef = &f
-			}
-		}
-
-	case friend.LinkedEntityActivity:
-		event, err := m.journal.GetEvent(friend.EventTypeActivity, r.LinkedEntityID)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		linkedEntity = &event
-
-		// Try to get first associated friend
-		if len(event.FriendIDs) > 0 {
-			f, err := m.journal.GetFriend(event.FriendIDs[0])
-			if err == nil {
-				friendRef = &f
-			}
-		}
-
-	case friend.LinkedEntityNote:
-		event, err := m.journal.GetEvent(friend.EventTypeNote, r.LinkedEntityID)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		linkedEntity = &event
-
-		// Try to get first associated friend
-		if len(event.FriendIDs) > 0 {
-			f, err := m.journal.GetFriend(event.FriendIDs[0])
-			if err == nil {
-				friendRef = &f
-			}
-		}
-
-	default:
-		return nil, nil, fmt.Errorf("unknown linked entity type: %s", r.LinkedEntityType)
-	}
-
-	return linkedEntity, friendRef, nil
-}
-
-func (m *Manager) updateReminderState(r *friend.Reminder, now time.Time) {
-	// Find the reminder in journal and update it
 	for _, jr := range m.journal.Reminders {
 		if jr.ID == r.ID {
 			jr.LastFiredAt = now
@@ -209,6 +139,8 @@ func (m *Manager) updateReminderState(r *friend.Reminder, now time.Time) {
 			break
 		}
 	}
+
+	return sendResults, nil
 }
 
 func (m *Manager) computeNextOccurrence(r *friend.Reminder, now time.Time) time.Time {

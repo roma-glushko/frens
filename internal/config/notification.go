@@ -14,17 +14,7 @@
 
 package config
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-	"sort"
-	"strings"
-
-	"github.com/BurntSushi/toml"
-)
-
-const NotificationConfigFile = "notifications.toml"
+import "strings"
 
 type ChannelType string
 
@@ -66,69 +56,18 @@ type RoutingRule struct {
 	TemplateID    string   `toml:"template_id,omitempty"` // Optional template override
 }
 
-// NotificationConfig holds the complete notification configuration
-type NotificationConfig struct {
+// Notifications holds notification-related configuration
+type Notifications struct {
 	Channels  []NotificationChannel  `toml:"channels"`
 	Templates []NotificationTemplate `toml:"templates"`
 	Rules     []RoutingRule          `toml:"rules"`
-	Default   struct {
-		ChannelIDs []string `toml:"channel_ids"`
-	} `toml:"default"`
-}
-
-// LoadNotificationConfig loads the notification configuration from the config directory
-func LoadNotificationConfig(configDir string) (*NotificationConfig, error) {
-	configPath := filepath.Join(configDir, NotificationConfigFile)
-
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		// Return empty config if file doesn't exist
-		return &NotificationConfig{}, nil
-	}
-
-	file, err := os.Open(configPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open notification config: %w", err)
-	}
-	defer file.Close()
-
-	var config NotificationConfig
-
-	decoder := toml.NewDecoder(file)
-	if _, err := decoder.Decode(&config); err != nil {
-		return nil, fmt.Errorf("failed to decode notification config: %w", err)
-	}
-
-	// Sort rules by priority
-	sort.SliceStable(config.Rules, func(i, j int) bool {
-		return config.Rules[i].Priority < config.Rules[j].Priority
-	})
-
-	return &config, nil
-}
-
-// SaveNotificationConfig saves the notification configuration to the config directory
-func SaveNotificationConfig(configDir string, config *NotificationConfig) error {
-	configPath := filepath.Join(configDir, NotificationConfigFile)
-
-	file, err := os.Create(configPath)
-	if err != nil {
-		return fmt.Errorf("failed to create notification config file: %w", err)
-	}
-	defer file.Close()
-
-	encoder := toml.NewEncoder(file)
-	if err := encoder.Encode(config); err != nil {
-		return fmt.Errorf("failed to encode notification config: %w", err)
-	}
-
-	return nil
 }
 
 // GetChannel returns a channel by ID
-func (c *NotificationConfig) GetChannel(id string) *NotificationChannel {
-	for i := range c.Channels {
-		if c.Channels[i].ID == id {
-			return &c.Channels[i]
+func (n *Notifications) GetChannel(id string) *NotificationChannel {
+	for i := range n.Channels {
+		if n.Channels[i].ID == id {
+			return &n.Channels[i]
 		}
 	}
 
@@ -136,10 +75,10 @@ func (c *NotificationConfig) GetChannel(id string) *NotificationChannel {
 }
 
 // GetTemplate returns a template by ID
-func (c *NotificationConfig) GetTemplate(id string) *NotificationTemplate {
-	for i := range c.Templates {
-		if c.Templates[i].ID == id {
-			return &c.Templates[i]
+func (n *Notifications) GetTemplate(id string) *NotificationTemplate {
+	for i := range n.Templates {
+		if n.Templates[i].ID == id {
+			return &n.Templates[i]
 		}
 	}
 
@@ -147,10 +86,10 @@ func (c *NotificationConfig) GetTemplate(id string) *NotificationTemplate {
 }
 
 // GetEnabledChannels returns all enabled channels
-func (c *NotificationConfig) GetEnabledChannels() []NotificationChannel {
+func (n *Notifications) GetEnabledChannels() []NotificationChannel {
 	enabled := make([]NotificationChannel, 0)
 
-	for _, ch := range c.Channels {
+	for _, ch := range n.Channels {
 		if ch.Enabled {
 			enabled = append(enabled, ch)
 		}
@@ -159,28 +98,29 @@ func (c *NotificationConfig) GetEnabledChannels() []NotificationChannel {
 	return enabled
 }
 
-// MatchRuleContext contains the context for matching routing rules
-type MatchRuleContext struct {
+// MatchRuleCtx contains the context for matching routing rules
+type MatchRuleCtx struct {
 	Tags    []string
 	Content string // Description or other searchable content
 }
 
 // MatchRule finds the first matching rule for given tags (convenience wrapper)
-func (c *NotificationConfig) MatchRule(tags []string) *RoutingRule {
-	return c.MatchRuleWithContext(MatchRuleContext{Tags: tags})
+func (n *Notifications) MatchRule(tags []string) *RoutingRule {
+	return n.MatchRuleWithCtx(MatchRuleCtx{Tags: tags})
 }
 
-// MatchRuleWithContext finds the first matching rule for given context
-func (c *NotificationConfig) MatchRuleWithContext(ctx MatchRuleContext) *RoutingRule {
+// MatchRuleWithCtx finds the first matching rule for given context
+func (n *Notifications) MatchRuleWithCtx(ctx MatchRuleCtx) *RoutingRule {
 	tagSet := make(map[string]bool)
+
 	for _, t := range ctx.Tags {
 		tagSet[t] = true
 	}
 
 	contentLower := strings.ToLower(ctx.Content)
 
-	for i := range c.Rules {
-		rule := &c.Rules[i]
+	for i := range n.Rules {
+		rule := &n.Rules[i]
 
 		// Rule with no conditions matches everything
 		if len(rule.MatchTags) == 0 && len(rule.MatchKeywords) == 0 {
@@ -189,11 +129,11 @@ func (c *NotificationConfig) MatchRuleWithContext(ctx MatchRuleContext) *Routing
 
 		if rule.MatchAll {
 			// AND logic - all conditions must match
-			if !c.allTagsMatch(rule.MatchTags, tagSet) {
+			if !allTagsMatch(rule.MatchTags, tagSet) {
 				continue
 			}
 
-			if !c.allKeywordsMatch(rule.MatchKeywords, contentLower) {
+			if !allKeywordsMatch(rule.MatchKeywords, contentLower) {
 				continue
 			}
 
@@ -201,11 +141,11 @@ func (c *NotificationConfig) MatchRuleWithContext(ctx MatchRuleContext) *Routing
 		}
 
 		// OR logic - any condition matches
-		if c.anyTagMatches(rule.MatchTags, tagSet) {
+		if anyTagMatches(rule.MatchTags, tagSet) {
 			return rule
 		}
 
-		if c.anyKeywordMatches(rule.MatchKeywords, contentLower) {
+		if anyKeywordMatches(rule.MatchKeywords, contentLower) {
 			return rule
 		}
 	}
@@ -213,7 +153,7 @@ func (c *NotificationConfig) MatchRuleWithContext(ctx MatchRuleContext) *Routing
 	return nil
 }
 
-func (c *NotificationConfig) allTagsMatch(matchTags []string, tagSet map[string]bool) bool {
+func allTagsMatch(matchTags []string, tagSet map[string]bool) bool {
 	for _, mt := range matchTags {
 		if !tagSet[mt] {
 			return false
@@ -223,7 +163,7 @@ func (c *NotificationConfig) allTagsMatch(matchTags []string, tagSet map[string]
 	return true
 }
 
-func (c *NotificationConfig) anyTagMatches(matchTags []string, tagSet map[string]bool) bool {
+func anyTagMatches(matchTags []string, tagSet map[string]bool) bool {
 	for _, mt := range matchTags {
 		if tagSet[mt] {
 			return true
@@ -233,7 +173,7 @@ func (c *NotificationConfig) anyTagMatches(matchTags []string, tagSet map[string
 	return false
 }
 
-func (c *NotificationConfig) allKeywordsMatch(keywords []string, content string) bool {
+func allKeywordsMatch(keywords []string, content string) bool {
 	for _, kw := range keywords {
 		if !strings.Contains(content, strings.ToLower(kw)) {
 			return false
@@ -243,7 +183,7 @@ func (c *NotificationConfig) allKeywordsMatch(keywords []string, content string)
 	return true
 }
 
-func (c *NotificationConfig) anyKeywordMatches(keywords []string, content string) bool {
+func anyKeywordMatches(keywords []string, content string) bool {
 	for _, kw := range keywords {
 		if strings.Contains(content, strings.ToLower(kw)) {
 			return true
@@ -251,9 +191,4 @@ func (c *NotificationConfig) anyKeywordMatches(keywords []string, content string
 	}
 
 	return false
-}
-
-// GetDefaultChannels returns the default channel IDs
-func (c *NotificationConfig) GetDefaultChannels() []string {
-	return c.Default.ChannelIDs
 }

@@ -57,8 +57,8 @@ type Reminder struct {
 	CreatedAt time.Time `toml:"created_at" json:"createdAt"`
 
 	// Linked entity reference
-	LinkedEntityType LinkedEntityType `toml:"linked_type" json:"linkedType"`
-	LinkedEntityID   string           `toml:"linked_id"   json:"linkedId"`
+	LinkedEntityType LinkedEntityType `toml:"linked_type"         json:"linkedType"`
+	LinkedEntityID   string           `toml:"linked_id"           json:"linkedId"`
 	FriendID         string           `toml:"friend_id,omitempty" json:"friendId,omitempty"`
 
 	// Schedule configuration
@@ -66,9 +66,9 @@ type Reminder struct {
 	ScheduleExpr string    `toml:"schedule_expr" json:"scheduleExpr"`
 
 	// Recurrence and offset
-	Recurrence      Recurrence      `toml:"recurrence"                  json:"recurrence"`
-	OffsetDirection OffsetDirection `toml:"offset_direction,omitempty"  json:"offsetDirection,omitempty"`
-	OffsetDuration  time.Duration   `toml:"offset_duration,omitempty"   json:"offsetDuration,omitempty"`
+	Recurrence      Recurrence      `toml:"recurrence"                 json:"recurrence"`
+	OffsetDirection OffsetDirection `toml:"offset_direction,omitempty" json:"offsetDirection,omitempty"`
+	OffsetDuration  time.Duration   `toml:"offset_duration,omitempty"  json:"offsetDuration,omitempty"`
 
 	// State tracking
 	State       ReminderState `toml:"state"                   json:"state"`

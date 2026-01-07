@@ -16,6 +16,7 @@ package reminder
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
@@ -125,15 +126,20 @@ func printUpcomingReminder(r *friend.Reminder, j *journal.Journal) {
 
 	recurrence := ""
 	if r.Recurrence != friend.RecurrenceOnce && r.Recurrence != "" {
-		recurrence = fmt.Sprintf(" (%s)", r.Recurrence)
+		recurrence = " (" + r.Recurrence + ")"
 	}
 
-	tags := ""
+	var tags string
+
 	if len(r.Tags) > 0 {
-		tags = fmt.Sprintf(" #%s", r.Tags[0])
-		for _, t := range r.Tags[1:] {
-			tags += fmt.Sprintf(" #%s", t)
+		var sb strings.Builder
+
+		for _, t := range r.Tags {
+			sb.WriteString(" #")
+			sb.WriteString(t)
 		}
+
+		tags = sb.String()
 	}
 
 	fmt.Printf("  - %s%s%s\n", desc, recurrence, tags)
@@ -142,39 +148,57 @@ func printUpcomingReminder(r *friend.Reminder, j *journal.Journal) {
 func getLinkedEntityDesc(r *friend.Reminder, j *journal.Journal) string {
 	switch r.LinkedEntityType {
 	case friend.LinkedEntityDate:
-		date, err := j.GetFriendDate(r.LinkedEntityID)
-		if err == nil {
-			if date.Person != "" {
-				f, err := j.GetFriend(date.Person)
-				if err == nil {
-					if date.Desc != "" {
-						return fmt.Sprintf("%s - %s", f.Name, date.Desc)
-					}
-
-					return fmt.Sprintf("%s's date (%s)", f.Name, date.DateExpr)
-				}
-			}
-
-			return date.Desc
-		}
-
+		return getDateDesc(r, j)
 	case friend.LinkedEntityWishlist:
-		item, err := j.GetFriendWishlistItem(r.LinkedEntityID)
-		if err == nil {
-			return item.Desc
-		}
-
+		return getWishlistDesc(r, j)
 	case friend.LinkedEntityActivity, friend.LinkedEntityNote:
-		eventType := friend.EventTypeActivity
-		if r.LinkedEntityType == friend.LinkedEntityNote {
-			eventType = friend.EventTypeNote
-		}
-
-		event, err := j.GetEvent(eventType, r.LinkedEntityID)
-		if err == nil {
-			return event.Desc
-		}
+		return getEventDesc(r, j)
 	}
 
-	return fmt.Sprintf("%s:%s", r.LinkedEntityType, r.LinkedEntityID[:8])
+	return r.LinkedEntityType + ":" + r.LinkedEntityID[:8]
+}
+
+func getDateDesc(r *friend.Reminder, j *journal.Journal) string {
+	date, err := j.GetFriendDate(r.LinkedEntityID)
+	if err != nil {
+		return r.LinkedEntityType + ":" + r.LinkedEntityID[:8]
+	}
+
+	if date.Person == "" {
+		return date.Desc
+	}
+
+	f, err := j.GetFriend(date.Person)
+	if err != nil {
+		return date.Desc
+	}
+
+	if date.Desc != "" {
+		return f.Name + " - " + date.Desc
+	}
+
+	return f.Name + "'s date (" + date.DateExpr + ")"
+}
+
+func getWishlistDesc(r *friend.Reminder, j *journal.Journal) string {
+	item, err := j.GetFriendWishlistItem(r.LinkedEntityID)
+	if err != nil {
+		return r.LinkedEntityType + ":" + r.LinkedEntityID[:8]
+	}
+
+	return item.Desc
+}
+
+func getEventDesc(r *friend.Reminder, j *journal.Journal) string {
+	eventType := friend.EventTypeActivity
+	if r.LinkedEntityType == friend.LinkedEntityNote {
+		eventType = friend.EventTypeNote
+	}
+
+	event, err := j.GetEvent(eventType, r.LinkedEntityID)
+	if err != nil {
+		return r.LinkedEntityType + ":" + r.LinkedEntityID[:8]
+	}
+
+	return event.Desc
 }

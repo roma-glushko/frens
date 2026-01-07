@@ -16,6 +16,7 @@ package notify
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -55,7 +56,7 @@ func (d *TelegramDispatcher) Send(
 	message string,
 ) error {
 	if destination == "" {
-		return fmt.Errorf("telegram destination (chat_id) is required")
+		return errors.New("telegram destination (chat_id) is required")
 	}
 
 	chatID, err := strconv.ParseInt(destination, 10, 64)
@@ -79,7 +80,7 @@ func (d *TelegramDispatcher) Send(
 // ValidateConfig validates the Telegram channel configuration
 func (d *TelegramDispatcher) ValidateConfig(channelConfig map[string]interface{}) error {
 	if _, ok := channelConfig["token"]; !ok {
-		return fmt.Errorf("telegram config requires 'token'")
+		return errors.New("telegram config requires 'token'")
 	}
 
 	return nil

@@ -27,35 +27,27 @@ import (
 
 // TemplateContext provides data for template rendering
 type TemplateContext struct {
-	Reminder     *friend.Reminder
-	LinkedEntity interface{} // *friend.Date, *friend.WishlistItem, *friend.Event
-	Friend       *friend.Person
 	EntityType   string // "date", "wishlist", "activity", "note"
-	DaysUntil    int    // Days until trigger date
+	Reminder     *friend.Reminder
+	Event        *friend.Event
+	Date         *friend.Date
+	WishlistItem *friend.WishlistItem
+	Friend       *friend.Person
+	DaysUntil    int // Days until trigger date
 	Now          time.Time
 }
 
 // NewTemplateContext creates a new template context for a reminder
 func NewTemplateContext(
-	reminder *friend.Reminder,
-	linkedEntity interface{},
-	friendRef *friend.Person,
+	rc *ReminderContext,
 	now time.Time,
 ) *TemplateContext {
-	daysUntil := 0
-	if !reminder.TriggerAt.IsZero() {
-		daysUntil = int(reminder.TriggerAt.Sub(now).Hours() / 24)
-		if daysUntil < 0 {
-			daysUntil = 0
-		}
-	}
-
 	return &TemplateContext{
-		Reminder:     reminder,
-		LinkedEntity: linkedEntity,
-		Friend:       friendRef,
-		EntityType:   string(reminder.LinkedEntityType),
-		DaysUntil:    daysUntil,
+		Reminder:     rc.Reminder,
+		Date:         rc.Date,
+		WishlistItem: rc.WishlistItem,
+		Event:        rc.Event,
+		Friend:       rc.Friend,
 		Now:          now,
 	}
 }
@@ -100,29 +92,29 @@ func RenderTemplate(tmpl *config.NotificationTemplate, ctx *TemplateContext) (st
 // RenderSubject renders the subject line for email notifications
 func RenderSubject(tmpl *config.NotificationTemplate, ctx *TemplateContext) (string, error) {
 	if tmpl == nil || tmpl.Subject == "" {
-		// Generate default subject
-		var subject string
-		switch ctx.EntityType {
-		case "date":
-			if ctx.Friend != nil {
-				subject = fmt.Sprintf("Reminder: %s's date", ctx.Friend.Name)
-			} else {
-				subject = "Date reminder"
-			}
-		case "wishlist":
-			if ctx.Friend != nil {
-				subject = fmt.Sprintf("Gift reminder for %s", ctx.Friend.Name)
-			} else {
-				subject = "Wishlist reminder"
-			}
-		default:
-			subject = "Frens reminder"
-		}
-
-		return subject, nil
+		return generateDefaultSubject(ctx), nil
 	}
 
 	return executeTemplate(tmpl.Subject, ctx)
+}
+
+func generateDefaultSubject(ctx *TemplateContext) string {
+	switch ctx.EntityType {
+	case "date":
+		if ctx.Friend != nil {
+			return "Reminder: " + ctx.Friend.Name + "'s date"
+		}
+
+		return "Date reminder"
+	case "wishlist":
+		if ctx.Friend != nil {
+			return "Gift reminder for " + ctx.Friend.Name
+		}
+
+		return "Wishlist reminder"
+	default:
+		return "Frens reminder"
+	}
 }
 
 func executeTemplate(templateStr string, ctx *TemplateContext) (string, error) {
@@ -156,20 +148,20 @@ func executeTemplate(templateStr string, ctx *TemplateContext) (string, error) {
 
 // GetTemplateForReminder selects the appropriate template for a reminder
 func GetTemplateForReminder(
-	notifyConfig *config.NotificationConfig,
+	notifications *config.Notifications,
 	rule *config.RoutingRule,
 	entityType string,
 ) *config.NotificationTemplate {
 	// First check if rule specifies a template
 	if rule != nil && rule.TemplateID != "" {
-		if tmpl := notifyConfig.GetTemplate(rule.TemplateID); tmpl != nil {
+		if tmpl := notifications.GetTemplate(rule.TemplateID); tmpl != nil {
 			return tmpl
 		}
 	}
 
 	// Then check for entity-type specific template
 	entityTemplateID := entityType + "-default"
-	if tmpl := notifyConfig.GetTemplate(entityTemplateID); tmpl != nil {
+	if tmpl := notifications.GetTemplate(entityTemplateID); tmpl != nil {
 		return tmpl
 	}
 

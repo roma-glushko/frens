@@ -22,11 +22,11 @@ var Commands = &cli.Command{
 	Name:        "reminder",
 	Aliases:     []string{"rem", "r"},
 	Usage:       "Manage reminders",
-	Description: `Reminders can be linked to dates, wishlist items, activities, or notes. They support absolute dates, relative offsets, and recurring schedules.`,
+	Description: `Reminders are created inline with other entities using the !r[schedule] syntax. Use this command to list, view upcoming, or delete reminders.`,
 	Subcommands: []*cli.Command{
-		AddCommand,
 		ListCommand,
 		UpcomingCommand,
+		NotifyCommand,
 		DeleteCommand,
 	},
 }

@@ -37,6 +37,13 @@ import (
 
 var ErrEventNotFound = errors.New("event not found")
 
+// LinkedEntity holds the resolved entity linked to a reminder
+type LinkedEntity struct {
+	Event        *friend.Event
+	Date         *friend.Date
+	WishlistItem *friend.WishlistItem
+}
+
 type Stats struct {
 	Friends    int `json:"friends"`
 	Locations  int `json:"locations"`
@@ -1200,6 +1207,7 @@ func (j *Journal) RemoveReminders(toRemove []friend.Reminder) error {
 			if r.ID == rem.ID {
 				j.Reminders = append(j.Reminders[:i], j.Reminders[i+1:]...)
 				found = true
+
 				j.SetDirty(true)
 
 				break
@@ -1244,6 +1252,72 @@ func (j *Journal) GetUpcomingReminders(now time.Time, days int) []friend.Reminde
 	})
 
 	return upcoming
+}
+
+// ResolveLinkedEntity resolves the entity linked to a reminder and its associated friend
+func (j *Journal) ResolveLinkedEntity( //nolint:cyclop
+	r *friend.Reminder,
+) (*LinkedEntity, *friend.Person, error) {
+	linkedEntity := &LinkedEntity{}
+
+	var friendRef *friend.Person
+
+	switch r.LinkedEntityType {
+	case friend.LinkedEntityDate:
+		date, err := j.GetFriendDate(r.LinkedEntityID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		linkedEntity.Date = &date
+
+		if r.FriendID != "" {
+			if f, err := j.GetFriend(r.FriendID); err == nil {
+				friendRef = &f
+			}
+		}
+
+	case friend.LinkedEntityWishlist:
+		item, err := j.GetFriendWishlistItem(r.LinkedEntityID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		linkedEntity.WishlistItem = &item
+
+		if r.FriendID != "" {
+			if f, err := j.GetFriend(r.FriendID); err == nil {
+				friendRef = &f
+			}
+		}
+
+	case friend.LinkedEntityActivity:
+		event, err := j.GetEvent(friend.EventTypeActivity, r.LinkedEntityID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		linkedEntity.Event = &event
+
+		if len(event.FriendIDs) > 0 {
+			if f, err := j.GetFriend(event.FriendIDs[0]); err == nil {
+				friendRef = &f
+			}
+		}
+
+	case friend.LinkedEntityNote:
+		event, err := j.GetEvent(friend.EventTypeNote, r.LinkedEntityID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		linkedEntity.Event = &event
+
+	default:
+		return nil, nil, fmt.Errorf("unknown linked entity type: %s", r.LinkedEntityType)
+	}
+
+	return linkedEntity, friendRef, nil
 }
 
 func (j *Journal) Stats() Stats {
