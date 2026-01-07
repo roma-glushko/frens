@@ -14,4 +14,74 @@
 
 package config
 
-type Config struct{}
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+
+	"github.com/BurntSushi/toml"
+	"github.com/roma-glushko/frens/internal/log"
+)
+
+const ConfigFile = "config.toml"
+
+// Config is the main application configuration
+type Config struct {
+	Notifications Notifications `toml:"notifications"`
+}
+
+// Load loads the configuration from the config directory
+func Load(configDir string) (*Config, error) {
+	configPath := filepath.Join(configDir, ConfigFile)
+
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		return &Config{}, nil
+	}
+
+	file, err := os.Open(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open config: %w", err)
+	}
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			log.Error(fmt.Sprintf("failed to close config file: %v", cerr))
+		}
+	}()
+
+	var cfg Config
+
+	decoder := toml.NewDecoder(file)
+	if _, err := decoder.Decode(&cfg); err != nil {
+		return nil, fmt.Errorf("failed to decode config: %w", err)
+	}
+
+	// Sort notification rules by priority
+	sort.SliceStable(cfg.Notifications.Rules, func(i, j int) bool {
+		return cfg.Notifications.Rules[i].Priority < cfg.Notifications.Rules[j].Priority
+	})
+
+	return &cfg, nil
+}
+
+// Save saves the configuration to the config directory
+func Save(configDir string, cfg *Config) error {
+	configPath := filepath.Join(configDir, ConfigFile)
+
+	file, err := os.Create(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to create config file: %w", err)
+	}
+
+	defer func() {
+		_ = file.Close()
+	}()
+
+	encoder := toml.NewEncoder(file)
+	if err := encoder.Encode(cfg); err != nil {
+		return fmt.Errorf("failed to encode config: %w", err)
+	}
+
+	return nil
+}

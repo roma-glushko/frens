@@ -101,6 +101,22 @@ var AddCommand = &cli.Command{
 			o, _ := fmtr.FormatSingle(e)
 			fmt.Println(o)
 
+			// Check for inline reminder
+			var friendID string
+			if len(e.FriendIDs) > 0 {
+				friendID = e.FriendIDs[0]
+			}
+
+			if r, err := lang.ExtractReminder(info, friend.LinkedEntityNote, e.ID, friendID, e.Date, e.Tags); err != nil {
+				log.Warnf("Failed to parse reminder: %v", err)
+			} else if r != nil {
+				if _, err := j.AddReminder(*r); err != nil {
+					log.Warnf("Failed to create reminder: %v", err)
+				} else {
+					log.Infof(" ✔ Reminder created (triggers %s)", r.TriggerAt.Format("2006-01-02"))
+				}
+			}
+
 			return nil
 		})
 	},

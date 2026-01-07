@@ -29,6 +29,7 @@ import (
 	"github.com/roma-glushko/frens/cmd/journal"
 	"github.com/roma-glushko/frens/cmd/location"
 	"github.com/roma-glushko/frens/cmd/note"
+	"github.com/roma-glushko/frens/cmd/reminder"
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/version"
@@ -117,6 +118,7 @@ func NewApp() cli.App {
 			location.Commands,
 			note.Commands,
 			activity.Commands,
+			reminder.Commands,
 			telegram.Commands,
 			ServeCommand,
 			ZenCommand,
