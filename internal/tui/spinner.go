@@ -133,3 +133,11 @@ func RunWithSpinner(message string, task func() error) error {
 
 	return nil
 }
+
+// RunWithProgress runs a task with a simple progress message.
+// Unlike RunWithSpinner, this doesn't take over the terminal,
+// allowing the task to interact with the user (e.g., SSH passphrase prompts).
+func RunWithProgress(message string, task func() error) error {
+	fmt.Printf("› %s\n", message)
+	return task()
+}

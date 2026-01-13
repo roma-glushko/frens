@@ -69,8 +69,11 @@ func (f ContactTextFormatter) formatCompact(c friend.Contact) string {
 func (f ContactTextFormatter) formatRegular(c friend.Contact) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("[%s]", idStyle.Render(c.ID)))
-	sb.WriteString(" " + labelStyle.Render(string(c.Type)))
+	if c.ID != "" {
+		sb.WriteString(fmt.Sprintf("[%s] ", idStyle.Render(c.ID)))
+	}
+
+	sb.WriteString(labelStyle.Render(string(c.Type)))
 	sb.WriteString(": " + c.Value)
 
 	if c.Person != "" {
@@ -82,6 +85,8 @@ func (f ContactTextFormatter) formatRegular(c friend.Contact) string {
 		sb.WriteString("\n")
 		sb.WriteString(" * " + tagStyle.Render(lang.RenderTags(c.Tags)))
 	}
+
+	sb.WriteString("\n")
 
 	return sb.String()
 }

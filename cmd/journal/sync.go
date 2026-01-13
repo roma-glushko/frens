@@ -58,7 +58,7 @@ Examples:
 		branch, err := git.GetBranchName(ctx)
 
 		if err == nil {
-			if err := tui.RunWithSpinner("Pulling latest changes from remote...", func() error {
+			if err := tui.RunWithProgress("Pulling latest changes from remote...", func() error {
 				return git.Pull(ctx, origin, branch)
 			}); err != nil {
 				return fmt.Errorf("git pull failed: %w", err)
@@ -84,7 +84,7 @@ Examples:
 		hostname, _ := os.Hostname()
 		commit := "🔄 sync: synchronize journal @ " + hostname
 
-		if err := tui.RunWithSpinner("Committing changes...", func() error {
+		if err := tui.RunWithProgress("Committing changes...", func() error {
 			if err := git.Commit(ctx, commit); err != nil {
 				return err
 			}
@@ -93,7 +93,7 @@ Examples:
 			return err
 		}
 
-		if err := tui.RunWithSpinner("Pushing changes to remote...", func() error {
+		if err := tui.RunWithProgress("Pushing changes to remote...", func() error {
 			return git.Push(ctx, origin, branch)
 		}); err != nil {
 			return fmt.Errorf("git push failed: %w", err)
