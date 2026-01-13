@@ -101,8 +101,8 @@ var AddCommand = &cli.Command{
 				return fmt.Errorf("failed to add a new event: %v", err)
 			}
 
-			log.Infof(" ✔ Activity added")
-			log.Info("==> Activity Information\n")
+			log.Success("Activity added")
+			log.Header("Activity Information")
 
 			return appCtx.Printer.Print(e)
 		})

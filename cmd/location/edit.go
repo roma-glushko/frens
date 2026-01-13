@@ -141,15 +141,23 @@ var EditCommand = &cli.Command{
 
 			if nameChanged || countryChanged || missingCoords {
 				geocoder := geo.NewGeocoder()
-				coords, err := geocoder.GeocodeLocation(ctx, lNew.Name, lNew.Country)
-				if err != nil {
-					log.Warnf("Failed to geocode location: %v", err)
+
+				var coords *geo.Coordinates
+				var geoErr error
+
+				_ = tui.RunWithSpinner("Looking up coordinates...", func() error {
+					coords, geoErr = geocoder.GeocodeLocation(ctx, lNew.Name, lNew.Country)
+					return nil // Don't fail the spinner, handle error below
+				})
+
+				if geoErr != nil {
+					log.Warnf("Failed to geocode location: %v\n", geoErr)
 				} else if coords != nil {
 					lNew.Lat = &coords.Lat
 					lNew.Lng = &coords.Lng
-					log.Infof("Resolved coordinates: %.4f, %.4f", coords.Lat, coords.Lng)
+					log.Infof("Resolved coordinates: %.4f, %.4f\n", coords.Lat, coords.Lng)
 				} else {
-					log.Warn("Could not find coordinates for this location")
+					log.Warn("Could not find coordinates for this location\n")
 				}
 			} else {
 				// Preserve existing coordinates
@@ -159,8 +167,8 @@ var EditCommand = &cli.Command{
 
 			j.UpdateLocation(lOld, lNew)
 
-			log.Info(" ✔ Location updated")
-			log.Info("==> Location Information\n")
+			log.Success("Location updated")
+			log.Header("Location Information")
 
 			return appCtx.Printer.Print(lNew)
 		})

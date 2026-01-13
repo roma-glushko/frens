@@ -159,8 +159,8 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info(" ✔ Friend added\n")
-		log.Info("==> Friend Information\n")
+		log.Success("Friend added")
+		log.Header("Friend Information")
 
 		return appCtx.Printer.Print(f)
 	},

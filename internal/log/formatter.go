@@ -50,6 +50,8 @@ const (
 
 func (d Density) String() string {
 	switch d {
+	case DensityRegular:
+		return "regular"
 	case DensityCompact:
 		return "compact"
 	default:

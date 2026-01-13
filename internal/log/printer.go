@@ -50,6 +50,7 @@ func (p *printer) Print(entity any) error {
 	}
 
 	ctx := FormatterContext{Density: p.density}
+
 	out, err := fmtr.FormatSingle(ctx, entity)
 	if err != nil {
 		return err
@@ -77,6 +78,7 @@ func (p *printer) PrintList(entities any) error {
 	}
 
 	ctx := FormatterContext{Density: p.density}
+
 	out, err := fmtr.FormatList(ctx, entities)
 	if err != nil {
 		return err

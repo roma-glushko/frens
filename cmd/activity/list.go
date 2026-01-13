@@ -31,9 +31,21 @@ import (
 )
 
 var ListCommand = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l", "ls"},
-	Usage:   "List all activities",
+	Name:      "list",
+	Aliases:   []string{"l", "ls"},
+	Usage:     "List all activities",
+	UsageText: "frens activity list [OPTIONS]",
+	Description: `List and filter activities from your journal.
+
+Examples:
+  frens activity list                        # list all activities
+  frens activity ls -q "dinner"              # search by keyword
+  frens activity ls -t meetup -t conference  # filter by tags
+  frens activity ls --from 2024/01/01        # activities since a date
+  frens activity ls --since yesterday        # activities since yesterday
+  frens activity ls --from 2024/01 --to 2024/03  # activities in a date range
+  frens activity ls -s alpha -r              # sort alphabetically, reversed
+`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "search",
@@ -48,12 +60,12 @@ var ListCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:    "from",
 			Aliases: []string{"since"},
-			Usage:   "Filter notes since a specific date",
+			Usage:   "Filter activities since a specific date",
 		},
 		&cli.StringFlag{
 			Name:    "to",
 			Aliases: []string{"until"},
-			Usage:   "Filter notes until a specific date",
+			Usage:   "Filter activities until a specific date",
 		},
 		&cli.StringFlag{
 			Name:    "sort",
@@ -97,7 +109,7 @@ var ListCommand = &cli.Command{
 			}
 
 			if len(activity) == 0 {
-				log.Info("No activities found for given query.")
+				log.Empty("activities")
 				return nil
 			}
 

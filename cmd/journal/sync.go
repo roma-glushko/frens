@@ -19,14 +19,26 @@ import (
 	"os"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/sync"
+	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
 
 var SyncCommand = &cli.Command{
-	Name:    "sync",
-	Aliases: []string{"s"},
-	Usage:   "Synchronize your journal with a remote git repository",
+	Name:      "sync",
+	Aliases:   []string{"s"},
+	Usage:     "Synchronize your journal with a remote git repository",
+	UsageText: "frens journal sync",
+	Description: `Pull latest changes, commit local changes, and push to remote.
+
+Requires git to be installed and a remote repository configured.
+Use 'frens journal connect' to set up the remote repository first.
+
+Examples:
+  frens journal sync                         # sync with remote
+  frens --journal ~/my-frens journal sync    # sync a specific journal
+`,
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
 		jCtx := jctx.FromCtx(ctx)
@@ -46,13 +58,13 @@ var SyncCommand = &cli.Command{
 		branch, err := git.GetBranchName(ctx)
 
 		if err == nil {
-			fmt.Println("Pulling latest changes from the remote repository...")
-
-			if err := git.Pull(ctx, origin, branch); err != nil {
+			if err := tui.RunWithSpinner("Pulling latest changes from remote...", func() error {
+				return git.Pull(ctx, origin, branch)
+			}); err != nil {
 				return fmt.Errorf("git pull failed: %w", err)
 			}
 		} else {
-			fmt.Println("failed to get current branch name, assuming no branch is set yet")
+			log.Warn("Failed to get current branch name, assuming no branch is set yet\n")
 		}
 
 		if branch == "" {
@@ -65,31 +77,29 @@ var SyncCommand = &cli.Command{
 		}
 
 		if len(status) == 0 {
-			fmt.Println("No changes to commit.")
+			log.Info("No changes to commit.\n")
 			return nil
-		} else {
-			fmt.Println("Committing changes to the remote repository...")
-
-			hostname, _ := os.Hostname()
-			commit := "🔄 sync: synchronize journal @ " + hostname
-
-			err := git.Commit(ctx, commit)
-			if err != nil {
-				return err
-			}
-
-			if err = git.Branch(ctx, branch); err != nil {
-				return fmt.Errorf("git branch failed: %w", err)
-			}
 		}
 
-		fmt.Println("Pushing changes to the remote repository...")
+		hostname, _ := os.Hostname()
+		commit := "🔄 sync: synchronize journal @ " + hostname
 
-		if err = git.Push(ctx, origin, branch); err != nil {
+		if err := tui.RunWithSpinner("Committing changes...", func() error {
+			if err := git.Commit(ctx, commit); err != nil {
+				return err
+			}
+			return git.Branch(ctx, branch)
+		}); err != nil {
+			return err
+		}
+
+		if err := tui.RunWithSpinner("Pushing changes to remote...", func() error {
+			return git.Push(ctx, origin, branch)
+		}); err != nil {
 			return fmt.Errorf("git push failed: %w", err)
 		}
 
-		fmt.Println("✅ Journal synchronized with the remote repository successfully.")
+		log.Success("Journal synchronized successfully")
 
 		return nil
 	},

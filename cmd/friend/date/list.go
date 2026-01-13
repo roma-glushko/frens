@@ -62,7 +62,7 @@ var ListCommand = &cli.Command{
 			}
 
 			if len(dates) == 0 {
-				log.Info("No dates found for given query.")
+				log.Empty("dates")
 				return nil
 			}
 

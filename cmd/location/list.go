@@ -84,7 +84,7 @@ var ListCommand = &cli.Command{
 			})
 
 			if len(locations) == 0 {
-				log.Info("No locations found")
+				log.Empty("locations")
 				return nil
 			}
 

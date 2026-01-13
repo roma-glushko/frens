@@ -15,15 +15,12 @@
 package location
 
 import (
-	"fmt"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
-
-	"github.com/roma-glushko/frens/internal/utils"
-
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
+	"github.com/roma-glushko/frens/internal/utils"
 	"github.com/urfave/cli/v2"
 )
 
@@ -68,22 +65,25 @@ var DeleteCommand = &cli.Command{
 			}
 
 			locWord := utils.P(len(locations), "location", "locations")
-			fmt.Printf("\n Found %d %s:\n\n", len(locations), locWord)
+			log.Found(len(locations), "location", "locations")
 
 			for _, l := range locations {
-				fmt.Printf(" • %s \n", l.String())
+				log.Bullet(l.String())
 			}
 
 			// TODO: check if interactive mode
-			fmt.Println("\n You're about to permanently delete the " + locWord + ".")
-			if !c.Bool("force") && !tui.ConfirmAction(" Are you sure?") {
-				fmt.Println("\n ↩ Deletion canceled.")
+			log.Info(
+				"\n" + log.WarnPrompt("You're about to permanently delete the "+locWord+".") + "\n",
+			)
+
+			if !c.Bool("force") && !tui.ConfirmAction(log.WarnPrompt("Are you sure?")) {
+				log.Canceled("Deletion canceled.")
 				return nil
 			}
 
 			j.RemoveLocations(locations)
 
-			fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(locWord))
+			log.Deleted(utils.TitleCaser.String(locWord))
 
 			return nil
 		})

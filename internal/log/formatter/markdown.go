@@ -50,6 +50,19 @@ func renderTagsMd(tags []string) string {
 	return strings.Join(result, " ")
 }
 
+// formatWishlistItemDesc formats a wishlist item description for markdown
+func formatWishlistItemDesc(desc, link string) string {
+	if link == "" {
+		return desc
+	}
+
+	if desc != "" {
+		return fmt.Sprintf("[%s](%s)", desc, link)
+	}
+
+	return fmt.Sprintf("[link](%s)", link)
+}
+
 // ============================================================================
 // Person Markdown Formatter
 // ============================================================================
@@ -66,33 +79,104 @@ func (p PersonMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (st
 
 	var sb strings.Builder
 
-	// Header
-	sb.WriteString(fmt.Sprintf("## %s\n\n", person.String()))
+	p.writeHeader(&sb, person)
+	p.writeMetadata(&sb, person)
+	p.writeContacts(&sb, person.Contacts)
+	p.writeDates(&sb, person.Dates)
+	p.writeWishlist(&sb, person.Wishlist)
 
-	// Metadata
-	sb.WriteString(fmt.Sprintf("- **ID:** `%s`\n", person.ID))
+	return sb.String(), nil
+}
+
+func (p PersonMarkdownFormatter) writeHeader(sb *strings.Builder, person friend.Person) {
+	fmt.Fprintf(sb, "## %s\n\n", person.String())
+	fmt.Fprintf(sb, "- **ID:** `%s`\n", person.ID)
 
 	if len(person.Nicknames) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Nicknames:** %s\n", strings.Join(person.Nicknames, ", ")))
+		fmt.Fprintf(sb, "- **Nicknames:** %s\n", strings.Join(person.Nicknames, ", "))
 	}
 
 	if len(person.Locations) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Locations:** %s\n", strings.Join(person.Locations, ", ")))
+		fmt.Fprintf(sb, "- **Locations:** %s\n", strings.Join(person.Locations, ", "))
 	}
 
 	if len(person.Tags) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Tags:** %s\n", renderTagsMd(person.Tags)))
+		fmt.Fprintf(sb, "- **Tags:** %s\n", renderTagsMd(person.Tags))
 	}
 
-	sb.WriteString(fmt.Sprintf("- **Notes:** %d\n", person.Notes))
-	sb.WriteString(fmt.Sprintf("- **Activities:** %d\n", person.Activities))
+	fmt.Fprintf(sb, "- **Notes:** %d\n", person.Notes)
+	fmt.Fprintf(sb, "- **Activities:** %d\n", person.Activities)
+}
 
-	// Description
+func (p PersonMarkdownFormatter) writeMetadata(sb *strings.Builder, person friend.Person) {
 	if person.Desc != "" {
-		sb.WriteString(fmt.Sprintf("\n%s\n", person.Desc))
+		fmt.Fprintf(sb, "\n%s\n", person.Desc)
+	}
+}
+
+func (p PersonMarkdownFormatter) writeContacts(sb *strings.Builder, contacts []*friend.Contact) {
+	if len(contacts) == 0 {
+		return
 	}
 
-	return sb.String(), nil
+	sb.WriteString("\n### Contacts\n\n")
+
+	for _, c := range contacts {
+		fmt.Fprintf(sb, "- **%s:** %s", c.Type, c.Value)
+
+		if len(c.Tags) > 0 {
+			sb.WriteString(" " + renderTagsMd(c.Tags))
+		}
+
+		sb.WriteString("\n")
+	}
+}
+
+func (p PersonMarkdownFormatter) writeDates(sb *strings.Builder, dates []*friend.Date) {
+	if len(dates) == 0 {
+		return
+	}
+
+	sb.WriteString("\n### Dates\n\n")
+
+	for _, d := range dates {
+		fmt.Fprintf(sb, "- **%s**", d.DateExpr)
+
+		if d.Desc != "" {
+			sb.WriteString(" — " + d.Desc)
+		}
+
+		if len(d.Tags) > 0 {
+			sb.WriteString(" " + renderTagsMd(d.Tags))
+		}
+
+		sb.WriteString("\n")
+	}
+}
+
+func (p PersonMarkdownFormatter) writeWishlist(
+	sb *strings.Builder,
+	wishlist []*friend.WishlistItem,
+) {
+	if len(wishlist) == 0 {
+		return
+	}
+
+	sb.WriteString("\n### Wishlist\n\n")
+
+	for _, w := range wishlist {
+		sb.WriteString("- " + formatWishlistItemDesc(w.Desc, w.Link))
+
+		if w.Price != "" {
+			sb.WriteString(" ($" + w.Price + ")")
+		}
+
+		if len(w.Tags) > 0 {
+			sb.WriteString(" " + renderTagsMd(w.Tags))
+		}
+
+		sb.WriteString("\n")
+	}
 }
 
 func (p PersonMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (string, error) {

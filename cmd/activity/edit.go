@@ -97,8 +97,8 @@ var EditCommand = &cli.Command{
 				return fmt.Errorf("failed to update activity: %w", err)
 			}
 
-			log.Info(" ✔ Activity updated")
-			log.Info("==> Activity Information\n")
+			log.Success("Activity updated")
+			log.Header("Activity Information")
 
 			return appCtx.Printer.Print(actNew)
 		})

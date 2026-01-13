@@ -94,7 +94,18 @@ func (p PersonTextFormatter) formatCompact(person friend.Person) string {
 func (p PersonTextFormatter) formatRegular(person friend.Person) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(" %s [%s]", labelStyle.Render(person.String()), person.ID))
+	p.writeHeader(&sb, person)
+	p.writeContacts(&sb, person.Contacts)
+	p.writeDates(&sb, person.Dates)
+	p.writeWishlist(&sb, person.Wishlist)
+
+	sb.WriteString("\n")
+
+	return sb.String()
+}
+
+func (p PersonTextFormatter) writeHeader(sb *strings.Builder, person friend.Person) {
+	fmt.Fprintf(sb, " %s [%s]", labelStyle.Render(person.String()), person.ID)
 	sb.WriteString("\n")
 
 	if len(person.Tags) > 0 {
@@ -114,11 +125,72 @@ func (p PersonTextFormatter) formatRegular(person friend.Person) string {
 		for _, line := range wrapped {
 			sb.WriteString(" " + line + "\n")
 		}
+	}
+}
+
+func (p PersonTextFormatter) writeContacts(sb *strings.Builder, contacts []*friend.Contact) {
+	if len(contacts) == 0 {
+		return
+	}
+
+	sb.WriteString("\n")
+	sb.WriteString(labelStyle.Render(" Contacts:") + "\n")
+
+	for _, c := range contacts {
+		fmt.Fprintf(sb, "   %s: %s", c.Type, c.Value)
+
+		if len(c.Tags) > 0 {
+			sb.WriteString(" " + tagStyle.Render(lang.RenderTags(c.Tags)))
+		}
 
 		sb.WriteString("\n")
 	}
+}
 
-	return sb.String()
+func (p PersonTextFormatter) writeDates(sb *strings.Builder, dates []*friend.Date) {
+	if len(dates) == 0 {
+		return
+	}
+
+	sb.WriteString("\n")
+	sb.WriteString(labelStyle.Render(" Dates:") + "\n")
+
+	for _, d := range dates {
+		sb.WriteString("   " + d.DateExpr)
+
+		if d.Desc != "" {
+			sb.WriteString(" - " + d.Desc)
+		}
+
+		if len(d.Tags) > 0 {
+			sb.WriteString(" " + tagStyle.Render(lang.RenderTags(d.Tags)))
+		}
+
+		sb.WriteString("\n")
+	}
+}
+
+func (p PersonTextFormatter) writeWishlist(sb *strings.Builder, wishlist []*friend.WishlistItem) {
+	if len(wishlist) == 0 {
+		return
+	}
+
+	sb.WriteString("\n")
+	sb.WriteString(labelStyle.Render(" Wishlist:") + "\n")
+
+	for _, w := range wishlist {
+		sb.WriteString("   " + formatWishlistDesc(w.Desc, w.Link))
+
+		if w.Price != "" {
+			sb.WriteString(" ($" + w.Price + ")")
+		}
+
+		if len(w.Tags) > 0 {
+			sb.WriteString(" " + tagStyle.Render(lang.RenderTags(w.Tags)))
+		}
+
+		sb.WriteString("\n")
+	}
 }
 
 func (p PersonTextFormatter) FormatList(ctx log.FormatterContext, el any) (string, error) {
@@ -159,4 +231,21 @@ func (p PersonTextFormatter) FormatList(ctx log.FormatterContext, el any) (strin
 	_ = w.Flush()
 
 	return buf.String(), nil
+}
+
+// formatWishlistDesc formats a wishlist item description for text output
+func formatWishlistDesc(desc, link string) string {
+	if desc != "" {
+		return desc
+	}
+
+	if link == "" {
+		return ""
+	}
+
+	if len(link) > 50 {
+		return link[:50] + "..."
+	}
+
+	return link
 }

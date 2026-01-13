@@ -32,8 +32,21 @@ var EditCommand = &cli.Command{
 	Name:      "edit",
 	Aliases:   []string{"e", "modify", "update"},
 	Usage:     "Update main friend information",
+	UsageText: "frens friend edit [OPTIONS] <FRIEND>",
 	Args:      true,
 	ArgsUsage: `<FRIEND_NAME, FRIEND_NICKNAME, FRIEND_ID>`,
+	Description: `Edit a friend's information by their name, nickname, or ID.
+
+Without flags, opens an interactive editor pre-filled with current info.
+Use flags for quick non-interactive updates.
+
+Examples:
+  frens friend edit "Jim Halpert"            # open interactive editor
+  frens friend edit jim -n "James Halpert"   # update name directly
+  frens friend edit jim -d "Sales rep at DM" # update description
+  frens friend edit jim --id james           # change the friend's ID
+  frens friend edit jim -a "Jimothy"         # add a nickname
+`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "id",
@@ -132,8 +145,8 @@ var EditCommand = &cli.Command{
 
 			j.UpdateFriend(pOld, pNew)
 
-			log.Info(" ✔ Friend updated")
-			log.Info("==> Friend Information\n")
+			log.Success("Friend updated")
+			log.Header("Friend Information")
 
 			return appCtx.Printer.Print(pNew)
 		})

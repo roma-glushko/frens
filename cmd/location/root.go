@@ -26,6 +26,7 @@ var Commands = &cli.Command{
 	Description: `Locations are places where you meet your friends, have activities, or events.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
+		GetCommand,
 		EditCommand,
 		ListCommand,
 		DeleteCommand,

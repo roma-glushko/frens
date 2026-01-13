@@ -28,9 +28,21 @@ import (
 )
 
 var ListCommand = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l", "ls"},
-	Usage:   "List all friends",
+	Name:      "list",
+	Aliases:   []string{"l", "ls"},
+	Usage:     "List all friends",
+	UsageText: "frens friend list [OPTIONS]",
+	Description: `List and filter friends from your journal.
+
+Examples:
+  frens friend list                          # list all friends
+  frens friend ls -q "Jim"                   # search by name or description
+  frens friend ls -t work -t college         # filter by multiple tags
+  frens friend ls -l NYC -l Scranton         # filter by locations
+  frens friend ls -s recency                 # sort by most recent activity
+  frens friend ls -s activities -r           # sort by activity count, reversed
+  frens friend ls -t family -s alpha         # combine filters and sorting
+`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "search",
@@ -84,7 +96,7 @@ var ListCommand = &cli.Command{
 			})
 
 			if len(friends) == 0 {
-				log.Info("No friends found for given query.")
+				log.Empty("friends")
 				return nil
 			}
 

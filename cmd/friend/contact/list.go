@@ -72,7 +72,7 @@ var ListCommand = &cli.Command{
 			}
 
 			if len(contacts) == 0 {
-				log.Info("No contacts found for given query.")
+				log.Empty("contacts")
 				return nil
 			}
 

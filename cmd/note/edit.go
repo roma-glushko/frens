@@ -98,8 +98,8 @@ var EditCommand = &cli.Command{
 				return fmt.Errorf("failed to update note: %v", err)
 			}
 
-			log.Info(" ✔ Note Updated")
-			log.Info("==> Note Information\n")
+			log.Success("Note updated")
+			log.Header("Note Information")
 
 			return appCtx.Printer.Print(actNew)
 		})
