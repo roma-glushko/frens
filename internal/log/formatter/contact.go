@@ -69,24 +69,22 @@ func (f ContactTextFormatter) formatCompact(c friend.Contact) string {
 func (f ContactTextFormatter) formatRegular(c friend.Contact) string {
 	var sb strings.Builder
 
-	if c.ID != "" {
-		sb.WriteString(fmt.Sprintf("[%s] ", idStyle.Render(c.ID)))
-	}
-
 	sb.WriteString(labelStyle.Render(string(c.Type)))
 	sb.WriteString(": " + c.Value)
 
-	if c.Person != "" {
-		sb.WriteString("\n")
-		sb.WriteString(" + " + c.Person)
-	}
-
-	if len(c.Tags) > 0 {
-		sb.WriteString("\n")
-		sb.WriteString(" * " + tagStyle.Render(lang.RenderTags(c.Tags)))
+	if c.ID != "" {
+		sb.WriteString(fmt.Sprintf(" (%s)", idStyle.Render(c.ID)))
 	}
 
 	sb.WriteString("\n")
+
+	if c.Person != "" {
+		sb.WriteString("  " + log.BulletChar + " " + c.Person + "\n")
+	}
+
+	if len(c.Tags) > 0 {
+		sb.WriteString("  " + log.BulletChar + " " + tagStyle.Render(lang.RenderTags(c.Tags)) + "\n")
+	}
 
 	return sb.String()
 }
@@ -115,7 +113,7 @@ func (f ContactTextFormatter) FormatList(ctx log.FormatterContext, el any) (stri
 		} else {
 			_, _ = fmt.Fprintf(
 				w,
-				" %s\t%s\t%s\t%s\t%s\n",
+				"%s\t%s\t%s\t%s\t%s\n",
 				idStyle.Render(c.ID),
 				labelStyle.Render(c.Person),
 				c.Type,

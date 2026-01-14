@@ -105,25 +105,32 @@ func (p PersonTextFormatter) formatRegular(person friend.Person) string {
 }
 
 func (p PersonTextFormatter) writeHeader(sb *strings.Builder, person friend.Person) {
-	fmt.Fprintf(sb, " %s [%s]", labelStyle.Render(person.String()), person.ID)
+	fmt.Fprintf(sb, "%s (%s)", labelStyle.Render(person.String()), idStyle.Render(person.ID))
 	sb.WriteString("\n")
 
-	if len(person.Tags) > 0 {
-		sb.WriteString(" * " + tagStyle.Render(lang.RenderTags(person.Tags)))
-		sb.WriteString(" ")
-	}
+	if len(person.Tags) > 0 || len(person.Locations) > 0 {
+		sb.WriteString("  ")
 
-	if len(person.Locations) > 0 {
-		sb.WriteString(locationStyle.Render(lang.RenderLocMarkers(person.Locations)))
+		if len(person.Tags) > 0 {
+			sb.WriteString(tagStyle.Render(lang.RenderTags(person.Tags)))
+		}
+
+		if len(person.Locations) > 0 {
+			if len(person.Tags) > 0 {
+				sb.WriteString(" ")
+			}
+
+			sb.WriteString(locationStyle.Render(lang.RenderLocMarkers(person.Locations)))
+		}
+
+		sb.WriteString("\n")
 	}
 
 	if person.Desc != "" {
-		sb.WriteString("\n")
-
 		wrapped := wrapText(person.Desc, 80)
 
 		for _, line := range wrapped {
-			sb.WriteString(" " + line + "\n")
+			sb.WriteString("  " + line + "\n")
 		}
 	}
 }
@@ -134,10 +141,10 @@ func (p PersonTextFormatter) writeContacts(sb *strings.Builder, contacts []*frie
 	}
 
 	sb.WriteString("\n")
-	sb.WriteString(labelStyle.Render(" Contacts:") + "\n")
+	sb.WriteString("  " + labelStyle.Render("Contacts") + "\n")
 
 	for _, c := range contacts {
-		fmt.Fprintf(sb, "   %s: %s", c.Type, c.Value)
+		fmt.Fprintf(sb, "    %s %s: %s", log.BulletChar, c.Type, c.Value)
 
 		if len(c.Tags) > 0 {
 			sb.WriteString(" " + tagStyle.Render(lang.RenderTags(c.Tags)))
@@ -153,10 +160,10 @@ func (p PersonTextFormatter) writeDates(sb *strings.Builder, dates []*friend.Dat
 	}
 
 	sb.WriteString("\n")
-	sb.WriteString(labelStyle.Render(" Dates:") + "\n")
+	sb.WriteString("  " + labelStyle.Render("Dates") + "\n")
 
 	for _, d := range dates {
-		sb.WriteString("   " + d.DateExpr)
+		sb.WriteString("    " + log.BulletChar + " " + d.DateExpr)
 
 		if d.Desc != "" {
 			sb.WriteString(" - " + d.Desc)
@@ -176,10 +183,10 @@ func (p PersonTextFormatter) writeWishlist(sb *strings.Builder, wishlist []*frie
 	}
 
 	sb.WriteString("\n")
-	sb.WriteString(labelStyle.Render(" Wishlist:") + "\n")
+	sb.WriteString("  " + labelStyle.Render("Wishlist") + "\n")
 
 	for _, w := range wishlist {
-		sb.WriteString("   " + formatWishlistDesc(w.Desc, w.Link))
+		sb.WriteString("    " + log.BulletChar + " " + formatWishlistDesc(w.Desc, w.Link))
 
 		if w.Price != "" {
 			sb.WriteString(" ($" + w.Price + ")")
@@ -217,13 +224,12 @@ func (p PersonTextFormatter) FormatList(ctx log.FormatterContext, el any) (strin
 		} else {
 			_, _ = fmt.Fprintf(
 				w,
-				" %s\t%s\t%s\t%s\t%s\t%s\n",
+				"%s\t%s\t%s\t%s\t%s\n",
 				idStyle.Render(person.ID),
 				labelStyle.Render(person.String()),
 				tagStyle.Render(lang.RenderTags(person.Tags)),
 				locationStyle.Render(lang.RenderLocMarkers(person.Locations)),
-				countLabel.Render(fmt.Sprintf("N %d", person.Notes)),
-				countLabel.Render(fmt.Sprintf("A %d", person.Activities)),
+				countLabel.Render(formatCounts(person.Notes, person.Activities)),
 			)
 		}
 	}
@@ -231,6 +237,29 @@ func (p PersonTextFormatter) FormatList(ctx log.FormatterContext, el any) (strin
 	_ = w.Flush()
 
 	return buf.String(), nil
+}
+
+// formatCounts returns a human-readable count string like "2 notes, 1 activity"
+func formatCounts(notes, activities int) string {
+	var parts []string
+
+	if notes > 0 {
+		if notes == 1 {
+			parts = append(parts, "1 note")
+		} else {
+			parts = append(parts, fmt.Sprintf("%d notes", notes))
+		}
+	}
+
+	if activities > 0 {
+		if activities == 1 {
+			parts = append(parts, "1 activity")
+		} else {
+			parts = append(parts, fmt.Sprintf("%d activities", activities))
+		}
+	}
+
+	return strings.Join(parts, ", ")
 }
 
 // formatWishlistDesc formats a wishlist item description for text output

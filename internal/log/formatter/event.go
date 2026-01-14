@@ -79,28 +79,41 @@ func (f EventTextFormatter) formatRegular(e friend.Event) string {
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(" %s [%s]\n", labelStyle.Render(date), e.ID))
+	sb.WriteString(fmt.Sprintf("%s (%s)\n", labelStyle.Render(date), idStyle.Render(e.ID)))
 
 	if len(e.Tags) > 0 || len(e.LocationIDs) > 0 {
-		sb.WriteString(" * ")
-	}
+		sb.WriteString("  ")
 
-	if len(e.Tags) > 0 {
-		sb.WriteString(tagStyle.Render(lang.RenderTags(e.Tags)))
-		sb.WriteString(" ")
-	}
+		if len(e.Tags) > 0 {
+			sb.WriteString(tagStyle.Render(lang.RenderTags(e.Tags)))
+		}
 
-	if len(e.LocationIDs) > 0 {
-		sb.WriteString(locationStyle.Render(lang.RenderLocMarkers(e.LocationIDs)))
+		if len(e.LocationIDs) > 0 {
+			if len(e.Tags) > 0 {
+				sb.WriteString(" ")
+			}
+
+			sb.WriteString(locationStyle.Render(lang.RenderLocMarkers(e.LocationIDs)))
+		}
+
+		sb.WriteString("\n")
 	}
 
 	if len(e.FriendIDs) > 0 {
 		sb.WriteString("\n")
-		sb.WriteString(" + " + strings.Join(e.FriendIDs, " "))
+		sb.WriteString("  " + labelStyle.Render("With") + "\n")
+
+		for _, friendID := range e.FriendIDs {
+			sb.WriteString("    " + log.BulletChar + " " + friendStyle.Render(friendID) + "\n")
+		}
 	}
 
-	sb.WriteString("\n\n")
-	sb.WriteString(" " + e.Desc)
+	sb.WriteString("\n")
+
+	wrapped := wrapText(e.Desc, 78)
+	for _, line := range wrapped {
+		sb.WriteString("  " + line + "\n")
+	}
 
 	return sb.String()
 }
@@ -129,10 +142,10 @@ func (f EventTextFormatter) FormatList(ctx log.FormatterContext, el any) (string
 		} else {
 			_, _ = fmt.Fprintf(
 				w,
-				" %s\t%s\t%s\t%s\t%s\t%s\n",
+				"%s\t%s\t%s\t%s\t%s\t%s\n",
 				idStyle.Render(e.ID),
-				e.Date.Format("Mon Jan 2, 2006 15:04 MST"),
-				labelStyle.Render(CutStr(e.Desc, 80)),
+				e.Date.Format("Jan 2, 2006"),
+				labelStyle.Render(CutStr(e.Desc, 60)),
 				friendStyle.Render(strings.Join(e.FriendIDs, " ")),
 				tagStyle.Render(lang.RenderTags(e.Tags)),
 				locationStyle.Render(lang.RenderLocMarkers(e.LocationIDs)),

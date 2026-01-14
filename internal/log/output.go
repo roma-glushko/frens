@@ -23,6 +23,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// BulletChar is the bullet character for list items
+const BulletChar = "•"
+
 type OutputHandler = func(w io.Writer, data any)
 
 func TextOutputHandler(w io.Writer, data any) {

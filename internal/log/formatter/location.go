@@ -60,24 +60,21 @@ func (l LocationTextFormatter) formatCompact(location friend.Location) string {
 func (l LocationTextFormatter) formatRegular(location friend.Location) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(" %s [%s]", labelStyle.Render(location.String()), location.ID))
+	sb.WriteString(fmt.Sprintf("%s (%s)", labelStyle.Render(location.String()), idStyle.Render(location.ID)))
 	sb.WriteString("\n")
 
 	if len(location.Tags) > 0 {
-		sb.WriteString(" * " + tagStyle.Render(lang.RenderTags(location.Tags)))
-		sb.WriteString(" ")
+		sb.WriteString("  " + log.BulletChar + " " + tagStyle.Render(lang.RenderTags(location.Tags)) + "\n")
 	}
 
 	if location.Desc != "" {
 		sb.WriteString("\n")
 
-		wrapped := wrapText(location.Desc, 80)
+		wrapped := wrapText(location.Desc, 78)
 
 		for _, line := range wrapped {
-			sb.WriteString(" " + line + "\n")
+			sb.WriteString("  " + line + "\n")
 		}
-
-		sb.WriteString("\n")
 	}
 
 	return sb.String()
@@ -105,7 +102,7 @@ func (l LocationTextFormatter) FormatList(ctx log.FormatterContext, el any) (str
 		} else {
 			_, _ = fmt.Fprintf(
 				w,
-				" %s\t%s\t%s\n",
+				"%s\t%s\t%s\n",
 				idStyle.Render(loc.ID),
 				labelStyle.Render(loc.String()),
 				tagStyle.Render(lang.RenderTags(loc.Tags)),
