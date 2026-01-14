@@ -83,7 +83,9 @@ func (f ContactTextFormatter) formatRegular(c friend.Contact) string {
 	}
 
 	if len(c.Tags) > 0 {
-		sb.WriteString("  " + log.BulletChar + " " + tagStyle.Render(lang.RenderTags(c.Tags)) + "\n")
+		sb.WriteString(
+			"  " + log.BulletChar + " " + tagStyle.Render(lang.RenderTags(c.Tags)) + "\n",
+		)
 	}
 
 	return sb.String()
