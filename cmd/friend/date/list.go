@@ -15,12 +15,9 @@
 package date
 
 import (
-	"fmt"
-
 	"github.com/roma-glushko/frens/internal/journal"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/log"
@@ -51,8 +48,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		return s.Tx(ctx, func(jr *journal.Journal) error {
 			dates, err := jr.ListFriendDates(friend.ListDateQuery{
@@ -65,16 +62,11 @@ var ListCommand = &cli.Command{
 			}
 
 			if len(dates) == 0 {
-				log.Info("No dates found for given query.")
+				log.Empty("dates")
 				return nil
 			}
 
-			fmtr := formatter.DateTextFormatter{}
-
-			o, _ := fmtr.FormatList(dates)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.PrintList(dates)
 		})
 	},
 }

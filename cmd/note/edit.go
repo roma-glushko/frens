@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/log/formatter"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -100,14 +98,10 @@ var EditCommand = &cli.Command{
 				return fmt.Errorf("failed to update note: %v", err)
 			}
 
-			log.Info(" ✔ Note Updated")
-			log.Info("==> Note Information\n")
+			log.Success("Note updated")
+			log.Header("Note Information")
 
-			fmtr := formatter.EventTextFormatter{}
-			o, _ := fmtr.FormatSingle(actNew)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.Print(actNew)
 		})
 	},
 }

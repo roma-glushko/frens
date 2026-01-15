@@ -19,8 +19,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/roma-glushko/frens/internal/log/formatter"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -36,7 +34,18 @@ var AddCommand = &cli.Command{
 	Name:      "add",
 	Aliases:   []string{"a", "create", "new"},
 	Usage:     "Add a new note",
-	UsageText: `frens note add [options]`,
+	UsageText: "frens note add [OPTIONS] [DESCR]",
+	Args:      true,
+	ArgsUsage: `<DESCR>
+
+	<DESCR> is a description of the note to record.
+
+	Examples:
+		frens note add "Jim is allergic to peanuts #health"
+		frens note add "Pam's favorite coffee is caramel macchiato"
+		frens note add "The Scranton office has free parking in the back"
+		frens note add -d 2024/01/10 "Michael prefers window seats on flights #travel"
+`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "date",
@@ -93,15 +102,10 @@ var AddCommand = &cli.Command{
 				return fmt.Errorf("failed to add note: %w", err)
 			}
 
-			log.Infof(" ✔ Note added")
-			log.Info("==> Note Information\n")
+			log.Success("Note added")
+			log.Header("Note Information")
 
-			fmtr := formatter.EventTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(e)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.Print(e)
 		})
 	},
 }
