@@ -15,10 +15,10 @@
 package journal
 
 import (
-	"fmt"
 	"os"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/sync"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
@@ -45,8 +45,8 @@ var CloneCommand = &cli.Command{
 
 		if err := git.Inited(); err == nil {
 			// TODO: check if interactive mode is enabled
-			if tui.ConfirmAction("\n⚠️  Do you want to overwrite the existing journal under?") {
-				fmt.Println("Overwriting the existing journal...")
+			if tui.ConfirmAction(log.WarnPrompt("Do you want to overwrite the existing journal?")) {
+				log.Progress("Overwriting the existing journal...")
 
 				if err = os.RemoveAll(jDir); err != nil {
 					return cli.Exit(
@@ -55,7 +55,7 @@ var CloneCommand = &cli.Command{
 					)
 				}
 			} else {
-				fmt.Println("\n↩️  Journal initialization canceled.")
+				log.Canceled("Journal clone canceled.")
 				return nil
 			}
 		}
@@ -64,7 +64,7 @@ var CloneCommand = &cli.Command{
 			return err
 		}
 
-		fmt.Println("✅ A new journal's initialized at", jDir)
+		log.Successf("Journal cloned to %s", jDir)
 
 		return nil
 	},

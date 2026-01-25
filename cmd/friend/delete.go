@@ -15,23 +15,13 @@
 package friend
 
 import (
-	"fmt"
-
-	"github.com/charmbracelet/lipgloss"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
-
-	"github.com/roma-glushko/frens/internal/utils"
-
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
+	"github.com/roma-glushko/frens/internal/utils"
 	"github.com/urfave/cli/v2"
-)
-
-var (
-	labelStyle = lipgloss.NewStyle().Bold(true)
-	warnStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("3")) // red
 )
 
 var DeleteCommand = &cli.Command{
@@ -76,24 +66,27 @@ var DeleteCommand = &cli.Command{
 			}
 
 			frenWord := utils.P(len(friends), "friend", "friends")
-			fmt.Printf("\n Found %d %s:\n\n", len(friends), frenWord)
+			log.Found(len(friends), "friend", "friends")
 
 			for _, f := range friends {
-				fmt.Printf(" • %s [%s]\n", labelStyle.Render(f.String()), f.ID)
+				log.Bulletf("%s [%s]", log.LabelStyle.Render(f.String()), f.ID)
 			}
 
 			// TODO: check if interactive mode
-			fmt.Println(
-				warnStyle.Render("\n You're about to permanently delete the " + frenWord + "."),
+			log.Info(
+				"\n" + log.WarnPrompt(
+					"You're about to permanently delete the "+frenWord+".",
+				) + "\n",
 			)
-			if !c.Bool("force") && !tui.ConfirmAction(warnStyle.Render(" Are you sure?")) {
-				fmt.Println("\n ↩ Deletion canceled.")
+
+			if !c.Bool("force") && !tui.ConfirmAction(log.WarnPrompt("Are you sure?")) {
+				log.Canceled("Deletion canceled.")
 				return nil
 			}
 
 			j.RemoveFriends(friends)
 
-			fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(frenWord))
+			log.Deleted(utils.TitleCaser.String(frenWord))
 
 			return nil
 		})

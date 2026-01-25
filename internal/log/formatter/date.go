@@ -33,20 +33,47 @@ type DateTextFormatter struct{}
 
 var _ log.Formatter = (*DateTextFormatter)(nil)
 
-func (f DateTextFormatter) FormatSingle(e any) (string, error) {
-	dt, ok := e.(*friend.Date)
+func (f DateTextFormatter) FormatSingle(ctx log.FormatterContext, e any) (string, error) {
+	var dt *friend.Date
 
-	if !ok {
+	switch v := e.(type) {
+	case friend.Date:
+		dt = &v
+	case *friend.Date:
+		dt = v
+	default:
 		return "", ErrInvalidEntity
 	}
 
+	if ctx.Density == log.DensityCompact {
+		return f.formatCompact(dt), nil
+	}
+
+	return f.formatRegular(dt), nil
+}
+
+func (f DateTextFormatter) formatCompact(dt *friend.Date) string {
+	parts := []string{idStyle.Render(dt.ID), dt.DateExpr}
+
+	if dt.Person != "" {
+		parts = append(parts, dt.Person)
+	}
+
+	if len(dt.Tags) > 0 {
+		parts = append(parts, tagStyle.Render(lang.RenderTags(dt.Tags)))
+	}
+
+	return strings.Join(parts, " ") + "\n"
+}
+
+func (f DateTextFormatter) formatRegular(dt *friend.Date) string {
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf("[%s] %s", idStyle.Render(dt.ID), labelStyle.Render(dt.DateExpr)))
 
 	if len(dt.Tags) > 0 {
 		sb.WriteString("\n")
-		sb.WriteString(" • " + tagStyle.Render(lang.RenderTags(dt.Tags)))
+		sb.WriteString(" * " + tagStyle.Render(lang.RenderTags(dt.Tags)))
 		sb.WriteString(" ")
 	}
 
@@ -60,10 +87,10 @@ func (f DateTextFormatter) FormatSingle(e any) (string, error) {
 		}
 	}
 
-	return sb.String(), nil
+	return sb.String()
 }
 
-func (f DateTextFormatter) FormatList(el any) (string, error) {
+func (f DateTextFormatter) FormatList(ctx log.FormatterContext, el any) (string, error) {
 	dates, ok := el.([]*friend.Date)
 
 	if !ok {
@@ -75,14 +102,24 @@ func (f DateTextFormatter) FormatList(el any) (string, error) {
 	w := tabwriter.NewWriter(&buf, 0, 0, 3, ' ', 0)
 
 	for _, dt := range dates {
-		_, _ = fmt.Fprintf(
-			w,
-			" %s\t%s\t%s\t%s\n",
-			idStyle.Render(dt.ID),
-			labelStyle.Render(dt.Person),
-			labelStyle.Render(dt.DateExpr),
-			tagStyle.Render(lang.RenderTags(dt.Tags)),
-		)
+		if ctx.Density == log.DensityCompact {
+			_, _ = fmt.Fprintf(
+				w,
+				"%s\t%s\t%s\n",
+				idStyle.Render(dt.ID),
+				dt.Person,
+				dt.DateExpr,
+			)
+		} else {
+			_, _ = fmt.Fprintf(
+				w,
+				" %s\t%s\t%s\t%s\n",
+				idStyle.Render(dt.ID),
+				labelStyle.Render(dt.Person),
+				labelStyle.Render(dt.DateExpr),
+				tagStyle.Render(lang.RenderTags(dt.Tags)),
+			)
+		}
 	}
 
 	_ = w.Flush()

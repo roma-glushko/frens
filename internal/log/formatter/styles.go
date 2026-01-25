@@ -14,14 +14,17 @@
 
 package formatter
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/lipgloss"
+	"github.com/roma-glushko/frens/internal/log"
+)
 
+// Re-export shared styles from log package for backward compatibility
 var (
-	// symbolStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("2")) // green
-	labelStyle    = lipgloss.NewStyle().Bold(true)
-	tagStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("6")) // cyan
-	locationStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("5")) // magenta
-	idStyle       = lipgloss.NewStyle().Faint(true)
+	labelStyle    = log.LabelStyle
+	tagStyle      = log.TagStyle
+	locationStyle = log.LocationStyle
+	idStyle       = log.IDStyle
 	countLabel    = lipgloss.NewStyle().
 			Faint(true).
 			PaddingLeft(1).

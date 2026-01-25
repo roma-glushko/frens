@@ -55,7 +55,18 @@ func InitLogging(verbose bool, quiet bool) {
 	log.SetLevel(level)
 }
 
-const Copyright = `2026-Present, Roma Hlushko & Friends (c)`
+func parseFormat(s string) log.Format {
+	switch s {
+	case "json":
+		return log.FormatJSON
+	case "markdown", "md":
+		return log.FormatMarkdown
+	default:
+		return log.FormatText
+	}
+}
+
+const Copyright = `2025-Present, Roma Hlushko & Friends (c)`
 
 func NewApp() cli.App {
 	return cli.App{
@@ -87,6 +98,17 @@ func NewApp() cli.App {
 				Aliases: []string{"j"},
 				Usage:   "path to the journal directory (default: ~/.config/frens/)",
 			},
+			&cli.StringFlag{
+				Name:    "format",
+				Aliases: []string{"o"},
+				Value:   "text",
+				Usage:   "output format: text, json, markdown",
+			},
+			&cli.BoolFlag{
+				Name:    "compact",
+				Aliases: []string{"c"},
+				Usage:   "use compact output (one line per entity)",
+			},
 		},
 		Before: func(c *cli.Context) error {
 			ctx := c.Context
@@ -102,9 +124,17 @@ func NewApp() cli.App {
 
 			log.Debugf(" Using journal directory: %s", jDir)
 
+			format := parseFormat(c.String("format"))
+
+			density := log.DensityRegular
+			if c.Bool("compact") {
+				density = log.DensityCompact
+			}
+
 			appCtx := jctx.AppContext{
 				JournalDir: jDir,
 				Store:      file.NewTOMLFileStore(jDir),
+				Printer:    log.NewPrinterWithDensity(format, density, os.Stdout),
 			}
 
 			c.Context = jctx.WithCtx(ctx, &appCtx)

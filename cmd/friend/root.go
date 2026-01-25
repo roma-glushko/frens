@@ -29,6 +29,7 @@ var Commands = &cli.Command{
 	Description: `Friends are people you know, interact with, and share experiences. They can be added to activities, locations, and notes.`,
 	Subcommands: []*cli.Command{
 		AddCommand,
+		GetCommand,
 		EditCommand,
 		ListCommand,
 		DeleteCommand,

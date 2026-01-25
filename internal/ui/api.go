@@ -538,7 +538,7 @@ func (a *API) handleGetComprehensiveStats(w http.ResponseWriter, r *http.Request
 			count int
 		}
 
-		var tags []tagCount
+		tags := make([]tagCount, 0, len(tagCounts))
 
 		for tag, count := range tagCounts {
 			tags = append(tags, tagCount{tag, count})

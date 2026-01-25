@@ -18,12 +18,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/roma-glushko/frens/internal/journal"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/graph"
+	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/urfave/cli/v2"
 )
 
@@ -73,7 +73,7 @@ var GraphCommand = &cli.Command{
 			}
 
 			if len(activities) == 0 {
-				fmt.Println("No activities found for given query.")
+				log.Empty("activities")
 				return nil
 			}
 
