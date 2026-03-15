@@ -125,7 +125,7 @@ func (s *TOMLFileStore) Load(ctx context.Context) (*journal.Journal, error) {
 
 	// Load reminders (optional file for backwards compatibility)
 	reminders, err := loadFile[RemindersFile](ctx, filepath.Join(s.dir, FileNameReminders))
-	if err != nil && !os.IsNotExist(err) {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		errs = append(errs, fmt.Errorf("failed to load reminders file: %w", err))
 	}
 

@@ -30,6 +30,8 @@ var ZenCommand = &cli.Command{
 		sb.WriteString("The Zen of Friendship:\n")
 		sb.WriteString(" • Treat others as you would like them to treat you.\n")
 		sb.WriteString(" • You should \"buy\" yourself a friend.\n")
+		sb.WriteString(" • Show up. The rest follows.\n")
+		sb.WriteString(" • The best time to reach out was yesterday. The second best is now.\n")
 
 		log.Info(sb.String())
 
