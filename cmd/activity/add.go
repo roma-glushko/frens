@@ -19,8 +19,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/roma-glushko/frens/internal/log/formatter"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	"github.com/roma-glushko/frens/internal/friend"
@@ -41,7 +39,7 @@ var AddCommand = &cli.Command{
 	ArgsUsage: `<DESCR>
 
 	<DESCR> is a description of the activity to record.
-	
+
 	Examples:
 		"Michael wrote a book 'Somehow I managed'" - no date, will be recorded as today
 		"yesterday :: Jim Halpert put my stuff in jello #pranks" - relative date & description
@@ -103,31 +101,10 @@ var AddCommand = &cli.Command{
 				return fmt.Errorf("failed to add a new event: %v", err)
 			}
 
-			log.Infof(" ✔ Activity added")
-			log.Info("==> Activity Information\n")
+			log.Success("Activity added")
+			log.Header("Activity Information")
 
-			fmtr := formatter.EventTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(e)
-			fmt.Println(o)
-
-			// Check for inline reminder
-			var friendID string
-			if len(e.FriendIDs) > 0 {
-				friendID = e.FriendIDs[0]
-			}
-
-			if r, err := lang.ExtractReminder(info, friend.LinkedEntityActivity, e.ID, friendID, e.Date, e.Tags); err != nil {
-				log.Warnf("Failed to parse reminder: %v", err)
-			} else if r != nil {
-				if _, err := j.AddReminder(*r); err != nil {
-					log.Warnf("Failed to create reminder: %v", err)
-				} else {
-					log.Infof(" ✔ Reminder created (triggers %s)", r.TriggerAt.Format("2006-01-02"))
-				}
-			}
-
-			return nil
+			return appCtx.Printer.Print(e)
 		})
 	},
 }

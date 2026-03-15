@@ -21,7 +21,6 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/roma-glushko/frens/internal/friend"
 
@@ -32,9 +31,21 @@ import (
 )
 
 var ListCommand = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l", "ls"},
-	Usage:   "List all activities",
+	Name:      "list",
+	Aliases:   []string{"l", "ls"},
+	Usage:     "List all activities",
+	UsageText: "frens activity list [OPTIONS]",
+	Description: `List and filter activities from your journal.
+
+Examples:
+  frens activity list                        # list all activities
+  frens activity ls -q "dinner"              # search by keyword
+  frens activity ls -t meetup -t conference  # filter by tags
+  frens activity ls --from 2024/01/01        # activities since a date
+  frens activity ls --since yesterday        # activities since yesterday
+  frens activity ls --from 2024/01 --to 2024/03  # activities in a date range
+  frens activity ls -s alpha -r              # sort alphabetically, reversed
+`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "search",
@@ -49,12 +60,12 @@ var ListCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:    "from",
 			Aliases: []string{"since"},
-			Usage:   "Filter notes since a specific date",
+			Usage:   "Filter activities since a specific date",
 		},
 		&cli.StringFlag{
 			Name:    "to",
 			Aliases: []string{"until"},
-			Usage:   "Filter notes until a specific date",
+			Usage:   "Filter activities until a specific date",
 		},
 		&cli.StringFlag{
 			Name:    "sort",
@@ -74,8 +85,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		orderBy := friend.SortOrderDirect
 
@@ -98,16 +109,11 @@ var ListCommand = &cli.Command{
 			}
 
 			if len(activity) == 0 {
-				log.Info("No activities found for given query.")
+				log.Empty("activities")
 				return nil
 			}
 
-			fmtr := formatter.EventTextFormatter{}
-
-			o, _ := fmtr.FormatList(activity)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.PrintList(activity)
 		})
 	},
 }

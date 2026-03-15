@@ -33,39 +33,58 @@ type LocationTextFormatter struct{}
 
 var _ log.Formatter = (*LocationTextFormatter)(nil)
 
-func (l LocationTextFormatter) FormatSingle(e any) (string, error) {
+func (l LocationTextFormatter) FormatSingle(ctx log.FormatterContext, e any) (string, error) {
 	location, ok := e.(friend.Location)
 
 	if !ok {
 		return "", ErrInvalidEntity
 	}
 
+	if ctx.Density == log.DensityCompact {
+		return l.formatCompact(location), nil
+	}
+
+	return l.formatRegular(location), nil
+}
+
+func (l LocationTextFormatter) formatCompact(location friend.Location) string {
+	parts := []string{idStyle.Render(location.ID), location.String()}
+
+	if len(location.Tags) > 0 {
+		parts = append(parts, tagStyle.Render(lang.RenderTags(location.Tags)))
+	}
+
+	return strings.Join(parts, " ") + "\n"
+}
+
+func (l LocationTextFormatter) formatRegular(location friend.Location) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(" %s [%s]", labelStyle.Render(location.String()), location.ID))
+	sb.WriteString(
+		fmt.Sprintf("%s (%s)", labelStyle.Render(location.String()), idStyle.Render(location.ID)),
+	)
 	sb.WriteString("\n")
 
 	if len(location.Tags) > 0 {
-		sb.WriteString(" • " + tagStyle.Render(lang.RenderTags(location.Tags)))
-		sb.WriteString(" ")
+		sb.WriteString(
+			"  " + log.BulletChar + " " + tagStyle.Render(lang.RenderTags(location.Tags)) + "\n",
+		)
 	}
 
 	if location.Desc != "" {
 		sb.WriteString("\n")
 
-		wrapped := wrapText(location.Desc, 80)
+		wrapped := wrapText(location.Desc, 78)
 
 		for _, line := range wrapped {
-			sb.WriteString(" " + line + "\n")
+			sb.WriteString("  " + line + "\n")
 		}
-
-		sb.WriteString("\n")
 	}
 
-	return sb.String(), nil
+	return sb.String()
 }
 
-func (l LocationTextFormatter) FormatList(el any) (string, error) {
+func (l LocationTextFormatter) FormatList(ctx log.FormatterContext, el any) (string, error) {
 	locations, ok := el.([]friend.Location)
 
 	if !ok {
@@ -76,14 +95,23 @@ func (l LocationTextFormatter) FormatList(el any) (string, error) {
 
 	w := tabwriter.NewWriter(&buf, 0, 0, 3, ' ', 0)
 
-	for _, l := range locations {
-		_, _ = fmt.Fprintf(
-			w,
-			" %s\t%s\t%s\n",
-			idStyle.Render(l.ID),
-			labelStyle.Render(l.String()),
-			tagStyle.Render(lang.RenderTags(l.Tags)),
-		)
+	for _, loc := range locations {
+		if ctx.Density == log.DensityCompact {
+			_, _ = fmt.Fprintf(
+				w,
+				"%s\t%s\n",
+				idStyle.Render(loc.ID),
+				loc.String(),
+			)
+		} else {
+			_, _ = fmt.Fprintf(
+				w,
+				"%s\t%s\t%s\n",
+				idStyle.Render(loc.ID),
+				labelStyle.Render(loc.String()),
+				tagStyle.Render(lang.RenderTags(loc.Tags)),
+			)
+		}
 	}
 
 	_ = w.Flush()

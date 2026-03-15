@@ -17,12 +17,14 @@ package context
 import (
 	"context"
 
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/store"
 )
 
 type AppContext struct {
 	JournalDir string
 	Store      store.Store
+	Printer    log.Printer
 }
 
 type ctxKey struct{}

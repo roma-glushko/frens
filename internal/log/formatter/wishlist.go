@@ -33,13 +33,53 @@ type WishlistItemTextFormatter struct{}
 
 var _ log.Formatter = (*WishlistItemTextFormatter)(nil)
 
-func (f WishlistItemTextFormatter) FormatSingle(e any) (string, error) {
-	w, ok := e.(*friend.WishlistItem)
+func (f WishlistItemTextFormatter) FormatSingle(ctx log.FormatterContext, e any) (string, error) {
+	var w friend.WishlistItem
 
-	if !ok {
+	switch v := e.(type) {
+	case friend.WishlistItem:
+		w = v
+	case *friend.WishlistItem:
+		w = *v
+	default:
 		return "", ErrInvalidEntity
 	}
 
+	if ctx.Density == log.DensityCompact {
+		return f.formatCompact(w), nil
+	}
+
+	return f.formatRegular(w), nil
+}
+
+func (f WishlistItemTextFormatter) formatCompact(w friend.WishlistItem) string {
+	parts := []string{idStyle.Render(w.ID)}
+
+	desc := w.Desc
+	if desc == "" && w.Link != "" {
+		if len(w.Link) > 40 {
+			desc = w.Link[:40] + "..."
+		} else {
+			desc = w.Link
+		}
+	}
+
+	if desc != "" {
+		parts = append(parts, desc)
+	}
+
+	if w.Price != "" {
+		parts = append(parts, w.Price)
+	}
+
+	if len(w.Tags) > 0 {
+		parts = append(parts, tagStyle.Render(lang.RenderTags(w.Tags)))
+	}
+
+	return strings.Join(parts, " ") + "\n"
+}
+
+func (f WishlistItemTextFormatter) formatRegular(w friend.WishlistItem) string {
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf("[%s]", idStyle.Render(w.ID)))
@@ -50,23 +90,23 @@ func (f WishlistItemTextFormatter) FormatSingle(e any) (string, error) {
 
 	if w.Link != "" {
 		sb.WriteString("\n")
-		sb.WriteString(" 🔗 " + w.Link)
+		sb.WriteString(" > " + w.Link)
 	}
 
 	if w.Price != "" {
 		sb.WriteString("\n")
-		sb.WriteString(" 💰 " + w.Price)
+		sb.WriteString(" $ " + w.Price)
 	}
 
 	if len(w.Tags) > 0 {
 		sb.WriteString("\n")
-		sb.WriteString(" • " + tagStyle.Render(lang.RenderTags(w.Tags)))
+		sb.WriteString(" * " + tagStyle.Render(lang.RenderTags(w.Tags)))
 	}
 
-	return sb.String(), nil
+	return sb.String()
 }
 
-func (f WishlistItemTextFormatter) FormatList(el any) (string, error) {
+func (f WishlistItemTextFormatter) FormatList(ctx log.FormatterContext, el any) (string, error) {
 	items, ok := el.([]friend.WishlistItem)
 
 	if !ok {
@@ -80,27 +120,37 @@ func (f WishlistItemTextFormatter) FormatList(el any) (string, error) {
 	for _, item := range items {
 		desc := item.Desc
 		if desc == "" && item.Link != "" {
-			// Truncate long URLs for list view
 			desc = item.Link
 			if len(desc) > 40 {
 				desc = desc[:40] + "..."
 			}
 		}
 
-		price := ""
-		if item.Price != "" {
-			price = "💰 " + item.Price
-		}
+		if ctx.Density == log.DensityCompact {
+			_, _ = fmt.Fprintf(
+				w,
+				"%s\t%s\t%s\t%s\n",
+				idStyle.Render(item.ID),
+				item.Person,
+				desc,
+				item.Price,
+			)
+		} else {
+			price := ""
+			if item.Price != "" {
+				price = "$ " + item.Price
+			}
 
-		_, _ = fmt.Fprintf(
-			w,
-			" %s\t%s\t%s\t%s\t%s\n",
-			idStyle.Render(item.ID),
-			labelStyle.Render(item.Person),
-			desc,
-			price,
-			tagStyle.Render(lang.RenderTags(item.Tags)),
-		)
+			_, _ = fmt.Fprintf(
+				w,
+				" %s\t%s\t%s\t%s\t%s\n",
+				idStyle.Render(item.ID),
+				labelStyle.Render(item.Person),
+				desc,
+				price,
+				tagStyle.Render(lang.RenderTags(item.Tags)),
+			)
+		}
 	}
 
 	_ = w.Flush()

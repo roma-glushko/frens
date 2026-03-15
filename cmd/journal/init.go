@@ -18,16 +18,25 @@ import (
 	"fmt"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
-
 	"github.com/urfave/cli/v2"
 )
 
 var InitCommand = &cli.Command{
-	Name:    "init",
-	Aliases: []string{"i"},
-	Usage:   "Init a new journal",
-	Flags:   []cli.Flag{},
+	Name:      "init",
+	Aliases:   []string{"i"},
+	Usage:     "Init a new journal",
+	UsageText: "frens journal init",
+	Description: `Initialize a new journal in the default location (~/.config/frens/).
+
+Use the global --journal flag to initialize in a custom location.
+
+Examples:
+  frens journal init                         # init in default location
+  frens --journal ~/my-frens journal init    # init in custom location
+`,
+	Flags: []cli.Flag{},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
 		jCtx := jctx.FromCtx(ctx)
@@ -37,11 +46,11 @@ var InitCommand = &cli.Command{
 
 		if s.Exist(ctx) {
 			// TODO: check if interactive mode is enabled
-			fmt.Println("A journal already exists at", jDir)
-			if tui.ConfirmAction("\n⚠️  Do you want to overwrite the existing journal under?") {
-				fmt.Println("Overwriting the existing journal...")
+			log.Infof("A journal already exists at %s\n", jDir)
+			if tui.ConfirmAction(log.WarnPrompt("Do you want to overwrite the existing journal?")) {
+				log.Progress("Overwriting the existing journal...")
 			} else {
-				fmt.Println("\n↩️  Journal initialization canceled.")
+				log.Canceled("Journal initialization canceled.")
 				return nil
 			}
 		}
@@ -50,7 +59,7 @@ var InitCommand = &cli.Command{
 			return fmt.Errorf("failed to initialize the journal at %s: %w", jDir, err)
 		}
 
-		fmt.Println("✅ A new journal's initialized at", jDir)
+		log.Successf("Journal initialized at %s", jDir)
 
 		return nil
 	},

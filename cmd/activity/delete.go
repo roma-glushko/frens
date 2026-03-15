@@ -15,15 +15,12 @@
 package activity
 
 import (
-	"fmt"
-
 	jctx "github.com/roma-glushko/frens/internal/context"
-
-	"github.com/roma-glushko/frens/internal/utils"
-
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/tui"
+	"github.com/roma-glushko/frens/internal/utils"
 	"github.com/urfave/cli/v2"
 )
 
@@ -68,22 +65,25 @@ var DeleteCommand = &cli.Command{
 			}
 
 			actWord := utils.P(len(activities), "activity", "activities")
-			fmt.Printf("🔍 Found %d %s:\n", len(activities), actWord)
+			log.Found(len(activities), "activity", "activities")
 
 			for _, act := range activities {
-				fmt.Printf("   • %s\n", act.ID)
+				log.Bulletf("%s", act.ID)
 			}
 
 			// TODO: check if interactive mode
-			fmt.Println("\n⚠️  You're about to permanently delete the " + actWord + ".")
-			if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
-				fmt.Println("\n↩️  Deletion canceled.")
+			log.Info(
+				"\n" + log.WarnPrompt("You're about to permanently delete the "+actWord+".") + "\n",
+			)
+
+			if !c.Bool("force") && !tui.ConfirmAction(log.WarnPrompt("Are you sure?")) {
+				log.Canceled("Deletion canceled.")
 				return nil
 			}
 
 			j.RemoveEvents(friend.EventTypeActivity, activities)
 
-			fmt.Printf("\n🗑️  %s deleted.\n", utils.TitleCaser.String(actWord))
+			log.Deleted(utils.TitleCaser.String(actWord))
 
 			return nil
 		})

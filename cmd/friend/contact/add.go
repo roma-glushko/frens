@@ -24,7 +24,6 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -37,7 +36,7 @@ var AddCommand = &cli.Command{
 	Args:      true,
 	ArgsUsage: `<CONTACTS>
 		Add one or more contacts in a flexible format.
-		
+
 		Format: ` + lang.FormatContactInfo + `
 
 		Examples:
@@ -125,10 +124,10 @@ var AddCommand = &cli.Command{
 
 			log.Infof(" Added %d contact(s) for %s", len(addedContacts), p.Name)
 
-			fmtr := formatter.ContactTextFormatter{}
 			for _, contact := range contacts {
-				o, _ := fmtr.FormatSingle(&contact)
-				fmt.Println(o)
+				if err := appCtx.Printer.Print(contact); err != nil {
+					return err
+				}
 			}
 
 			return nil

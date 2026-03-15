@@ -16,7 +16,6 @@ package wishlist
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -26,7 +25,6 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/roma-glushko/frens/internal/wishlist"
 	"github.com/urfave/cli/v2"
@@ -166,23 +164,7 @@ var AddCommand = &cli.Command{
 			log.Info(" ✔ Wishlist item added")
 			log.Info("==> Wishlist Item Information\n")
 
-			fmtr := formatter.WishlistItemTextFormatter{}
-
-			o, _ := fmtr.FormatSingle(&w)
-			fmt.Println(o)
-
-			// Check for inline reminder
-			if r, err := lang.ExtractReminder(info, friend.LinkedEntityWishlist, w.ID, p.ID, time.Now(), w.Tags); err != nil {
-				log.Warnf("Failed to parse reminder: %v", err)
-			} else if r != nil {
-				if _, err := j.AddReminder(*r); err != nil {
-					log.Warnf("Failed to create reminder: %v", err)
-				} else {
-					log.Infof(" ✔ Reminder created (triggers %s)", r.TriggerAt.Format("2006-01-02"))
-				}
-			}
-
-			return nil
+			return appCtx.Printer.Print(w)
 		})
 	},
 }

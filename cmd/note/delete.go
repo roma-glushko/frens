@@ -16,18 +16,14 @@ package note
 
 import (
 	"errors"
-	"fmt"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-	"github.com/roma-glushko/frens/internal/log/formatter"
-
-	"github.com/charmbracelet/log"
-
-	"github.com/roma-glushko/frens/internal/utils"
-
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/log/formatter"
 	"github.com/roma-glushko/frens/internal/tui"
+	"github.com/roma-glushko/frens/internal/utils"
 	"github.com/urfave/cli/v2"
 )
 
@@ -69,30 +65,35 @@ var DeleteCommand = &cli.Command{
 						return cli.Exit("Note not found: "+actID, 1)
 					}
 
-					log.Error("Failed to get note", "err", err, "note_id", actID)
+					log.Errorf("Failed to get note %s: %v", actID, err)
 					return err
 				}
 
 				events = append(events, act)
 			}
 
-			actWord := utils.P(len(events), "note", "notes")
-			fmt.Printf("\n Found %d %s:\n\n", len(events), actWord)
+			noteWord := utils.P(len(events), "note", "notes")
+			log.Found(len(events), "note", "notes")
 
-			for _, act := range events {
-				fmt.Printf(" • [%s] %s\n", act.ID, formatter.CutStr(act.Desc, 80))
+			for _, note := range events {
+				log.Bulletf("[%s] %s", note.ID, formatter.CutStr(note.Desc, 80))
 			}
 
 			// TODO: check if interactive mode
-			fmt.Println("\n You're about to permanently delete the " + actWord + ".")
-			if !c.Bool("force") && !tui.ConfirmAction(" Are you sure?") {
-				fmt.Println("\n ↩ Deletion canceled.")
+			log.Info(
+				"\n" + log.WarnPrompt(
+					"You're about to permanently delete the "+noteWord+".",
+				) + "\n",
+			)
+
+			if !c.Bool("force") && !tui.ConfirmAction(log.WarnPrompt("Are you sure?")) {
+				log.Canceled("Deletion canceled.")
 				return nil
 			}
 
 			j.RemoveEvents(friend.EventTypeNote, events)
 
-			fmt.Printf("\n ✔ %s deleted.\n", utils.TitleCaser.String(actWord))
+			log.Deleted(utils.TitleCaser.String(noteWord))
 
 			return nil
 		})

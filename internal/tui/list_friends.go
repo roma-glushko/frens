@@ -118,7 +118,7 @@ func (m ListFriendsModel) Init() tea.Cmd {
 }
 
 func (m ListFriendsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
+	cmds := make([]tea.Cmd, 0, 1)
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:

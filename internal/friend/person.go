@@ -39,22 +39,22 @@ func (p Persons) Less(i, j int) bool { return p[i].Name < p[j].Name }
 func (p Persons) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 type Person struct {
-	ID        string          `toml:"id"                                      json:"id"`
-	Name      string          `toml:"name"                                    json:"name"`
-	Desc      string          `toml:"desc,omitempty"                          json:"description,omitempty"`
-	Nicknames []string        `toml:"nicknames,omitempty"                     json:"nicknames,omitempty"`
-	Tags      []string        `toml:"tags,omitempty"                          json:"tags,omitempty"`
-	Locations []string        `toml:"locations,omitempty"                     json:"locations,omitempty"`
-	Contacts  []*Contact      `toml:"contacts,omitempty"                      json:"contacts,omitempty"`
-	Dates     []*Date         `toml:"dates,omitempty"                         json:"dates,omitempty"`
-	Wishlist  []*WishlistItem `toml:"wishlist,omitempty"                      json:"wishlist,omitempty"`
-	CreatedAt time.Time       `toml:"created_at,omitempty,omitzero"           json:"createdAt,omitzero"`
+	ID        string          `toml:"id"                            json:"id"`
+	Name      string          `toml:"name"                          json:"name"`
+	Desc      string          `toml:"desc,omitempty"                json:"description,omitempty"`
+	Nicknames []string        `toml:"nicknames,omitempty"           json:"nicknames,omitempty"`
+	Tags      []string        `toml:"tags,omitempty"                json:"tags,omitempty"`
+	Locations []string        `toml:"locations,omitempty"           json:"locations,omitempty"`
+	Contacts  []*Contact      `toml:"contacts,omitempty"            json:"contacts,omitempty"`
+	Dates     []*Date         `toml:"dates,omitempty"               json:"dates,omitempty"`
+	Wishlist  []*WishlistItem `toml:"wishlist,omitempty"            json:"wishlist,omitempty"`
+	CreatedAt time.Time       `toml:"created_at,omitempty,omitzero" json:"createdAt,omitzero"`
 	// Cached information
 	Activities         int       `toml:"activities,omitempty"                    json:"activitiesCount"`
 	Notes              int       `toml:"notes,omitempty"                         json:"notesCount"`
 	MostRecentActivity time.Time `toml:"most_recent_activity,omitempty,omitzero" json:"lastActivity,omitzero"`
 	// internal use only
-	Score int `toml:"-"                                       json:"-"`
+	Score int `toml:"-" json:"-"`
 }
 
 var (

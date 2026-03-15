@@ -16,10 +16,7 @@ package location
 
 import (
 	"errors"
-	"fmt"
 	"strings"
-
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 
@@ -41,7 +38,7 @@ var AddCommand = &cli.Command{
 	ArgsUsage: `<INFO>
 		If no arguments are provided, a textarea will be shown to fill in the details interactively.
 		Otherwise, the information will be parsed from the command options.
-		
+
 		<INFO> format:
 			` + lang.FormatLocationInfo + `
 
@@ -155,15 +152,23 @@ var AddCommand = &cli.Command{
 		// Geocode the location to get coordinates
 		if l.Lat == nil || l.Lng == nil {
 			geocoder := geo.NewGeocoder()
-			coords, err := geocoder.GeocodeLocation(ctx, l.Name, l.Country)
-			if err != nil {
-				log.Warnf("Failed to geocode location: %v", err)
+
+			var coords *geo.Coordinates
+			var geoErr error
+
+			_ = tui.RunWithSpinner("Looking up coordinates...", func() error {
+				coords, geoErr = geocoder.GeocodeLocation(ctx, l.Name, l.Country)
+				return nil // Don't fail the spinner, handle error below
+			})
+
+			if geoErr != nil {
+				log.Warnf("Failed to geocode location: %v\n", geoErr)
 			} else if coords != nil {
 				l.Lat = &coords.Lat
 				l.Lng = &coords.Lng
-				log.Infof("Resolved coordinates: %.4f, %.4f", coords.Lat, coords.Lng)
+				log.Infof("Resolved coordinates: %.4f, %.4f\n", coords.Lat, coords.Lng)
 			} else {
-				log.Warn("Could not find coordinates for this location")
+				log.Warn("Could not find coordinates for this location\n")
 			}
 		}
 
@@ -176,14 +181,9 @@ var AddCommand = &cli.Command{
 			return err
 		}
 
-		log.Info(" ✔ Location added")
-		log.Info("==> Location Information\n")
+		log.Success("Location added")
+		log.Header("Location Information")
 
-		fmtr := formatter.LocationTextFormatter{}
-
-		o, _ := fmtr.FormatSingle(l)
-		fmt.Println(o)
-
-		return nil
+		return appCtx.Printer.Print(l)
 	},
 }

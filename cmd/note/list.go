@@ -23,7 +23,6 @@ import (
 	"github.com/roma-glushko/frens/internal/log"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
-	"github.com/roma-glushko/frens/internal/log/formatter"
 
 	"github.com/roma-glushko/frens/internal/friend"
 
@@ -33,9 +32,20 @@ import (
 )
 
 var ListCommand = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l", "ls"},
-	Usage:   "List all notes",
+	Name:      "list",
+	Aliases:   []string{"l", "ls"},
+	Usage:     "List all notes",
+	UsageText: "frens note list [OPTIONS]",
+	Description: `List and filter notes from your journal.
+
+Examples:
+  frens note list                            # list all notes
+  frens note ls -q "allergic"                # search by keyword
+  frens note ls -t health -t travel          # filter by tags
+  frens note ls --from 2024/01/01            # notes since a date
+  frens note ls --since "last week"          # notes from last week
+  frens note ls -s alpha                     # sort alphabetically
+`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "search",
@@ -75,8 +85,8 @@ var ListCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		ctx := c.Context
-		jctx := jctx.FromCtx(ctx)
-		s := jctx.Store
+		appCtx := jctx.FromCtx(ctx)
+		s := appCtx.Store
 
 		sortOrder := friend.SortOrderDirect
 
@@ -99,16 +109,11 @@ var ListCommand = &cli.Command{
 			}
 
 			if len(notes) == 0 {
-				log.Info("No notes found")
+				log.Empty("notes")
 				return nil
 			}
 
-			fmtr := formatter.EventTextFormatter{}
-
-			o, _ := fmtr.FormatList(notes)
-			fmt.Println(o)
-
-			return nil
+			return appCtx.Printer.PrintList(notes)
 		})
 	},
 }

@@ -12,59 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package wishlist
+package location
 
 import (
+	"strings"
+
 	jctx "github.com/roma-glushko/frens/internal/context"
-	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
-	"github.com/roma-glushko/frens/internal/log"
 
 	"github.com/urfave/cli/v2"
 )
 
-var ListCommand = &cli.Command{
-	Name:    "list",
-	Aliases: []string{"l", "ls"},
-	Usage:   "List wishlist items for all friends",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:    "search",
-			Aliases: []string{"q"},
-			Usage:   "Search by description or link",
-		},
-		&cli.StringSliceFlag{
-			Name:    "with",
-			Aliases: []string{"w"},
-			Usage:   "Filter by friend(s)",
-		},
-		&cli.StringSliceFlag{
-			Name:    "tag",
-			Aliases: []string{"t"},
-			Usage:   "Filter by tag(s)",
-		},
-	},
+var GetCommand = &cli.Command{
+	Name:      "get",
+	Aliases:   []string{"g", "view", "show"},
+	Usage:     "Get and display location information",
+	Args:      true,
+	ArgsUsage: `<LOCATION_NAME, LOCATION_ALIAS, LOCATION_ID>`,
 	Action: func(c *cli.Context) error {
+		if c.NArg() < 1 {
+			return cli.Exit(
+				"You must provide a location name, alias, or ID. Execute `frens location ls` to find out.",
+				1,
+			)
+		}
+
+		lID := strings.Join(c.Args().Slice(), " ")
+
 		ctx := c.Context
 		appCtx := jctx.FromCtx(ctx)
 		s := appCtx.Store
 
 		return s.Tx(ctx, func(j *journal.Journal) error {
-			items, err := j.ListFriendWishlistItems(friend.ListWishlistQuery{
-				Keyword: c.String("search"),
-				Friends: c.StringSlice("with"),
-				Tags:    c.StringSlice("tag"),
-			})
+			l, err := j.GetLocation(lID)
 			if err != nil {
 				return err
 			}
 
-			if len(items) == 0 {
-				log.Empty("wishlist items")
-				return nil
-			}
-
-			return appCtx.Printer.PrintList(items)
+			return appCtx.Printer.Print(l)
 		})
 	},
 }
