@@ -99,7 +99,9 @@ func (j *Journal) Path() string {
 	return j.DirPath
 }
 
-func (j *Journal) AddFriend(f friend.Person) {
+var ErrDuplicateFriend = errors.New("friend with this ID already exists")
+
+func (j *Journal) AddFriend(f friend.Person) (friend.Person, error) {
 	if f.ID == "" {
 		f.ID = slug.Make(f.Name)
 	}
@@ -108,11 +110,16 @@ func (j *Journal) AddFriend(f friend.Person) {
 		f.CreatedAt = time.Now()
 	}
 
-	// TODO: check for duplicated IDs
-	// TODO: check for duplicated aliases
+	for _, existing := range j.Friends {
+		if existing.ID == f.ID {
+			return friend.Person{}, fmt.Errorf("%w: %s", ErrDuplicateFriend, f.ID)
+		}
+	}
 
 	j.Friends = append(j.Friends, &f)
 	j.SetDirty(true)
+
+	return f, nil
 }
 
 func (j *Journal) GetFriend(q string) (friend.Person, error) {
@@ -236,7 +243,7 @@ func (j *Journal) UpdateFriend(o, n friend.Person) {
 	// TODO: update friend references in activities and notes
 
 	// If the friend was not found, add it as a new one
-	j.AddFriend(n)
+	_, _ = j.AddFriend(n)
 }
 
 func (j *Journal) RemoveFriends(toRemove []friend.Person) {
