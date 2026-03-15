@@ -30,5 +30,7 @@ var Commands = &cli.Command{
 		StatsCommand,
 		CleanCommand,
 		SyncCommand,
+		ImportCommand,
+		ExportCommand,
 	},
 }
