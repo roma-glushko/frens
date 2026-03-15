@@ -42,32 +42,39 @@ func NewTemplateContext(
 	rc *ReminderContext,
 	now time.Time,
 ) *TemplateContext {
+	daysUntil := int(rc.Reminder.TriggerAt.Sub(now).Hours() / 24)
+	if daysUntil < 0 {
+		daysUntil = 0
+	}
+
 	return &TemplateContext{
+		EntityType:   rc.Reminder.LinkedEntityType,
 		Reminder:     rc.Reminder,
 		Date:         rc.Date,
 		WishlistItem: rc.WishlistItem,
 		Event:        rc.Event,
 		Friend:       rc.Friend,
+		DaysUntil:    daysUntil,
 		Now:          now,
 	}
 }
 
 // Default templates for different entity types
 var defaultTemplates = map[string]string{
-	"date": `{{ if .Friend }}{{ .Friend.Name }}'s {{ end }}{{ if .LinkedEntity.Desc }}{{ .LinkedEntity.Desc }}{{ else }}important date{{ end }}
+	"date": `{{ if .Friend }}{{ .Friend.Name }}'s {{ end }}{{ if .Date }}{{ if .Date.Desc }}{{ .Date.Desc }}{{ else }}important date{{ end }}{{ else }}important date{{ end }}
 {{ if eq .DaysUntil 0 }}Today!{{ else if eq .DaysUntil 1 }}Tomorrow{{ else }}In {{ .DaysUntil }} days{{ end }}
-Date: {{ .LinkedEntity.DateExpr }}`,
+{{ if .Date }}Date: {{ .Date.DateExpr }}{{ end }}`,
 
 	"wishlist": `{{ if .Friend }}Gift idea for {{ .Friend.Name }}{{ else }}Wishlist reminder{{ end }}
-{{ .LinkedEntity.Desc }}{{ if .LinkedEntity.Link }}
-Link: {{ .LinkedEntity.Link }}{{ end }}{{ if .LinkedEntity.Price }}
-Price: {{ .LinkedEntity.Price }}{{ end }}`,
+{{ if .WishlistItem }}{{ .WishlistItem.Desc }}{{ if .WishlistItem.Link }}
+Link: {{ .WishlistItem.Link }}{{ end }}{{ if .WishlistItem.Price }}
+Price: {{ .WishlistItem.Price }}{{ end }}{{ end }}`,
 
 	"activity": `Activity reminder{{ if .Friend }} ({{ .Friend.Name }}){{ end }}
-{{ .LinkedEntity.Desc }}`,
+{{ if .Event }}{{ .Event.Desc }}{{ end }}`,
 
 	"note": `Note reminder{{ if .Friend }} ({{ .Friend.Name }}){{ end }}
-{{ .LinkedEntity.Desc }}`,
+{{ if .Event }}{{ .Event.Desc }}{{ end }}`,
 }
 
 // RenderTemplate renders a notification message using the provided template

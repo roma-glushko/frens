@@ -32,7 +32,7 @@ var DeleteCommand = &cli.Command{
 	ArgsUsage: "<ID>",
 	Action: func(c *cli.Context) error {
 		if c.NArg() == 0 {
-			return cli.Exit("You must provide a reminder ID", 1)
+			return fmt.Errorf("you must provide a reminder ID")
 		}
 
 		reminderID := c.Args().First()

@@ -16,6 +16,7 @@ package reminder
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -95,13 +96,9 @@ func groupByDaysUntil(reminders []friend.Reminder, now time.Time) []reminderGrou
 	}
 
 	// Sort by days until
-	for i := 0; i < len(result)-1; i++ {
-		for j := i + 1; j < len(result); j++ {
-			if result[i].DaysUntil > result[j].DaysUntil {
-				result[i], result[j] = result[j], result[i]
-			}
-		}
-	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].DaysUntil < result[j].DaysUntil
+	})
 
 	return result
 }
@@ -155,13 +152,13 @@ func getLinkedEntityDesc(r *friend.Reminder, j *journal.Journal) string {
 		return getEventDesc(r, j)
 	}
 
-	return r.LinkedEntityType + ":" + r.LinkedEntityID[:8]
+	return r.LinkedEntityType + ":" + truncateID(r.LinkedEntityID, 8)
 }
 
 func getDateDesc(r *friend.Reminder, j *journal.Journal) string {
 	date, err := j.GetFriendDate(r.LinkedEntityID)
 	if err != nil {
-		return r.LinkedEntityType + ":" + r.LinkedEntityID[:8]
+		return r.LinkedEntityType + ":" + truncateID(r.LinkedEntityID, 8)
 	}
 
 	if date.Person == "" {
@@ -183,7 +180,7 @@ func getDateDesc(r *friend.Reminder, j *journal.Journal) string {
 func getWishlistDesc(r *friend.Reminder, j *journal.Journal) string {
 	item, err := j.GetFriendWishlistItem(r.LinkedEntityID)
 	if err != nil {
-		return r.LinkedEntityType + ":" + r.LinkedEntityID[:8]
+		return r.LinkedEntityType + ":" + truncateID(r.LinkedEntityID, 8)
 	}
 
 	return item.Desc
@@ -197,7 +194,7 @@ func getEventDesc(r *friend.Reminder, j *journal.Journal) string {
 
 	event, err := j.GetEvent(eventType, r.LinkedEntityID)
 	if err != nil {
-		return r.LinkedEntityType + ":" + r.LinkedEntityID[:8]
+		return r.LinkedEntityType + ":" + truncateID(r.LinkedEntityID, 8)
 	}
 
 	return event.Desc

@@ -278,6 +278,7 @@ func TestReminderSchedule_ComputeTriggerDate(t *testing.T) {
 
 func TestExtractReminder(t *testing.T) {
 	baseDate := time.Date(2025, 3, 15, 0, 0, 0, 0, time.UTC)
+	now := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tests := []struct {
 		name      string
@@ -316,6 +317,7 @@ func TestExtractReminder(t *testing.T) {
 				"entity-123",
 				"friend-456",
 				baseDate,
+				now,
 				[]string{"tag1"},
 			)
 

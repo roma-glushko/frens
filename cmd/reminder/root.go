@@ -18,6 +18,14 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+func truncateID(id string, n int) string {
+	if len(id) <= n {
+		return id
+	}
+
+	return id[:n]
+}
+
 var Commands = &cli.Command{
 	Name:        "reminder",
 	Aliases:     []string{"rem", "r"},

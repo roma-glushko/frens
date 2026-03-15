@@ -48,6 +48,22 @@ var ListCommand = &cli.Command{
 		linkedType := c.String("type")
 		tags := c.StringSlice("tag")
 
+		if state != "" {
+			switch state {
+			case friend.ReminderStatePending, friend.ReminderStateFired, friend.ReminderStateAcknowledged:
+			default:
+				return fmt.Errorf("invalid state %q: must be pending, fired, or acknowledged", state)
+			}
+		}
+
+		if linkedType != "" {
+			switch linkedType {
+			case friend.LinkedEntityDate, friend.LinkedEntityWishlist, friend.LinkedEntityActivity, friend.LinkedEntityNote:
+			default:
+				return fmt.Errorf("invalid type %q: must be date, wishlist, activity, or note", linkedType)
+			}
+		}
+
 		ctx := c.Context
 		appCtx := jctx.FromCtx(ctx)
 
@@ -92,7 +108,7 @@ func printReminder(r *friend.Reminder) {
 		stateIcon = "✓"
 	}
 
-	fmt.Printf("%s [%s] %s:%s\n", stateIcon, r.ID[:8], r.LinkedEntityType, r.LinkedEntityID[:8])
+	fmt.Printf("%s [%s] %s:%s\n", stateIcon, truncateID(r.ID, 8), r.LinkedEntityType, truncateID(r.LinkedEntityID, 8))
 	fmt.Printf("   Trigger: %s", r.TriggerAt.Format("2006-01-02"))
 
 	if r.Recurrence != friend.RecurrenceOnce && r.Recurrence != "" {

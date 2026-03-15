@@ -284,6 +284,7 @@ func ExtractReminder(
 	entityType friend.LinkedEntityType,
 	entityID, friendID string,
 	baseDate time.Time,
+	now time.Time,
 	tags []string,
 ) (*friend.Reminder, error) {
 	if !reminderRe.MatchString(text) {
@@ -295,7 +296,7 @@ func ExtractReminder(
 		return nil, err
 	}
 
-	triggerAt := schedule.ComputeTriggerDate(baseDate, time.Now())
+	triggerAt := schedule.ComputeTriggerDate(baseDate, now)
 
 	return &friend.Reminder{
 		LinkedEntityType: entityType,

@@ -17,7 +17,6 @@ package wishlist
 import (
 	"errors"
 	"strings"
-	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	jctx "github.com/roma-glushko/frens/internal/context"

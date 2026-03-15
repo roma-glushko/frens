@@ -101,22 +101,20 @@ func NewNotificationSender(
 	}
 }
 
-// Send sends a notification to appropriate channels based on routing rules
+// Send sends a notification to appropriate channels based on the provided routing rule
 func (s *NotificationSender) Send(
 	ctx context.Context,
 	rc *ReminderContext,
+	rule *config.RoutingRule,
 	template *config.NotificationTemplate,
 ) ([]SendResult, error) {
 	results := make([]SendResult, 0)
 
-	tags := rc.Reminder.Tags
-
-	rule := s.notifyConf.MatchRuleWithCtx(config.MatchRuleCtx{
-		Tags:    tags,
-		Content: buildContentForMatching(rc),
-	})
-
 	channelIDs, destination := s.resolveChannelsAndDestination(rule)
+
+	if rule != nil {
+		log.Debugf("Send: matched rule %q → channels=%v destination=%q", rule.ID, channelIDs, destination)
+	}
 
 	if len(channelIDs) == 0 {
 		log.Warn(
@@ -175,7 +173,13 @@ func (s *NotificationSender) Send(
 			}
 		}
 
+		log.Debugf("Send: dispatching to channel %s (type=%s, dest=%q)", chID, channel.Type, dest)
+
 		err := notifier.Send(ctx, rc, dest, message)
+
+		if err != nil {
+			log.Debugf("Send: channel %s failed: %v", chID, err)
+		}
 
 		results = append(results, SendResult{
 			ChannelID:   chID,

@@ -22,6 +22,7 @@ import (
 	"github.com/roma-glushko/frens/internal/config"
 	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/notify"
 )
 
@@ -60,11 +61,18 @@ func (m *Manager) CheckAndFire(
 	dryRun bool,
 ) ([]FireResult, error) {
 	dueReminders := m.journal.GetDueReminders(now)
+
+	log.Debugf("CheckAndFire: found %d due reminder(s) at %s (dry-run=%v)",
+		len(dueReminders), now.Format(time.RFC3339), dryRun)
+
 	results := make([]FireResult, 0, len(dueReminders))
 
 	for i := range dueReminders {
 		r := &dueReminders[i]
 		result := FireResult{Reminder: r}
+
+		log.Debugf("  processing reminder %s (type=%s, trigger=%s, recurrence=%s)",
+			r.ID, r.LinkedEntityType, r.TriggerAt.Format(time.RFC3339), r.Recurrence)
 
 		if dryRun {
 			result.Success = true
@@ -75,9 +83,13 @@ func (m *Manager) CheckAndFire(
 
 		fireResult, err := m.Fire(ctx, r, now)
 		if err != nil {
+			log.Debugf("  reminder %s fire failed: %v", r.ID, err)
+
 			result.Error = err
 			result.Success = false
 		} else {
+			log.Debugf("  reminder %s fired successfully (%d channels notified)", r.ID, len(fireResult))
+
 			result.Success = true
 			result.SendResults = fireResult
 		}
@@ -95,6 +107,9 @@ func (m *Manager) Fire(
 	now time.Time,
 ) ([]notify.SendResult, error) {
 	// Resolve linked entity and friend
+	log.Debugf("Fire: resolving linked entity for reminder %s (type=%s, entity=%s)",
+		r.ID, r.LinkedEntityType, r.LinkedEntityID)
+
 	linkedEntity, friendRef, err := m.journal.ResolveLinkedEntity(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve linked entity: %w", err)
@@ -110,12 +125,17 @@ func (m *Manager) Fire(
 		WishlistItem: linkedEntity.WishlistItem,
 	}
 
-	// Get template
-	rule := m.notifyConf.MatchRule(r.Tags)
+	// Get template and routing rule
+	log.Debugf("Fire: matching routing rule for tags=%v desc=%q", r.Tags, r.Desc)
+
+	rule := m.notifyConf.MatchRuleWithCtx(config.MatchRuleCtx{
+		Tags:    r.Tags,
+		Content: r.Desc,
+	})
 	template := notify.GetTemplateForReminder(m.notifyConf, rule, r.LinkedEntityType)
 
 	// Send notifications
-	sendResults, err := m.sender.Send(ctx, rc, template)
+	sendResults, err := m.sender.Send(ctx, rc, rule, template)
 	if err != nil {
 		return sendResults, fmt.Errorf("failed to send notifications: %w", err)
 	}

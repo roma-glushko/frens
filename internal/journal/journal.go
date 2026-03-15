@@ -687,21 +687,33 @@ func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
 	}
 }
 
-func (j *Journal) AddFriendDate(fID string, d friend.Date) (friend.Date, error) {
-	f, err := j.GetFriend(fID)
-	if err != nil {
-		return friend.Date{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
+func (j *Journal) AddFriendDate(fID string, d friend.Date) (friend.Date, friend.Person, error) {
+	fp := j.getFriendPtr(fID)
+	if fp == nil {
+		return friend.Date{}, friend.Person{}, fmt.Errorf("friend %s not found", fID)
 	}
 
 	if d.ID == "" {
 		d.ID = ksuid.New().String()
 	}
 
-	f.Dates = append(f.Dates, &d)
+	fp.Dates = append(fp.Dates, &d)
 
 	j.SetDirty(true)
 
-	return d, nil
+	return d, *fp, nil
+}
+
+// getFriendPtr returns a pointer to the friend in the journal's Friends slice.
+// This allows direct mutation (e.g. appending dates) that persists through save.
+func (j *Journal) getFriendPtr(q string) *friend.Person {
+	for _, f := range j.Friends {
+		if f.ID == q {
+			return f
+		}
+	}
+
+	return nil
 }
 
 func (j *Journal) UpdateFriendDate(o, n friend.Date) (friend.Date, error) {

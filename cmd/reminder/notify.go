@@ -58,9 +58,7 @@ Example cron entry (every hour):
 			// Set up notification registry
 			registry := notify.NewRegistry()
 
-			if err := registerNotifiers(registry, &cfg.Notifications); err != nil {
-				return err
-			}
+			registerNotifiers(registry, &cfg.Notifications)
 
 			// Create sender and manager
 			sender := notify.NewNotificationSender(registry, &cfg.Notifications)
@@ -93,7 +91,7 @@ Example cron entry (every hour):
 	},
 }
 
-func registerNotifiers(registry *notify.Registry, notifications *config.Notifications) error {
+func registerNotifiers(registry *notify.Registry, notifications *config.Notifications) {
 	for _, ch := range notifications.GetEnabledChannels() {
 		switch ch.Type {
 		case config.ChannelTelegram:
@@ -134,8 +132,6 @@ func registerNotifiers(registry *notify.Registry, notifications *config.Notifica
 			log.Warnf("Channel type '%s' is not yet implemented, skipping '%s'", ch.Type, ch.ID)
 		}
 	}
-
-	return nil
 }
 
 func printNotifyResult(r reminder.FireResult, dryRun bool) {
@@ -144,9 +140,9 @@ func printNotifyResult(r reminder.FireResult, dryRun bool) {
 	fmt.Printf(
 		"%s [%s] %s:%s\n",
 		icon,
-		r.Reminder.ID[:8],
+		truncateID(r.Reminder.ID, 8),
 		r.Reminder.LinkedEntityType,
-		r.Reminder.LinkedEntityID[:8],
+		truncateID(r.Reminder.LinkedEntityID, 8),
 	)
 
 	if r.Reminder.Desc != "" {
