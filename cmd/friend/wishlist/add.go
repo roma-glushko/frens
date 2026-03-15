@@ -160,7 +160,7 @@ var AddCommand = &cli.Command{
 				return err
 			}
 
-			log.Info(" Wishlist item added")
+			log.Info(" ✔ Wishlist item added")
 			log.Info("==> Wishlist Item Information\n")
 
 			return appCtx.Printer.Print(w)

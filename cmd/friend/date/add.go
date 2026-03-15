@@ -17,6 +17,7 @@ package date
 import (
 	"errors"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -140,13 +141,27 @@ var AddCommand = &cli.Command{
 				return err
 			}
 
-			d, err = j.AddFriendDate(p.ID, d)
+			d, p, err = j.AddFriendDate(p.ID, d)
 			if err != nil {
 				return err
 			}
 
 			log.Info(" ✔ Date added")
-			log.Infof("  %s: %s", d.DateExpr, d.Desc) // TODO: improve this output
+			log.Infof("  %s: %s", d.DateExpr, d.Desc)
+
+			// Check for inline reminder
+			now := time.Now()
+			baseDate := lang.ExtractDate(d.DateExpr, now)
+
+			if r, err := lang.ExtractReminder(info, friend.LinkedEntityDate, d.ID, p.ID, baseDate, now, d.Tags); err != nil {
+				log.Warnf("Failed to parse reminder: %v", err)
+			} else if r != nil {
+				if _, err := j.AddReminder(*r); err != nil {
+					log.Warnf("Failed to create reminder: %v", err)
+				} else {
+					log.Infof(" ✔ Reminder created (triggers %s)", r.TriggerAt.Format("2006-01-02"))
+				}
+			}
 
 			return nil
 		})

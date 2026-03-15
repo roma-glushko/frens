@@ -15,8 +15,12 @@
 package acceptance
 
 import (
+	"context"
+	"path/filepath"
 	"testing"
 
+	"github.com/roma-glushko/frens/internal/friend"
+	"github.com/roma-glushko/frens/internal/store/file"
 	"github.com/urfave/cli/v2"
 )
 
@@ -31,4 +35,23 @@ func InitJournal(t *testing.T, c cli.App) (string, error) {
 	}
 
 	return jDir, c.RunContext(t.Context(), a)
+}
+
+// LoadReminders loads the reminders from the journal directory for test assertions
+func LoadReminders(t *testing.T, jDir string) []*friend.Reminder {
+	t.Helper()
+
+	store := file.NewTOMLFileStore(jDir)
+
+	j, err := store.Load(context.Background())
+	if err != nil {
+		t.Fatalf("failed to load journal: %v", err)
+	}
+
+	return j.Reminders
+}
+
+// RemindersFileExists checks that reminders.toml exists in the journal directory
+func RemindersFileExists(jDir string) string {
+	return filepath.Join(jDir, file.FileNameReminders)
 }

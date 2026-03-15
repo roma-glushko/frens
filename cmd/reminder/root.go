@@ -12,29 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package reminder
 
 import (
-	"strings"
-
-	"github.com/roma-glushko/frens/internal/log"
 	"github.com/urfave/cli/v2"
 )
 
-var ZenCommand = &cli.Command{
-	Name:  "zen",
-	Usage: "Print the zen of friendship",
-	Action: func(_ *cli.Context) error {
-		var sb strings.Builder
+func truncateID(id string, n int) string {
+	if len(id) <= n {
+		return id
+	}
 
-		sb.WriteString("The Zen of Friendship:\n")
-		sb.WriteString(" • Treat others as you would like them to treat you.\n")
-		sb.WriteString(" • You should \"buy\" yourself a friend.\n")
-		sb.WriteString(" • Show up. The rest follows.\n")
-		sb.WriteString(" • The best time to reach out was yesterday. The second best is now.\n")
+	return id[:n]
+}
 
-		log.Info(sb.String())
-
-		return nil
+var Commands = &cli.Command{
+	Name:        "reminder",
+	Aliases:     []string{"rem", "r"},
+	Usage:       "Manage reminders",
+	Description: `Reminders are created inline with other entities using the !r[schedule] syntax. Use this command to list, view upcoming, or delete reminders.`,
+	Subcommands: []*cli.Command{
+		ListCommand,
+		UpcomingCommand,
+		NotifyCommand,
+		DeleteCommand,
 	},
 }
