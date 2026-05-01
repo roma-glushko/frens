@@ -687,6 +687,7 @@ func (j *Journal) AddFriendDate(fID string, d friend.Date) (friend.Date, error) 
 	for _, f := range j.Friends {
 		if f.ID == fID {
 			f.Dates = append(f.Dates, &d)
+
 			j.SetDirty(true)
 
 			return d, nil
@@ -814,6 +815,7 @@ func (j *Journal) AddFriendWishlistItem(
 	for _, f := range j.Friends {
 		if f.ID == fID {
 			f.Wishlist = append(f.Wishlist, &w)
+
 			j.SetDirty(true)
 
 			return w, nil
