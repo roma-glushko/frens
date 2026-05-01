@@ -80,71 +80,17 @@ var AddCommand = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
+		interactive := c.NArg() == 0
 		var info string
 
-		if c.NArg() == 0 {
-			// TODO: also check if we are in the interactive mode
-			inputForm := tui.NewEditorForm(tui.EditorOptions{
-				Title:      "Add a new friend information:",
-				SyntaxHint: lang.FormatPersonInfo,
-			})
-			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
-
-			if _, err := teaUI.Run(); err != nil {
-				log.Errorf("uh oh: %v", err)
-				return err
-			}
-
-			info = inputForm.Textarea.Value()
+		if interactive {
+			info = promptFriendInfo("")
 		} else {
 			info = strings.Join(c.Args().Slice(), " ")
 		}
 
-		var f friend.Person
-		var err error
-
-		if info != "" {
-			f, err = lang.ExtractPerson(info)
-
-			if err != nil && !errors.Is(err, lang.ErrNoInfo) {
-				log.Errorf("failed to parse friend info: %v", err)
-				return err
-			}
-		}
-
-		// apply CLI flags
-		id := c.String("id")
-		name := c.String("name")
-		desc := c.String("desc")
-		nicknames := c.StringSlice("nickname")
-		tags := c.StringSlice("tag")
-		locs := c.StringSlice("location")
-
-		if id != "" {
-			f.ID = id
-		}
-
-		if name != "" {
-			f.Name = name
-		}
-
-		if desc != "" {
-			f.Desc = desc
-		}
-
-		if len(nicknames) > 0 {
-			f.Nicknames = nicknames
-		}
-
-		if len(tags) > 0 {
-			f.Tags = tags
-		}
-
-		if len(locs) > 0 {
-			f.Locations = locs
-		}
-
-		if err := f.Validate(); err != nil {
+		f, err := parseFriend(c, info)
+		if err != nil {
 			return err
 		}
 
@@ -152,8 +98,37 @@ var AddCommand = &cli.Command{
 		appCtx := jctx.FromCtx(ctx)
 
 		err = appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
-			j.AddFriend(f)
-			return nil
+			f, err = j.AddFriend(f)
+			if err == nil {
+				return nil
+			}
+
+			if !errors.Is(err, journal.ErrDuplicateFriend) || !interactive {
+				return err
+			}
+
+			// Interactive mode: let user fix the input
+			log.Warnf("Friend with ID %q already exists. Please change the name or set a different $id:", f.ID)
+
+			for {
+				info = promptFriendInfo(info)
+
+				f, err = parseFriend(c, info)
+				if err != nil {
+					return err
+				}
+
+				f, err = j.AddFriend(f)
+				if err == nil {
+					return nil
+				}
+
+				if !errors.Is(err, journal.ErrDuplicateFriend) {
+					return err
+				}
+
+				log.Warnf("Friend with ID %q already exists. Please change the name or set a different $id:", f.ID)
+			}
 		})
 		if err != nil {
 			return err
@@ -164,4 +139,69 @@ var AddCommand = &cli.Command{
 
 		return appCtx.Printer.Print(f)
 	},
+}
+
+func promptFriendInfo(prefill string) string {
+	opts := tui.EditorOptions{
+		Title:      "Add a new friend information:",
+		SyntaxHint: lang.FormatPersonInfo,
+	}
+
+	inputForm := tui.NewEditorForm(opts)
+
+	if prefill != "" {
+		inputForm.Textarea.SetValue(prefill)
+	}
+
+	teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
+
+	if _, err := teaUI.Run(); err != nil {
+		log.Errorf("uh oh: %v", err)
+		return ""
+	}
+
+	return inputForm.Textarea.Value()
+}
+
+func parseFriend(c *cli.Context, info string) (friend.Person, error) {
+	var f friend.Person
+	var err error
+
+	if info != "" {
+		f, err = lang.ExtractPerson(info)
+
+		if err != nil && !errors.Is(err, lang.ErrNoInfo) {
+			return friend.Person{}, err
+		}
+	}
+
+	if id := c.String("id"); id != "" {
+		f.ID = id
+	}
+
+	if name := c.String("name"); name != "" {
+		f.Name = name
+	}
+
+	if desc := c.String("desc"); desc != "" {
+		f.Desc = desc
+	}
+
+	if nicknames := c.StringSlice("nickname"); len(nicknames) > 0 {
+		f.Nicknames = nicknames
+	}
+
+	if tags := c.StringSlice("tag"); len(tags) > 0 {
+		f.Tags = tags
+	}
+
+	if locs := c.StringSlice("location"); len(locs) > 0 {
+		f.Locations = locs
+	}
+
+	if err := f.Validate(); err != nil {
+		return friend.Person{}, err
+	}
+
+	return f, nil
 }

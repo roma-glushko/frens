@@ -17,6 +17,7 @@ package wishlist
 import (
 	"errors"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	jctx "github.com/roma-glushko/frens/internal/context"
@@ -24,6 +25,7 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/reminder"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/roma-glushko/frens/internal/wishlist"
 	"github.com/urfave/cli/v2"
@@ -160,8 +162,15 @@ var AddCommand = &cli.Command{
 				return err
 			}
 
-			log.Info(" Wishlist item added")
+			log.Info(" ✔ Wishlist item added")
 			log.Info("==> Wishlist Item Information\n")
+
+			now := time.Now()
+
+			result := reminder.CreateFromAdd(j, info, friend.LinkedEntityWishlist, w.ID, p.ID, now, w.Tags)
+			if err := appCtx.Printer.Print(result); err != nil {
+				return err
+			}
 
 			return appCtx.Printer.Print(w)
 		})

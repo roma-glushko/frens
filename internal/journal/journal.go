@@ -37,6 +37,13 @@ import (
 
 var ErrEventNotFound = errors.New("event not found")
 
+// LinkedEntity holds the resolved entity linked to a reminder
+type LinkedEntity struct {
+	Event        *friend.Event
+	Date         *friend.Date
+	WishlistItem *friend.WishlistItem
+}
+
 type Stats struct {
 	Friends    int `json:"friends"`
 	Locations  int `json:"locations"`
@@ -51,6 +58,7 @@ type Journal struct {
 	Locations  friend.Locations
 	Activities []*friend.Event
 	Notes      []*friend.Event
+	Reminders  []*friend.Reminder
 
 	dirty           bool
 	matcherMu       sync.Mutex
@@ -91,7 +99,9 @@ func (j *Journal) Path() string {
 	return j.DirPath
 }
 
-func (j *Journal) AddFriend(f friend.Person) {
+var ErrDuplicateFriend = errors.New("friend with this ID already exists")
+
+func (j *Journal) AddFriend(f friend.Person) (friend.Person, error) {
 	if f.ID == "" {
 		f.ID = slug.Make(f.Name)
 	}
@@ -100,11 +110,16 @@ func (j *Journal) AddFriend(f friend.Person) {
 		f.CreatedAt = time.Now()
 	}
 
-	// TODO: check for duplicated IDs
-	// TODO: check for duplicated aliases
+	for _, existing := range j.Friends {
+		if existing.ID == f.ID {
+			return friend.Person{}, fmt.Errorf("%w: %s", ErrDuplicateFriend, f.ID)
+		}
+	}
 
 	j.Friends = append(j.Friends, &f)
 	j.SetDirty(true)
+
+	return f, nil
 }
 
 func (j *Journal) GetFriend(q string) (friend.Person, error) {
@@ -228,7 +243,7 @@ func (j *Journal) UpdateFriend(o, n friend.Person) {
 	// TODO: update friend references in activities and notes
 
 	// If the friend was not found, add it as a new one
-	j.AddFriend(n)
+	_, _ = j.AddFriend(n)
 }
 
 func (j *Journal) RemoveFriends(toRemove []friend.Person) {
@@ -679,21 +694,33 @@ func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
 	}
 }
 
-func (j *Journal) AddFriendDate(fID string, d friend.Date) (friend.Date, error) {
-	f, err := j.GetFriend(fID)
-	if err != nil {
-		return friend.Date{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
+func (j *Journal) AddFriendDate(fID string, d friend.Date) (friend.Date, friend.Person, error) {
+	fp := j.getFriendPtr(fID)
+	if fp == nil {
+		return friend.Date{}, friend.Person{}, fmt.Errorf("friend %s not found", fID)
 	}
 
 	if d.ID == "" {
 		d.ID = ksuid.New().String()
 	}
 
-	f.Dates = append(f.Dates, &d)
+	fp.Dates = append(fp.Dates, &d)
 
 	j.SetDirty(true)
 
-	return d, nil
+	return d, *fp, nil
+}
+
+// getFriendPtr returns a pointer to the friend in the journal's Friends slice.
+// This allows direct mutation (e.g. appending dates) that persists through save.
+func (j *Journal) getFriendPtr(q string) *friend.Person {
+	for _, f := range j.Friends {
+		if f.ID == q {
+			return f
+		}
+	}
+
+	return nil
 }
 
 func (j *Journal) UpdateFriendDate(o, n friend.Date) (friend.Date, error) {
@@ -1064,6 +1091,252 @@ func (j *Journal) RemoveFriendContacts(toRemove []friend.Contact) error {
 	}
 
 	return nil
+}
+
+// Reminder methods
+
+func (j *Journal) AddReminder(r friend.Reminder) (friend.Reminder, error) {
+	if err := r.Validate(); err != nil {
+		return friend.Reminder{}, fmt.Errorf("invalid reminder: %w", err)
+	}
+
+	if r.ID == "" {
+		r.ID = ksuid.New().String()
+	}
+
+	if r.CreatedAt.IsZero() {
+		r.CreatedAt = time.Now()
+	}
+
+	if r.State == "" {
+		r.State = friend.ReminderStatePending
+	}
+
+	tags := lang.ExtractTags(r.Desc)
+
+	if len(tags) > 0 {
+		j.AddTags(tags)
+		tag.Add(&r, tags)
+	}
+
+	j.Reminders = append(j.Reminders, &r)
+	j.SetDirty(true)
+
+	return r, nil
+}
+
+func (j *Journal) GetReminder(id string) (friend.Reminder, error) {
+	for _, r := range j.Reminders {
+		if r.ID == id {
+			return *r, nil
+		}
+	}
+
+	return friend.Reminder{}, fmt.Errorf("reminder with ID %s not found", id)
+}
+
+func (j *Journal) UpdateReminder(o, n friend.Reminder) (friend.Reminder, error) {
+	n.ID = o.ID
+	n.CreatedAt = o.CreatedAt
+
+	for i, r := range j.Reminders {
+		if r.ID == o.ID {
+			j.Reminders[i] = &n
+			j.SetDirty(true)
+
+			return n, nil
+		}
+	}
+
+	return friend.Reminder{}, fmt.Errorf("reminder with ID %s not found", o.ID)
+}
+
+func (j *Journal) ListReminders(q friend.ListReminderQuery) []friend.Reminder { //nolint:cyclop
+	reminders := make([]friend.Reminder, 0, 10)
+
+	for _, r := range j.Reminders {
+		if q.Keyword != "" &&
+			!strings.Contains(strings.ToLower(r.Desc), strings.ToLower(q.Keyword)) {
+			continue
+		}
+
+		if q.LinkedEntityType != "" && r.LinkedEntityType != q.LinkedEntityType {
+			continue
+		}
+
+		if q.LinkedEntityID != "" && r.LinkedEntityID != q.LinkedEntityID {
+			continue
+		}
+
+		if q.FriendID != "" && r.FriendID != q.FriendID {
+			continue
+		}
+
+		if q.State != "" && r.State != q.State {
+			continue
+		}
+
+		if len(q.Tags) > 0 && !tag.HasTags(r, q.Tags) {
+			continue
+		}
+
+		if !q.DueBefore.IsZero() && r.TriggerAt.After(q.DueBefore) {
+			continue
+		}
+
+		if !q.DueAfter.IsZero() && r.TriggerAt.Before(q.DueAfter) {
+			continue
+		}
+
+		reminders = append(reminders, *r)
+	}
+
+	if len(reminders) == 0 {
+		return reminders
+	}
+
+	sort.SliceStable(reminders, func(i, k int) bool {
+		switch q.SortBy { //nolint:exhaustive
+		case friend.SortAlpha:
+			if q.SortOrder == friend.SortOrderReverse {
+				return strings.ToLower(reminders[i].Desc) > strings.ToLower(reminders[k].Desc)
+			}
+
+			return strings.ToLower(reminders[i].Desc) < strings.ToLower(reminders[k].Desc)
+		case friend.SortRecency:
+			if q.SortOrder == friend.SortOrderReverse {
+				return reminders[i].TriggerAt.Before(reminders[k].TriggerAt)
+			}
+
+			return reminders[i].TriggerAt.After(reminders[k].TriggerAt)
+		default:
+			// Default: sort by trigger date ascending
+			return reminders[i].TriggerAt.Before(reminders[k].TriggerAt)
+		}
+	})
+
+	return reminders
+}
+
+func (j *Journal) RemoveReminders(toRemove []friend.Reminder) error {
+	for _, rem := range toRemove {
+		found := false
+
+		for i, r := range j.Reminders {
+			if r.ID == rem.ID {
+				j.Reminders = append(j.Reminders[:i], j.Reminders[i+1:]...)
+				found = true
+
+				j.SetDirty(true)
+
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("reminder with ID %s not found", rem.ID)
+		}
+	}
+
+	return nil
+}
+
+func (j *Journal) GetDueReminders(now time.Time) []friend.Reminder {
+	due := make([]friend.Reminder, 0)
+
+	for _, r := range j.Reminders {
+		if r.IsDue(now) {
+			due = append(due, *r)
+		}
+	}
+
+	return due
+}
+
+func (j *Journal) GetUpcomingReminders(now time.Time, days int) []friend.Reminder {
+	upcoming := make([]friend.Reminder, 0)
+	until := now.AddDate(0, 0, days)
+
+	for _, r := range j.Reminders {
+		if r.State == friend.ReminderStatePending &&
+			r.TriggerAt.After(now) &&
+			!r.TriggerAt.After(until) {
+			upcoming = append(upcoming, *r)
+		}
+	}
+
+	// Sort by trigger date
+	sort.SliceStable(upcoming, func(i, k int) bool {
+		return upcoming[i].TriggerAt.Before(upcoming[k].TriggerAt)
+	})
+
+	return upcoming
+}
+
+// ResolveLinkedEntity resolves the entity linked to a reminder and its associated friend
+func (j *Journal) ResolveLinkedEntity( //nolint:cyclop
+	r *friend.Reminder,
+) (*LinkedEntity, *friend.Person, error) {
+	linkedEntity := &LinkedEntity{}
+
+	var friendRef *friend.Person
+
+	switch r.LinkedEntityType {
+	case friend.LinkedEntityDate:
+		date, err := j.GetFriendDate(r.LinkedEntityID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		linkedEntity.Date = &date
+
+		if r.FriendID != "" {
+			if f, err := j.GetFriend(r.FriendID); err == nil {
+				friendRef = &f
+			}
+		}
+
+	case friend.LinkedEntityWishlist:
+		item, err := j.GetFriendWishlistItem(r.LinkedEntityID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		linkedEntity.WishlistItem = &item
+
+		if r.FriendID != "" {
+			if f, err := j.GetFriend(r.FriendID); err == nil {
+				friendRef = &f
+			}
+		}
+
+	case friend.LinkedEntityActivity:
+		event, err := j.GetEvent(friend.EventTypeActivity, r.LinkedEntityID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		linkedEntity.Event = &event
+
+		if len(event.FriendIDs) > 0 {
+			if f, err := j.GetFriend(event.FriendIDs[0]); err == nil {
+				friendRef = &f
+			}
+		}
+
+	case friend.LinkedEntityNote:
+		event, err := j.GetEvent(friend.EventTypeNote, r.LinkedEntityID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		linkedEntity.Event = &event
+
+	default:
+		return nil, nil, fmt.Errorf("unknown linked entity type: %s", r.LinkedEntityType)
+	}
+
+	return linkedEntity, friendRef, nil
 }
 
 func (j *Journal) Stats() Stats {

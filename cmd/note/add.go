@@ -26,6 +26,7 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/reminder"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -104,6 +105,11 @@ var AddCommand = &cli.Command{
 
 			log.Success("Note added")
 			log.Header("Note Information")
+
+			result := reminder.CreateFromAdd(j, info, friend.LinkedEntityNote, e.ID, "", e.Date, e.Tags)
+			if err := appCtx.Printer.Print(result); err != nil {
+				return err
+			}
 
 			return appCtx.Printer.Print(e)
 		})

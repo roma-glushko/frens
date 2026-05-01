@@ -39,6 +39,7 @@ require (
 	github.com/hablullah/go-hijri v1.0.2 // indirect
 	github.com/hablullah/go-juliandays v1.0.0 // indirect
 	github.com/jalaali/go-jalaali v0.0.0-20210801064154-80525e88d958 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect

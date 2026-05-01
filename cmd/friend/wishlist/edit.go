@@ -17,13 +17,16 @@ package wishlist
 import (
 	"errors"
 	"strings"
+	"time"
 
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/reminder"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -76,12 +79,14 @@ var EditCommand = &cli.Command{
 				return err
 			}
 
+			existingReminders := reminder.FindForEntity(j, wOld.ID)
+
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
 				Title:      "Edit wishlist item (" + wOld.ID + "):",
 				SyntaxHint: lang.FormatWishlistItem,
 			})
 
-			inputForm.Textarea.SetValue(lang.RenderWishlistItem(wOld))
+			inputForm.Textarea.SetValue(reminder.RenderForEditor(lang.RenderWishlistItem(wOld), existingReminders))
 
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
 
@@ -135,6 +140,11 @@ var EditCommand = &cli.Command{
 
 			log.Info(" Wishlist item updated")
 			log.Info("==> Wishlist Item Information\n")
+
+			result := reminder.SyncFromEdit(j, infoTxt, friend.LinkedEntityWishlist, wNew.ID, wOld.Person, time.Now(), wNew.Tags, existingReminders)
+			if err := appCtx.Printer.Print(result); err != nil {
+				return err
+			}
 
 			return appCtx.Printer.Print(wNew)
 		})

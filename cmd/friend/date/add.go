@@ -17,6 +17,7 @@ package date
 import (
 	"errors"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/roma-glushko/frens/internal/tui"
@@ -27,6 +28,7 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/reminder"
 	"github.com/urfave/cli/v2"
 )
 
@@ -140,13 +142,21 @@ var AddCommand = &cli.Command{
 				return err
 			}
 
-			d, err = j.AddFriendDate(p.ID, d)
+			d, p, err = j.AddFriendDate(p.ID, d)
 			if err != nil {
 				return err
 			}
 
 			log.Info(" ✔ Date added")
-			log.Infof("  %s: %s", d.DateExpr, d.Desc) // TODO: improve this output
+			log.Infof("  %s: %s", d.DateExpr, d.Desc)
+
+			now := time.Now()
+			baseDate := lang.ExtractDate(d.DateExpr, now)
+
+			result := reminder.CreateFromAdd(j, info, friend.LinkedEntityDate, d.ID, p.ID, baseDate, d.Tags)
+			if err := appCtx.Printer.Print(result); err != nil {
+				return err
+			}
 
 			return nil
 		})

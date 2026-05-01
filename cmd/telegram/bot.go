@@ -305,9 +305,7 @@ var BotCommand = &cli.Command{
 			ctx := context.Background()
 
 			return s.Tx(ctx, func(j *journal.Journal) error {
-				j.AddFriend(f)
-
-				if err != nil {
+				if _, err := j.AddFriend(f); err != nil {
 					return c.Send(fmt.Sprintf("failed to add friend: %v", err))
 				}
 

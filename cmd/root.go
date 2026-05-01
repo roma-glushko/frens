@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/roma-glushko/frens/internal/config"
 	"github.com/roma-glushko/frens/internal/store/file"
 
@@ -29,6 +30,7 @@ import (
 	"github.com/roma-glushko/frens/cmd/journal"
 	"github.com/roma-glushko/frens/cmd/location"
 	"github.com/roma-glushko/frens/cmd/note"
+	"github.com/roma-glushko/frens/cmd/reminder"
 	jctx "github.com/roma-glushko/frens/internal/context"
 	"github.com/roma-glushko/frens/internal/log"
 	"github.com/roma-glushko/frens/internal/version"
@@ -109,6 +111,12 @@ func NewApp() cli.App {
 				Aliases: []string{"c"},
 				Usage:   "use compact output (one line per entity)",
 			},
+			&cli.StringFlag{
+				Name:    "env-file",
+				Aliases: []string{"e"},
+				Value:   ".env",
+				Usage:   "path to the dotenv file",
+			},
 		},
 		Before: func(c *cli.Context) error {
 			ctx := c.Context
@@ -116,6 +124,9 @@ func NewApp() cli.App {
 			quietLevel := c.Bool("quiet")
 
 			InitLogging(debugLevel, quietLevel)
+
+			// Load dotenv file (optional, no error if missing)
+			_ = godotenv.Load(c.String("env-file"))
 
 			jDir, err := config.Dir(c.String("journal"))
 			if err != nil {
@@ -147,6 +158,7 @@ func NewApp() cli.App {
 			location.Commands,
 			note.Commands,
 			activity.Commands,
+			reminder.Commands,
 			telegram.Commands,
 			ServeCommand,
 			ZenCommand,

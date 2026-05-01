@@ -91,9 +91,16 @@ func (f DateTextFormatter) formatRegular(dt *friend.Date) string {
 }
 
 func (f DateTextFormatter) FormatList(ctx log.FormatterContext, el any) (string, error) {
-	dates, ok := el.([]*friend.Date)
+	var dates []*friend.Date
 
-	if !ok {
+	switch v := el.(type) {
+	case []*friend.Date:
+		dates = v
+	case []friend.Date:
+		for i := range v {
+			dates = append(dates, &v[i])
+		}
+	default:
 		return "", ErrInvalidEntity
 	}
 

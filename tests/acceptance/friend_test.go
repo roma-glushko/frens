@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/roma-glushko/frens/cmd"
+	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -181,6 +182,79 @@ func TestFriend_List_WithSortAndReverse(t *testing.T) {
 		"friend", "list",
 		"--sort", "alpha",
 		"--reverse",
+	})
+	require.NoError(t, err)
+}
+
+func TestFriend_Add_DuplicateID_Rejected(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add a friend
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend $id:john_doe",
+	})
+	require.NoError(t, err)
+
+	// Try adding another friend with the same ID
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"Johnny Doe :: A different person $id:john_doe",
+	})
+	require.Error(t, err)
+	require.ErrorIs(t, err, journal.ErrDuplicateFriend)
+}
+
+func TestFriend_Add_DuplicateSlug_Rejected(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	// Add a friend (auto-slug: "john-doe")
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A good friend",
+	})
+	require.NoError(t, err)
+
+	// Try adding another friend with the same name (same auto-slug)
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: A different description",
+	})
+	require.Error(t, err)
+	require.ErrorIs(t, err, journal.ErrDuplicateFriend)
+}
+
+func TestFriend_Add_SameName_DifferentID_OK(t *testing.T) {
+	ctx := t.Context()
+	app := cmd.NewApp()
+
+	jDir, err := InitJournal(t, app)
+	require.NoError(t, err)
+
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: From work $id:john_doe_work",
+	})
+	require.NoError(t, err)
+
+	// Same name but different explicit ID should succeed
+	err = app.RunContext(ctx, []string{
+		"frens", "-j", jDir,
+		"friend", "add",
+		"John Doe :: From school $id:john_doe_school",
 	})
 	require.NoError(t, err)
 }
