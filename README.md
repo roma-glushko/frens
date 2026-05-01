@@ -8,6 +8,8 @@
     </a>
 </div>
 
+<hr/>
+
 A friendship management & journaling application for introverts and not only.
 
 `frens` is a command-line application that helps you to keep track of your relationships 
