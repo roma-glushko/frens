@@ -441,7 +441,7 @@ func (f DateMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (stri
 }
 
 func (f DateMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (string, error) {
-	dates, ok := el.([]*friend.Date)
+	dates, ok := el.([]friend.Date)
 	if !ok {
 		return "", ErrInvalidEntity
 	}
