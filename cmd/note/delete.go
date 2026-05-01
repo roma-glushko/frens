@@ -66,6 +66,7 @@ var DeleteCommand = &cli.Command{
 					}
 
 					log.Errorf("Failed to get note %s: %v", actID, err)
+
 					return err
 				}
 

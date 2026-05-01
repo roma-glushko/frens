@@ -118,10 +118,10 @@ var BotCommand = &cli.Command{
 				var sb strings.Builder
 
 				sb.WriteString("Frens Stats:\n")
-				sb.WriteString(fmt.Sprintf("Friends: %d\n", stats.Friends))
-				sb.WriteString(fmt.Sprintf("Locations: %d\n", stats.Locations))
-				sb.WriteString(fmt.Sprintf("Notes: %d\n", stats.Notes))
-				sb.WriteString(fmt.Sprintf("Activities: %d\n", stats.Activities))
+				fmt.Fprintf(&sb, "Friends: %d\n", stats.Friends)
+				fmt.Fprintf(&sb, "Locations: %d\n", stats.Locations)
+				fmt.Fprintf(&sb, "Notes: %d\n", stats.Notes)
+				fmt.Fprintf(&sb, "Activities: %d\n", stats.Activities)
 
 				return c.Send(sb.String())
 			})
@@ -149,20 +149,18 @@ var BotCommand = &cli.Command{
 				sb.WriteString("Here are your friends:\n")
 
 				for _, f := range friends {
-					sb.WriteString(fmt.Sprintf("👤 %s\n", f.String()))
+					fmt.Fprintf(&sb, "👤 %s\n", f.String())
 
 					if len(f.Tags) > 0 {
-						sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(f.Tags, ", ")))
+						fmt.Fprintf(&sb, "  Tags: %s\n", strings.Join(f.Tags, ", "))
 					}
 
 					if len(f.Locations) > 0 {
-						sb.WriteString(
-							fmt.Sprintf("  Locations: %s\n", strings.Join(f.Locations, ", ")),
-						)
+						fmt.Fprintf(&sb, "  Locations: %s\n", strings.Join(f.Locations, ", "))
 					}
 
 					if f.Desc != "" {
-						sb.WriteString(fmt.Sprintf("  Description: %s\n", f.Desc))
+						fmt.Fprintf(&sb, "  Description: %s\n", f.Desc)
 					}
 
 					sb.WriteString("\n")
@@ -194,10 +192,10 @@ var BotCommand = &cli.Command{
 				sb.WriteString("Here are your locations:\n")
 
 				for _, l := range locs {
-					sb.WriteString(fmt.Sprintf("📍 %s\n", l.String()))
+					fmt.Fprintf(&sb, "📍 %s\n", l.String())
 
 					if len(l.Tags) > 0 {
-						sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(l.Tags, ", ")))
+						fmt.Fprintf(&sb, "  Tags: %s\n", strings.Join(l.Tags, ", "))
 					}
 
 					sb.WriteString("\n")
@@ -237,7 +235,7 @@ var BotCommand = &cli.Command{
 					sb.WriteString(nt.Desc + "\n")
 
 					if len(nt.Tags) > 0 {
-						sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
+						fmt.Fprintf(&sb, "  Tags: %s\n", strings.Join(nt.Tags, ", "))
 					}
 
 					sb.WriteString("\n")
@@ -277,7 +275,7 @@ var BotCommand = &cli.Command{
 					sb.WriteString(nt.Desc + "\n")
 
 					if len(nt.Tags) > 0 {
-						sb.WriteString(fmt.Sprintf("  Tags: %s\n", strings.Join(nt.Tags, ", ")))
+						fmt.Fprintf(&sb, "  Tags: %s\n", strings.Join(nt.Tags, ", "))
 					}
 
 					sb.WriteString("\n")
@@ -455,7 +453,6 @@ var BotCommand = &cli.Command{
 			// Assume person is selected; in real bot use DB lookup
 			// personID := "person_123"
 			// editMgr.BeginEdit(c.Sender().ID, personID)
-
 			markup := &tele.ReplyMarkup{}
 			btnName := markup.Data("✏️ Name", "edit_name")
 			btnDesc := markup.Data("📝 Desc", "edit_desc")

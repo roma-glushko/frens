@@ -73,7 +73,7 @@ func (f ContactTextFormatter) formatRegular(c friend.Contact) string {
 	sb.WriteString(": " + c.Value)
 
 	if c.ID != "" {
-		sb.WriteString(fmt.Sprintf(" (%s)", idStyle.Render(c.ID)))
+		fmt.Fprintf(&sb, " (%s)", idStyle.Render(c.ID))
 	}
 
 	sb.WriteString("\n")

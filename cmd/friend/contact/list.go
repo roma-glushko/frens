@@ -56,6 +56,7 @@ var ListCommand = &cli.Command{
 		return s.Tx(ctx, func(j *journal.Journal) error {
 			// Parse contact types
 			typeStrs := c.StringSlice("type")
+
 			types := make([]friend.ContactType, 0, len(typeStrs))
 			for _, t := range typeStrs {
 				types = append(types, friend.ParseContactType(t))

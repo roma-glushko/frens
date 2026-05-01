@@ -79,7 +79,7 @@ func (f EventTextFormatter) formatRegular(e friend.Event) string {
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("%s (%s)\n", labelStyle.Render(date), idStyle.Render(e.ID)))
+	fmt.Fprintf(&sb, "%s (%s)\n", labelStyle.Render(date), idStyle.Render(e.ID))
 
 	if len(e.Tags) > 0 || len(e.LocationIDs) > 0 {
 		sb.WriteString("  ")

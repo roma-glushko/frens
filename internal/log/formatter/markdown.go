@@ -191,14 +191,14 @@ func (p PersonMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (str
 	sb.WriteString("|---|---|---|---|---|---|\n")
 
 	for _, person := range persons {
-		sb.WriteString(fmt.Sprintf("| `%s` | %s | %s | %s | %d | %d |\n",
+		fmt.Fprintf(&sb, "| `%s` | %s | %s | %s | %d | %d |\n",
 			person.ID,
 			person.String(),
 			renderTagsMd(person.Tags),
 			strings.Join(person.Locations, ", "),
 			person.Notes,
 			person.Activities,
-		))
+		)
 	}
 
 	return sb.String(), nil
@@ -226,15 +226,15 @@ func (f ContactMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (s
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("## %s: %s\n\n", c.Type, c.Value))
-	sb.WriteString(fmt.Sprintf("- **ID:** `%s`\n", c.ID))
+	fmt.Fprintf(&sb, "## %s: %s\n\n", c.Type, c.Value)
+	fmt.Fprintf(&sb, "- **ID:** `%s`\n", c.ID)
 
 	if c.Person != "" {
-		sb.WriteString(fmt.Sprintf("- **Person:** %s\n", c.Person))
+		fmt.Fprintf(&sb, "- **Person:** %s\n", c.Person)
 	}
 
 	if len(c.Tags) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Tags:** %s\n", renderTagsMd(c.Tags)))
+		fmt.Fprintf(&sb, "- **Tags:** %s\n", renderTagsMd(c.Tags))
 	}
 
 	return sb.String(), nil
@@ -252,13 +252,13 @@ func (f ContactMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (st
 	sb.WriteString("|---|---|---|---|---|\n")
 
 	for _, c := range contacts {
-		sb.WriteString(fmt.Sprintf("| `%s` | %s | %s | %s | %s |\n",
+		fmt.Fprintf(&sb, "| `%s` | %s | %s | %s | %s |\n",
 			c.ID,
 			c.Person,
 			c.Type,
 			c.Value,
 			renderTagsMd(c.Tags),
-		))
+		)
 	}
 
 	return sb.String(), nil
@@ -282,24 +282,24 @@ func (f EventMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (str
 
 	date := event.Date.Format("Mon Jan 2, 2006 15:04 MST")
 
-	sb.WriteString(fmt.Sprintf("## %s\n\n", date))
-	sb.WriteString(fmt.Sprintf("- **ID:** `%s`\n", event.ID))
-	sb.WriteString(fmt.Sprintf("- **Type:** %s\n", event.Type))
+	fmt.Fprintf(&sb, "## %s\n\n", date)
+	fmt.Fprintf(&sb, "- **ID:** `%s`\n", event.ID)
+	fmt.Fprintf(&sb, "- **Type:** %s\n", event.Type)
 
 	if len(event.FriendIDs) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Friends:** %s\n", strings.Join(event.FriendIDs, ", ")))
+		fmt.Fprintf(&sb, "- **Friends:** %s\n", strings.Join(event.FriendIDs, ", "))
 	}
 
 	if len(event.LocationIDs) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Locations:** %s\n", strings.Join(event.LocationIDs, ", ")))
+		fmt.Fprintf(&sb, "- **Locations:** %s\n", strings.Join(event.LocationIDs, ", "))
 	}
 
 	if len(event.Tags) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Tags:** %s\n", renderTagsMd(event.Tags)))
+		fmt.Fprintf(&sb, "- **Tags:** %s\n", renderTagsMd(event.Tags))
 	}
 
 	if event.Desc != "" {
-		sb.WriteString(fmt.Sprintf("\n%s\n", event.Desc))
+		fmt.Fprintf(&sb, "\n%s\n", event.Desc)
 	}
 
 	return sb.String(), nil
@@ -318,14 +318,14 @@ func (f EventMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (stri
 
 	for _, e := range events {
 		desc := CutStr(e.Desc, 50)
-		sb.WriteString(fmt.Sprintf("| `%s` | %s | %s | %s | %s | %s |\n",
+		fmt.Fprintf(&sb, "| `%s` | %s | %s | %s | %s | %s |\n",
 			e.ID,
 			e.Date.Format("2006-01-02 15:04"),
 			desc,
 			strings.Join(e.FriendIDs, ", "),
 			renderTagsMd(e.Tags),
 			strings.Join(e.LocationIDs, ", "),
-		))
+		)
 	}
 
 	return sb.String(), nil
@@ -347,27 +347,27 @@ func (l LocationMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("## %s\n\n", location.String()))
-	sb.WriteString(fmt.Sprintf("- **ID:** `%s`\n", location.ID))
+	fmt.Fprintf(&sb, "## %s\n\n", location.String())
+	fmt.Fprintf(&sb, "- **ID:** `%s`\n", location.ID)
 
 	if location.Country != "" {
-		sb.WriteString(fmt.Sprintf("- **Country:** %s\n", location.Country))
+		fmt.Fprintf(&sb, "- **Country:** %s\n", location.Country)
 	}
 
 	if len(location.Aliases) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Aliases:** %s\n", strings.Join(location.Aliases, ", ")))
+		fmt.Fprintf(&sb, "- **Aliases:** %s\n", strings.Join(location.Aliases, ", "))
 	}
 
 	if len(location.Tags) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Tags:** %s\n", renderTagsMd(location.Tags)))
+		fmt.Fprintf(&sb, "- **Tags:** %s\n", renderTagsMd(location.Tags))
 	}
 
 	if location.Lat != nil && location.Lng != nil {
-		sb.WriteString(fmt.Sprintf("- **Coordinates:** %.4f, %.4f\n", *location.Lat, *location.Lng))
+		fmt.Fprintf(&sb, "- **Coordinates:** %.4f, %.4f\n", *location.Lat, *location.Lng)
 	}
 
 	if location.Desc != "" {
-		sb.WriteString(fmt.Sprintf("\n%s\n", location.Desc))
+		fmt.Fprintf(&sb, "\n%s\n", location.Desc)
 	}
 
 	return sb.String(), nil
@@ -385,12 +385,12 @@ func (l LocationMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (s
 	sb.WriteString("|---|---|---|---|\n")
 
 	for _, loc := range locations {
-		sb.WriteString(fmt.Sprintf("| `%s` | %s | %s | %s |\n",
+		fmt.Fprintf(&sb, "| `%s` | %s | %s | %s |\n",
 			loc.ID,
 			loc.String(),
 			loc.Country,
 			renderTagsMd(loc.Tags),
-		))
+		)
 	}
 
 	return sb.String(), nil
@@ -418,23 +418,23 @@ func (f DateMarkdownFormatter) FormatSingle(_ log.FormatterContext, e any) (stri
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("## %s\n\n", dt.DateExpr))
-	sb.WriteString(fmt.Sprintf("- **ID:** `%s`\n", dt.ID))
+	fmt.Fprintf(&sb, "## %s\n\n", dt.DateExpr)
+	fmt.Fprintf(&sb, "- **ID:** `%s`\n", dt.ID)
 
 	if dt.Person != "" {
-		sb.WriteString(fmt.Sprintf("- **Person:** %s\n", dt.Person))
+		fmt.Fprintf(&sb, "- **Person:** %s\n", dt.Person)
 	}
 
 	if dt.Calendar != "" {
-		sb.WriteString(fmt.Sprintf("- **Calendar:** %s\n", dt.Calendar))
+		fmt.Fprintf(&sb, "- **Calendar:** %s\n", dt.Calendar)
 	}
 
 	if len(dt.Tags) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Tags:** %s\n", renderTagsMd(dt.Tags)))
+		fmt.Fprintf(&sb, "- **Tags:** %s\n", renderTagsMd(dt.Tags))
 	}
 
 	if dt.Desc != "" {
-		sb.WriteString(fmt.Sprintf("\n%s\n", dt.Desc))
+		fmt.Fprintf(&sb, "\n%s\n", dt.Desc)
 	}
 
 	return sb.String(), nil
@@ -452,12 +452,12 @@ func (f DateMarkdownFormatter) FormatList(_ log.FormatterContext, el any) (strin
 	sb.WriteString("|---|---|---|---|\n")
 
 	for _, dt := range dates {
-		sb.WriteString(fmt.Sprintf("| `%s` | %s | %s | %s |\n",
+		fmt.Fprintf(&sb, "| `%s` | %s | %s | %s |\n",
 			dt.ID,
 			dt.Person,
 			dt.DateExpr,
 			renderTagsMd(dt.Tags),
-		))
+		)
 	}
 
 	return sb.String(), nil
@@ -490,23 +490,23 @@ func (f WishlistItemMarkdownFormatter) FormatSingle(_ log.FormatterContext, e an
 		title = w.Link
 	}
 
-	sb.WriteString(fmt.Sprintf("## %s\n\n", title))
-	sb.WriteString(fmt.Sprintf("- **ID:** `%s`\n", w.ID))
+	fmt.Fprintf(&sb, "## %s\n\n", title)
+	fmt.Fprintf(&sb, "- **ID:** `%s`\n", w.ID)
 
 	if w.Person != "" {
-		sb.WriteString(fmt.Sprintf("- **Person:** %s\n", w.Person))
+		fmt.Fprintf(&sb, "- **Person:** %s\n", w.Person)
 	}
 
 	if w.Link != "" {
-		sb.WriteString(fmt.Sprintf("- **Link:** [%s](%s)\n", w.Link, w.Link))
+		fmt.Fprintf(&sb, "- **Link:** [%s](%s)\n", w.Link, w.Link)
 	}
 
 	if w.Price != "" {
-		sb.WriteString(fmt.Sprintf("- **Price:** %s\n", w.Price))
+		fmt.Fprintf(&sb, "- **Price:** %s\n", w.Price)
 	}
 
 	if len(w.Tags) > 0 {
-		sb.WriteString(fmt.Sprintf("- **Tags:** %s\n", renderTagsMd(w.Tags)))
+		fmt.Fprintf(&sb, "- **Tags:** %s\n", renderTagsMd(w.Tags))
 	}
 
 	return sb.String(), nil
@@ -529,13 +529,13 @@ func (f WishlistItemMarkdownFormatter) FormatList(_ log.FormatterContext, el any
 			desc = CutStr(item.Link, 40)
 		}
 
-		sb.WriteString(fmt.Sprintf("| `%s` | %s | %s | %s | %s |\n",
+		fmt.Fprintf(&sb, "| `%s` | %s | %s | %s | %s |\n",
 			item.ID,
 			item.Person,
 			desc,
 			item.Price,
 			renderTagsMd(item.Tags),
-		))
+		)
 	}
 
 	return sb.String(), nil

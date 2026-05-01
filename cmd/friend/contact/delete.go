@@ -74,6 +74,7 @@ var DeleteCommand = &cli.Command{
 			}
 
 			fmt.Println("\n  You're about to permanently delete the " + contactWord + ".")
+
 			if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
 				fmt.Println("\n  Deletion canceled.")
 				return nil

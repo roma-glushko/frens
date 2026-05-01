@@ -74,10 +74,12 @@ var DeleteCommand = &cli.Command{
 				if desc == "" {
 					desc = item.Link
 				}
+
 				fmt.Printf("   %s: %s\n", item.ID, desc)
 			}
 
 			fmt.Println("\n  You're about to permanently delete the wishlist " + itemWord + ".")
+
 			if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
 				fmt.Println("\n  Deletion canceled.")
 				return nil

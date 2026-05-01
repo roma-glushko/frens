@@ -47,6 +47,7 @@ Examples:
 		if s.Exist(ctx) {
 			// TODO: check if interactive mode is enabled
 			log.Infof("A journal already exists at %s\n", jDir)
+
 			if tui.ConfirmAction(log.WarnPrompt("Do you want to overwrite the existing journal?")) {
 				log.Progress("Overwriting the existing journal...")
 			} else {

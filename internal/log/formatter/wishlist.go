@@ -82,7 +82,7 @@ func (f WishlistItemTextFormatter) formatCompact(w friend.WishlistItem) string {
 func (f WishlistItemTextFormatter) formatRegular(w friend.WishlistItem) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("[%s]", idStyle.Render(w.ID)))
+	fmt.Fprintf(&sb, "[%s]", idStyle.Render(w.ID))
 
 	if w.Desc != "" {
 		sb.WriteString(" " + labelStyle.Render(w.Desc))

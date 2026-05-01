@@ -84,6 +84,7 @@ var ServeCommand = &cli.Command{
 		}
 
 		logger.Info("Server stopped")
+
 		return nil
 	},
 }

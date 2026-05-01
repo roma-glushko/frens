@@ -60,9 +60,7 @@ func (l LocationTextFormatter) formatCompact(location friend.Location) string {
 func (l LocationTextFormatter) formatRegular(location friend.Location) string {
 	var sb strings.Builder
 
-	sb.WriteString(
-		fmt.Sprintf("%s (%s)", labelStyle.Render(location.String()), idStyle.Render(location.ID)),
-	)
+	fmt.Fprintf(&sb, "%s (%s)", labelStyle.Render(location.String()), idStyle.Render(location.ID))
 	sb.WriteString("\n")
 
 	if len(location.Tags) > 0 {
