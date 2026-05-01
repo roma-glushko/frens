@@ -680,20 +680,20 @@ func (j *Journal) RemoveEvents(t friend.EventType, toRemove []friend.Event) {
 }
 
 func (j *Journal) AddFriendDate(fID string, d friend.Date) (friend.Date, error) {
-	f, err := j.GetFriend(fID)
-	if err != nil {
-		return friend.Date{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
-	}
-
 	if d.ID == "" {
 		d.ID = ksuid.New().String()
 	}
 
-	f.Dates = append(f.Dates, &d)
+	for _, f := range j.Friends {
+		if f.ID == fID {
+			f.Dates = append(f.Dates, &d)
+			j.SetDirty(true)
 
-	j.SetDirty(true)
+			return d, nil
+		}
+	}
 
-	return d, nil
+	return friend.Date{}, fmt.Errorf("failed to get friend %s: friend not found", fID)
 }
 
 func (j *Journal) UpdateFriendDate(o, n friend.Date) (friend.Date, error) {
@@ -807,20 +807,20 @@ func (j *Journal) AddFriendWishlistItem(
 	fID string,
 	w friend.WishlistItem,
 ) (friend.WishlistItem, error) {
-	f, err := j.GetFriend(fID)
-	if err != nil {
-		return friend.WishlistItem{}, fmt.Errorf("failed to get friend %s: %w", fID, err)
-	}
-
 	if w.ID == "" {
 		w.ID = ksuid.New().String()
 	}
 
-	f.Wishlist = append(f.Wishlist, &w)
+	for _, f := range j.Friends {
+		if f.ID == fID {
+			f.Wishlist = append(f.Wishlist, &w)
+			j.SetDirty(true)
 
-	j.SetDirty(true)
+			return w, nil
+		}
+	}
 
-	return w, nil
+	return friend.WishlistItem{}, fmt.Errorf("failed to get friend %s: friend not found", fID)
 }
 
 func (j *Journal) UpdateFriendWishlistItem(o, n friend.WishlistItem) (friend.WishlistItem, error) {

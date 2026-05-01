@@ -91,7 +91,7 @@ func (f DateTextFormatter) formatRegular(dt *friend.Date) string {
 }
 
 func (f DateTextFormatter) FormatList(ctx log.FormatterContext, el any) (string, error) {
-	dates, ok := el.([]*friend.Date)
+	dates, ok := el.([]friend.Date)
 
 	if !ok {
 		return "", ErrInvalidEntity
@@ -101,7 +101,8 @@ func (f DateTextFormatter) FormatList(ctx log.FormatterContext, el any) (string,
 
 	w := tabwriter.NewWriter(&buf, 0, 0, 3, ' ', 0)
 
-	for _, dt := range dates {
+	for i := range dates {
+		dt := &dates[i]
 		if ctx.Density == log.DensityCompact {
 			_, _ = fmt.Fprintf(
 				w,

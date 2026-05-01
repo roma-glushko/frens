@@ -17,6 +17,8 @@ package acceptance
 import (
 	"testing"
 
+	"github.com/roma-glushko/frens/internal/journal"
+	"github.com/roma-glushko/frens/internal/store/file"
 	"github.com/urfave/cli/v2"
 )
 
@@ -31,4 +33,17 @@ func InitJournal(t *testing.T, c cli.App) (string, error) {
 	}
 
 	return jDir, c.RunContext(t.Context(), a)
+}
+
+func LoadJournal(t *testing.T, jDir string) *journal.Journal {
+	t.Helper()
+
+	s := file.NewTOMLFileStore(jDir)
+
+	j, err := s.Load(t.Context())
+	if err != nil {
+		t.Fatalf("failed to load journal: %v", err)
+	}
+
+	return j
 }
