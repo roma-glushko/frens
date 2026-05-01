@@ -4,7 +4,7 @@
     <img src="./docs/logo.png" width="300px" alt="Frens" />
     <p>Build relationships with people that last.</p>
     <a href="https://github.com/roma-glushko/hawk/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/roma-glushko/hawk" alt="Apache-2.0" />
+        <img src="https://img.shields.io/github/license/roma-glushko/frens?color=%238C72D6" alt="Apache-2.0" />
     </a>
 </div>
 
