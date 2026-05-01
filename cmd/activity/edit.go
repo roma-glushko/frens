@@ -26,6 +26,7 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/reminder"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -63,11 +64,13 @@ var EditCommand = &cli.Command{
 				return cli.Exit("Activity not found: "+actID, 1)
 			}
 
+			existingReminders := reminder.FindForEntity(j, actOld.ID)
+
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
 				Title:      fmt.Sprintf("Edit activity log (%s):", actOld.ID),
 				SyntaxHint: lang.FormatEventInfo,
 			})
-			inputForm.Textarea.SetValue(lang.RenderEvent(actOld))
+			inputForm.Textarea.SetValue(reminder.RenderForEditor(lang.RenderEvent(actOld), existingReminders))
 
 			// TODO: check if interactive mode is enabled
 			teaUI := tea.NewProgram(inputForm, tea.WithMouseAllMotion())
@@ -99,6 +102,11 @@ var EditCommand = &cli.Command{
 
 			log.Success("Activity updated")
 			log.Header("Activity Information")
+
+			result := reminder.SyncFromEdit(j, infoTxt, friend.LinkedEntityActivity, actNew.ID, "", actNew.Date, actNew.Tags, existingReminders)
+			if err := appCtx.Printer.Print(result); err != nil {
+				return err
+			}
 
 			return appCtx.Printer.Print(actNew)
 		})

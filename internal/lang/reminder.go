@@ -312,6 +312,11 @@ func ExtractReminder(
 	}, nil
 }
 
+// HasReminderExpr returns true if the string contains a !r[...] expression
+func HasReminderExpr(s string) bool {
+	return reminderRe.MatchString(s)
+}
+
 // RemoveReminderExpr removes reminder expression from string
 func RemoveReminderExpr(s string) string {
 	return strings.TrimSpace(reminderRe.ReplaceAllString(s, ""))

@@ -75,6 +75,7 @@ func ExtractDateInfo(s string) (friend.Date, error) {
 
 	s = RemoveTags(s)
 	s = RemoveProps(s)
+	s = RemoveReminderExpr(s)
 
 	parts := strings.SplitN(s, Separator, 2)
 

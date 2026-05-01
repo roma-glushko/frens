@@ -73,6 +73,7 @@ func ExtractEvent(t friend.EventType, s string) (friend.Event, error) {
 
 	desc = RemoveTags(desc)
 	desc = RemoveLocMarkers(desc)
+	desc = RemoveReminderExpr(desc)
 
 	return friend.Event{
 		Type:        t,

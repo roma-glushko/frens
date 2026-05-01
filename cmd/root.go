@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/roma-glushko/frens/internal/config"
 	"github.com/roma-glushko/frens/internal/store/file"
 
@@ -110,6 +111,12 @@ func NewApp() cli.App {
 				Aliases: []string{"c"},
 				Usage:   "use compact output (one line per entity)",
 			},
+			&cli.StringFlag{
+				Name:    "env-file",
+				Aliases: []string{"e"},
+				Value:   ".env",
+				Usage:   "path to the dotenv file",
+			},
 		},
 		Before: func(c *cli.Context) error {
 			ctx := c.Context
@@ -117,6 +124,9 @@ func NewApp() cli.App {
 			quietLevel := c.Bool("quiet")
 
 			InitLogging(debugLevel, quietLevel)
+
+			// Load dotenv file (optional, no error if missing)
+			_ = godotenv.Load(c.String("env-file"))
 
 			jDir, err := config.Dir(c.String("journal"))
 			if err != nil {

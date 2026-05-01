@@ -28,6 +28,7 @@ import (
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/reminder"
 	"github.com/urfave/cli/v2"
 )
 
@@ -149,18 +150,12 @@ var AddCommand = &cli.Command{
 			log.Info(" ✔ Date added")
 			log.Infof("  %s: %s", d.DateExpr, d.Desc)
 
-			// Check for inline reminder
 			now := time.Now()
 			baseDate := lang.ExtractDate(d.DateExpr, now)
 
-			if r, err := lang.ExtractReminder(info, friend.LinkedEntityDate, d.ID, p.ID, baseDate, now, d.Tags); err != nil {
-				log.Warnf("Failed to parse reminder: %v", err)
-			} else if r != nil {
-				if _, err := j.AddReminder(*r); err != nil {
-					log.Warnf("Failed to create reminder: %v", err)
-				} else {
-					log.Infof(" ✔ Reminder created (triggers %s)", r.TriggerAt.Format("2006-01-02"))
-				}
+			result := reminder.CreateFromAdd(j, info, friend.LinkedEntityDate, d.ID, p.ID, baseDate, d.Tags)
+			if err := appCtx.Printer.Print(result); err != nil {
+				return err
 			}
 
 			return nil

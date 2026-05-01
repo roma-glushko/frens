@@ -19,6 +19,7 @@ with other people you care about.
 ## Features
 
 - Record your relationships with friends, family, colleagues, and acquaintances using a simple set of concepts like `Friends`, `Locations`, `Activities`, and `Notes`.
+- Set up `Reminders` for birthdays, anniversaries, and follow-ups with notifications via Telegram and Discord.
 - A simple journaling language (called `frentxt`) to simplify the process of recording your thoughts and activities.
 
 ## Philosophy
@@ -50,6 +51,7 @@ For other platforms and architectures, you can download `frens`' binaries right 
 - **Locations**: Places where you and your friends live, work, or spend time together.
 - **Activities**: Things you do with your friends, like going to the movies, having dinner, or attending events.
 - **Notes**: Insights, preferences, deep meaning information with long-term value about your friends, activities, or locations.
+- **Reminders**: Scheduled notifications for important dates and follow-ups, with support for recurring schedules and notification channels.
 
 ## Language
 
@@ -176,6 +178,89 @@ Specialty coffee subscription #coffee #monthly
 
 ```text
 Concert tickets for Coldplay @Berlin $price:$120 #music #experience
+```
+
+### Reminders
+
+`Reminders` let you get notified about upcoming dates, events, or anything you don't want to forget. They are created inline using the `!r[SCHEDULE]` syntax when adding dates or other entities:
+
+```text
+birthday :: January 15 !r[yearly 1w before] #birthday
+```
+
+#### Schedule Syntax
+
+| Syntax                 | Meaning                       |
+|------------------------|-------------------------------|
+| `!r[2025-03-15]`       | Remind on a specific date     |
+| `!r[yearly]`           | Recur every year on this date |
+| `!r[monthly]`          | Recur every month             |
+| `!r[yearly 1w before]` | 1 week before, every year     |
+| `!r[3d before]`        | 3 days before the linked date |
+| `!r[in 2w]`            | 2 weeks from now (one-time)   |
+| `!r[Friday]`           | Next Friday (one-time)        |
+
+Offsets support `d` (days), `w` (weeks), `m` (months), `y` (years).
+
+#### Managing Reminders
+
+```bash
+# List all reminders
+frens reminder list
+
+# Filter by state or type
+frens reminder list --state pending
+frens reminder list --type date --tag birthday
+
+# See what's coming up
+frens reminder upcoming
+frens reminder upcoming --days 7
+
+# Delete a reminder
+frens reminder delete <ID>
+
+# Check and send due notifications (for cron)
+frens reminder notify
+
+# Preview what would fire without sending
+frens reminder notify --dry-run
+```
+
+#### Notification Channels
+
+Reminders can send notifications via Telegram or Discord. Configure channels and routing rules in `config.toml` inside your journal directory:
+
+```toml
+[[notifications.channels]]
+id = "tg-main"
+type = "telegram"
+name = "My Telegram"
+enabled = true
+
+[notifications.channels.config]
+token = "BOT_TOKEN"
+default_chat_id = "CHAT_ID"
+
+[[notifications.rules]]
+id = "birthday-rule"
+priority = 1
+match_tags = ["birthday"]
+channel_ids = ["tg-main"]
+destination = "CHAT_ID"
+```
+
+Token and webhook values can also be set via `TELEGRAM_BOT_TOKEN` and `DISCORD_WEBHOOK_URL` environment variables.
+
+#### Cron Setup
+
+Run `frens reminder notify` periodically to send due notifications:
+
+```bash
+# Check every hour
+0 * * * * frens reminder notify
+
+# Check once a day at 9am
+0 9 * * * frens reminder notify
 ```
 
 ### Activities & Notes

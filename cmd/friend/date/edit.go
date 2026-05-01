@@ -22,9 +22,11 @@ import (
 	jctx "github.com/roma-glushko/frens/internal/context"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/roma-glushko/frens/internal/friend"
 	"github.com/roma-glushko/frens/internal/journal"
 	"github.com/roma-glushko/frens/internal/lang"
 	"github.com/roma-glushko/frens/internal/log"
+	"github.com/roma-glushko/frens/internal/reminder"
 	"github.com/roma-glushko/frens/internal/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -75,12 +77,14 @@ var EditCommand = &cli.Command{
 				return err
 			}
 
+			existingReminders := reminder.FindForEntity(j, dtOld.ID)
+
 			inputForm := tui.NewEditorForm(tui.EditorOptions{
 				Title:      "Edit " + dtOld.ID + " information:",
 				SyntaxHint: lang.FormatDateInfo,
 			})
 
-			dateInfo := lang.RenderDateInfo(dtOld)
+			dateInfo := reminder.RenderForEditor(lang.RenderDateInfo(dtOld), existingReminders)
 			inputForm.Textarea.SetValue(dateInfo)
 
 			// TODO: check if interactive mode is enabled
@@ -135,6 +139,12 @@ var EditCommand = &cli.Command{
 
 			log.Info(" Date updated")
 			log.Info("==> Date Information\n")
+
+			baseDate := lang.ExtractDate(dtNew.DateExpr)
+			result := reminder.SyncFromEdit(j, infoTxt, friend.LinkedEntityDate, dtNew.ID, dtOld.Person, baseDate, dtNew.Tags, existingReminders)
+			if err := appCtx.Printer.Print(result); err != nil {
+				return err
+			}
 
 			return appCtx.Printer.Print(dtNew)
 		})

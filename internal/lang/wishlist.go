@@ -67,6 +67,7 @@ func ExtractWishlistItem(s string) (friend.WishlistItem, error) {
 	s = RemoveTags(s)
 	s = RemoveProps(s)
 	s = RemoveURLs(s)
+	s = RemoveReminderExpr(s)
 
 	desc := strings.TrimSpace(s)
 
