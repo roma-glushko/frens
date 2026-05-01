@@ -143,6 +143,7 @@ var EditCommand = &cli.Command{
 				geocoder := geo.NewGeocoder()
 
 				var coords *geo.Coordinates
+
 				var geoErr error
 
 				_ = tui.RunWithSpinner("Looking up coordinates...", func() error {

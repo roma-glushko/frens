@@ -99,6 +99,7 @@ var AddCommand = &cli.Command{
 		}
 
 		var l friend.Location
+
 		var err error
 
 		if info != "" {
@@ -154,6 +155,7 @@ var AddCommand = &cli.Command{
 			geocoder := geo.NewGeocoder()
 
 			var coords *geo.Coordinates
+
 			var geoErr error
 
 			_ = tui.RunWithSpinner("Looking up coordinates...", func() error {

@@ -101,6 +101,7 @@ var AddCommand = &cli.Command{
 		}
 
 		var f friend.Person
+
 		var err error
 
 		if info != "" {

@@ -83,6 +83,7 @@ var AddCommand = &cli.Command{
 
 		return appCtx.Store.Tx(ctx, func(j *journal.Journal) error {
 			pID := c.Args().First()
+
 			p, err := j.GetFriend(pID)
 			if err != nil {
 				return err
@@ -149,6 +150,7 @@ var AddCommand = &cli.Command{
 					if w.Desc == "" && pInfo.Name != "" {
 						w.Desc = pInfo.Name
 					}
+
 					if w.Price == "" && pInfo.PriceAmount != "" {
 						w.Price = pInfo.PriceAmount + pInfo.PriceCurrency
 					}

@@ -24,7 +24,6 @@ var CleanCommand = &cli.Command{
 	Usage:   "Clean up journal data in case it has been corrupted or stale",
 	Action: func(_ *cli.Context) error {
 		// TODO: implement
-
 		return nil
 	},
 }

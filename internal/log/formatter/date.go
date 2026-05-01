@@ -69,7 +69,7 @@ func (f DateTextFormatter) formatCompact(dt *friend.Date) string {
 func (f DateTextFormatter) formatRegular(dt *friend.Date) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("[%s] %s", idStyle.Render(dt.ID), labelStyle.Render(dt.DateExpr)))
+	fmt.Fprintf(&sb, "[%s] %s", idStyle.Render(dt.ID), labelStyle.Render(dt.DateExpr))
 
 	if len(dt.Tags) > 0 {
 		sb.WriteString("\n")

@@ -43,7 +43,6 @@ var ConnectCommand = &cli.Command{
 
 		if err := git.Inited(); err != nil {
 			// if the .git directory does not exist, we should init git first
-
 			if err := git.Init(ctx); err != nil {
 				return err
 			}

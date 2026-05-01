@@ -124,6 +124,7 @@ var EditCommand = &cli.Command{
 				log.Errorf(" failed to parse friend info: %v", err)
 				return err
 			}
+
 			if err := dtNew.Validate(); err != nil {
 				return err
 			}

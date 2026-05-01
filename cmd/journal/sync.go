@@ -55,8 +55,8 @@ Examples:
 		}
 
 		origin := "origin"
-		branch, err := git.GetBranchName(ctx)
 
+		branch, err := git.GetBranchName(ctx)
 		if err == nil {
 			if err := tui.RunWithProgress("Pulling latest changes from remote...", func() error {
 				return git.Pull(ctx, origin, branch)
@@ -88,6 +88,7 @@ Examples:
 			if err := git.Commit(ctx, commit); err != nil {
 				return err
 			}
+
 			return git.Branch(ctx, branch)
 		}); err != nil {
 			return err

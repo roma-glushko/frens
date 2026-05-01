@@ -74,6 +74,7 @@ var DeleteCommand = &cli.Command{
 
 			// TODO: check if interactive mode
 			fmt.Println("\n⚠️  You're about to permanently delete the " + dtWord + ".")
+
 			if !c.Bool("force") && !tui.ConfirmAction("Are you sure?") {
 				fmt.Println("\n↩️  Deletion canceled.")
 				return nil

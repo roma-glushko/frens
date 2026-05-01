@@ -155,7 +155,7 @@ func (p *Person) String() string {
 	sb.WriteString(p.Name)
 
 	if len(p.Nicknames) > 0 {
-		sb.WriteString(fmt.Sprintf(" (a.k.a %s)", strings.Join(p.Nicknames, ", ")))
+		fmt.Fprintf(&sb, " (a.k.a %s)", strings.Join(p.Nicknames, ", "))
 	}
 
 	return sb.String()
