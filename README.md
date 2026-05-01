@@ -1,7 +1,14 @@
 # Frens
 
+<div align="center">
+    <img src="./docs/logo.png" width="300px" alt="Frens" />
+    <p>Build relationships with people that last.</p>
+    <a href="https://github.com/roma-glushko/hawk/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/roma-glushko/hawk" alt="Apache-2.0" />
+    </a>
+</div>
+
 A friendship management & journaling application for introverts and not only.
-Build relationships with people that last.
 
 `frens` is a command-line application that helps you to keep track of your relationships 
 with other people you care about.
