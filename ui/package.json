@@ -16,7 +16,7 @@
     "svelte": "^5.55.5",
     "svelte-check": "^4.1.1",
     "typescript": "^5.7.2",
-    "vite": "^6.0.7"
+    "vite": "^6.4.2"
   },
   "dependencies": {
     "@types/leaflet": "^1.9.21",
