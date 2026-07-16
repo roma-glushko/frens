@@ -11,7 +11,7 @@ require (
 	github.com/charmbracelet/log v1.0.0
 	github.com/gosimple/slug v1.15.0
 	github.com/markusmobius/go-dateparser v1.2.4
-	github.com/mattn/go-isatty v0.0.22
+	github.com/mattn/go-isatty v0.0.23
 	github.com/pkg/errors v0.9.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.11.1
